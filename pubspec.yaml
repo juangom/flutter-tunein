@@ -16,8 +16,7 @@ dependencies:
   get_it: ^1.0.3+1
   crypto: ^2.0.6
   uuid: ^2.0.2
-
-
+  page_transition: "^1.1.5"
 
 dev_dependencies:
   flutter_test:

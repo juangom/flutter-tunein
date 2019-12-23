@@ -87,8 +87,8 @@ class Nano {
     for (var track in _musicFiles) {
       var data = await getFileMetaData(track);
       // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
-      // print(track);
-      if (data[2] != null) {
+       //print(track);
+      if (data!=null && data[2] != null) {
         if (data[2] is List<int>) {
           var digest = sha1.convert(data[2]).toString();
           writeImage(digest, data[2]);
@@ -118,6 +118,7 @@ class Nano {
 
   void cleanMetadata() {
     for (var i = 0; i < _musicFiles.length; i++) {
+      if(_metaData[i]==null) continue;
       if (_metaData[i][0] == null) {
         String s = _musicFiles[i];
         for (var n = s.length; n > 0; n--) {
@@ -162,6 +163,7 @@ class Nano {
     await getAllMetaData();
     cleanMetadata();
     for (var i = 0; i < _musicFiles.length; i++) {
+      if(_metaData[i]==null)continue;
       var albumArt = getImage(appPath, _metaData[i][2]);
       Tune tune = Tune(
           uuid.v1(),
@@ -200,4 +202,28 @@ class Tune {
     albumArt = m["albumArt"];
     colors = m["colors"].cast<int>();
   }
+}
+
+
+class Album {
+  int id;
+  String title;
+  String artist;
+  String albumArt;
+  List<Tune> songs=[];
+  Album(this.id, this.title, this.artist, this.albumArt);
+
+  Album.fromMap(Map m) {
+    id= m["id"];
+    artist = m["artist"];
+    title = m["title"];
+    albumArt = m["albumArt"];
+  }
+
+  @override
+  String toString() {
+    return 'Album{id: $id, title: $title, artist: $artist, albumArt: $albumArt, songs: $songs}';
+  }
+
+
 }

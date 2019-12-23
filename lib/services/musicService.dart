@@ -15,6 +15,7 @@ final themeService = locator<ThemeService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
+  BehaviorSubject<List<Album>> _albums$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$;
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>
       _playlist$; //key is normal, value is shuffle
@@ -27,6 +28,7 @@ class MusicService {
   Tune _defaultSong;
 
   BehaviorSubject<List<Tune>> get songs$ => _songs$;
+  BehaviorSubject<List<Album>> get albums$ => _albums$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> get playerState$ =>
       _playerState$;
   BehaviorSubject<Duration> get position$ => _position$;
@@ -49,6 +51,53 @@ class MusicService {
         _songs$.add(data);
       },
     );
+  }
+
+  Future<void> fetchAlbums() async {
+    Map<String,Album> albums = {};
+    int currentIndex = 0;
+    List<Tune> ItemsList =_songs$.value;
+    ItemsList.forEach((Tune tune){
+      if(albums[tune.album]!=null){
+        albums[tune.album].songs.add(tune);
+      }else{
+        albums[tune.album]= new Album(currentIndex, tune.album, tune.artist, tune.albumArt);
+        albums[tune.album].songs.add(tune);
+        currentIndex++;
+      }
+    });
+    List <Album> newAlbumList =albums.values.toList();
+    newAlbumList.sort((a, b) {
+      if(a.title==null || b.title ==null ) return 1;
+      return a.title
+          .toLowerCase()
+          .compareTo(b.title.toLowerCase());
+    });
+    _albums$.add(newAlbumList);
+
+  }
+
+  BehaviorSubject<List<Album>> fetchAlbum ({String title, int id, String artist}){
+    if(artist==null && id==null && title==null){
+      return BehaviorSubject<List<Album>>();
+    }else{
+      List<Album> albums = _albums$.value.toList();
+      List <Album> finalAlbums =  albums.where((elem){
+        bool finalDecision = true;
+        if(title!=null) {
+          finalDecision = finalDecision && (elem.title==title);
+        }
+        if(id!=null) {
+          finalDecision = finalDecision && (elem.id==id);
+        }
+        if(artist!=null) {
+          finalDecision = finalDecision && (elem.artist==artist);
+        }
+        return finalDecision;
+      }).toList();
+      return BehaviorSubject<List<Album>>.seeded(finalAlbums);
+    }
+
   }
 
   void playMusic(Tune song) {
@@ -282,6 +331,7 @@ class MusicService {
     _nano = Nano();
     _isAudioSeeking$ = BehaviorSubject<bool>.seeded(false);
     _songs$ = BehaviorSubject<List<Tune>>();
+    _albums$ = BehaviorSubject<List<Album>>();
     _position$ = BehaviorSubject<Duration>();
     _playlist$ = BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>();
     _playback$ = BehaviorSubject<List<Playback>>.seeded([]);

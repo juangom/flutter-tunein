@@ -120,38 +120,67 @@ class BottomPanel extends StatelessWidget {
             ],
           ),
         ),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              if (_currentSong.uri == null) {
-                return;
-              }
-              if (PlayerState.paused == _state) {
-                musicService.playMusic(_currentSong);
-              } else {
-                musicService.pauseMusic(_currentSong);
-              }
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: _state == PlayerState.playing
-                      ? Icon(
-                          Icons.pause,
-                          color: Color(colors[1]).withOpacity(.7),
-                        )
-                      : Icon(
-                          Icons.play_arrow,
-                          color: Color(colors[1]).withOpacity(.7),
-                        ),
+        Row(
+          children: <Widget>[
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (_currentSong.uri == null) {
+                    return;
+                  }
+                  musicService.playPreviousSong();
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Icon(
+                        IconData(0xeb40, fontFamily: 'boxicons'),
+                        color: new Color(colors[1]).withOpacity(.7),
+                        size: 35,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (_currentSong.uri == null) {
+                    return;
+                  }
+                  if (PlayerState.paused == _state) {
+                    musicService.playMusic(_currentSong);
+                  } else {
+                    musicService.pauseMusic(_currentSong);
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: _state == PlayerState.playing
+                          ? Icon(
+                        Icons.pause,
+                        color: Color(colors[1]).withOpacity(.7),
+                      )
+                          : Icon(
+                        Icons.play_arrow,
+                        color: Color(colors[1]).withOpacity(.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         )
       ],
     );

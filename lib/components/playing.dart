@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:page_transition/page_transition.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
@@ -11,8 +11,9 @@ import 'package:Tunein/components/slider.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'controlls.dart';
+import 'package:rxdart/rxdart.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   @override
@@ -32,17 +33,27 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
   Widget build(BuildContext context) {
     final _screenHeight = MediaQuery.of(context).size.height;
 
-    return StreamBuilder<MapEntry<PlayerState, Tune>>(
-      stream: musicService.playerState$,
+    return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
+      stream: Observable.combineLatest2(
+        musicService.playerState$,
+        musicService.favorites$,
+        (a, b) => MapEntry(a, b),
+      ),
       builder: (BuildContext context,
-          AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot) {
+          AsyncSnapshot<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>
+              snapshot) {
         if (!snapshot.hasData) {
           return Scaffold(
             backgroundColor: MyTheme.bgBottomBar,
           );
         }
+        final _state = snapshot.data.key.key;
+        final _currentSong = snapshot.data.key.value;
+        final List<Tune> _favorites = snapshot.data.value;
 
-        final Tune _currentSong = snapshot.data.value;
+        final int index =
+            _favorites.indexWhere((song) => song.id == _currentSong.id);
+        final bool _isFavorited = index == -1 ? false : true;
 
         if (_currentSong.id == null) {
           return Scaffold(
@@ -64,10 +75,7 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
                     curve: Curves.decelerate,
                     color: Color(colors[0]),
                     child: getPlayinglayout(
-                      _currentSong,
-                      colors,
-                      _screenHeight,
-                    ),
+                        _currentSong, colors, _screenHeight, _isFavorited),
                   );
                 }));
       },
@@ -85,12 +93,13 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight) {
+  getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
+      bool _isFavorited) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
     if (_currentSong == null || songs == null) {
       return Container();
     }
-    
+
     String image = songs.value.albumArt;
     String image2 = songs.key.albumArt;
     return Column(
@@ -145,6 +154,23 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    Padding(
+                      child: InkWell(
+                        child: Icon(
+                          _isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: new Color(colors[1]).withOpacity(.7),
+                          size: 30,
+                        ),
+                        onTap: () {
+                          if (_isFavorited) {
+                            musicService.removeFromFavorites(_currentSong);
+                          } else {
+                            musicService.addToFavorites(_currentSong);
+                          }
+                        },
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                    ),
                     Expanded(
                       child: Column(
                         children: <Widget>[
@@ -173,7 +199,20 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
                           )
                         ],
                       ),
-                    )
+                    ),
+                    Padding(
+                      child: InkWell(
+                        child: Icon(
+                          Icons.album,
+                          size: 30,
+                          color: Colors.white70,
+                        ),
+                        onTap: () {
+                          gotoFullAlbumPage(context,_currentSong);
+                        },
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                    ),
                   ],
                 ),
                 NowPlayingSlider(colors),
@@ -184,5 +223,9 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
         ),
       ],
     );
+  }
+
+  gotoFullAlbumPage(context,Tune song){
+    MyUtils.createDelayedPageroute(context, SingleAlbumPage(song),this.widget);
   }
 }

@@ -103,27 +103,15 @@ class MusicBoardControls extends StatelessWidget {
                   ),
                   onTap: () => musicService.playNextSong(),
                 ),
-                // InkWell(
-                //   child: Icon(
-                //     _isFavorited ? Icons.favorite : Icons.favorite_border,
-                //     color: new Color(colors[1]).withOpacity(.7),
-                //     size: 30,
-                //   ),
-                //   onTap: () {
-                //     if (_isFavorited) {
-                //       musicService.removeFromFavorites(songPlus);
-                //     } else {
-                //       musicService.addToFavorites(songPlus);
-                //     }
-                //   },
-                // ),
                 InkWell(
                   child: Icon(
                     Icons.shuffle,
                     color: new Color(colors[1]).withOpacity(.5),
                     size: 20,
                   ),
-                  onTap: () {}
+                  onTap: () {
+                    musicService.fetchAlbums();
+                  }
                 ),
               ],
             );

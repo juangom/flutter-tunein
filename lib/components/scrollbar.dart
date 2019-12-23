@@ -22,20 +22,20 @@ class _MyScrollbarState extends State<MyScrollbar> {
   }
 
   _updateThumbPos(double newPos) {
-    setState(() {
+    mounted?setState(() {
       thumbPos = newPos;
       _offstage = false;
-    });
+    }):null;
 
     if (_closing) return;
 
     _closing = true;
 
     Future.delayed(Duration(milliseconds: 1500), () {
-      setState(() {
+      mounted?setState(() {
         _offstage = true;
         _closing = false;
-      });
+      }):null;
     });
   }
 

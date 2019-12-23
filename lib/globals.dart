@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
 
 class MyTheme {
   static final darkRed = Color(0xffff245a);
@@ -18,4 +19,56 @@ class MyUtils {
       return a + " & " + b;
     });
   }
+
+  static dynamic createDelayedPageroute(context, Widget page, Widget exitPage) async {
+
+    Future<Widget> buildPageAsync() async {
+      return Future.microtask(() {
+        return page;
+      });
+    }
+
+    var newPage = await buildPageAsync();
+    //var route = MaterialPageRoute(builder: (_) => newPage,);
+    Navigator.push(context, SlideRightRoute(page: newPage,exitPage: exitPage));
+  }
+}
+
+
+class SlideRightRoute extends PageRouteBuilder {
+  final Widget page;
+  final Widget exitPage;
+  SlideRightRoute({this.page, this.exitPage})
+      : super(
+    pageBuilder: (
+        BuildContext context,
+        Animation<double> animation,
+        Animation<double> secondaryAnimation,
+        ) =>
+    page,
+    transitionsBuilder: (
+        BuildContext context,
+        Animation<double> animation,
+        Animation<double> secondaryAnimation,
+        Widget child,
+        ) =>
+        Stack(
+          children: <Widget>[
+            SlideTransition(
+              position: new Tween<Offset>(
+                begin: const Offset(0.0, 0.0),
+                end: const Offset(-1.0, 0.0),
+              ).animate(animation),
+              child: exitPage,
+            ),
+            SlideTransition(
+              position: new Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: page,
+            )
+          ],
+        ),
+  );
 }
