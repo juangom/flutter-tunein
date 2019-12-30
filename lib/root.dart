@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/bottomnavbar.dart';
 import 'globals.dart';
-
+import 'package:Tunein/services/dialogService.dart';
 enum StartupState { Busy, Success, Error }
 
 class Root extends StatefulWidget {
@@ -25,7 +25,9 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       StreamController<StartupState>();
   @override
   void initState() {
+
     loadFiles();
+
     super.initState();
   }
 
@@ -56,7 +58,11 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: () {
         if (!layoutService.globalPanelController.isPanelClosed()) {
-          layoutService.globalPanelController.close();
+          if(layoutService.albumPlayerPageController.page>0.0){
+            layoutService.albumPlayerPageController.jumpToPage(0);
+          }else{
+            layoutService.globalPanelController.close();
+          }
         } else {
           _androidAppRetain.invokeMethod("sendToBackground");
           return Future.value(false);
@@ -73,9 +79,29 @@ class RootState extends State<Root> with TickerProviderStateMixin {
               return Container();
             }
             if (snapshot.data == StartupState.Busy) {
-              return Container();
+              return Container(
+                constraints: BoxConstraints.expand(),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      CircularProgressIndicator(
+                        strokeWidth: 5.0,
+                      ),
+                      Text(
+                        "Scanning Your Library ...",
+                        style: TextStyle(
+                          color: MyTheme.darkRed,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16.0,
+                          height: 2.0
+                        )
+                      )
+                    ],
+                  ),
+                ),
+              );
             }
-
             return Theme(
               data: Theme.of(context).copyWith(accentColor: MyTheme.darkRed),
               child: Padding(

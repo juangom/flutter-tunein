@@ -14,11 +14,14 @@ class LayoutService {
   // Main Panel
   PanelController _globalPanelController;
   PanelController get globalPanelController => _globalPanelController;
+  PageController _albumPlayerPageController;
+  PageController get albumPlayerPageController => _albumPlayerPageController;
 
   LayoutService() {
     _initGlobalPageView();
     _initSubPageViews();
     _initGlobalPanel();
+    _initPlayingPageView();
   }
 
   void _initSubPageViews() {
@@ -34,6 +37,11 @@ class LayoutService {
 
   void _initGlobalPageView() {
     _globalPageController = PageController();
+  }
+
+  void _initPlayingPageView() {
+    _albumPlayerPageController = PageController();
+
   }
 
   void changeGlobalPage(int pageIndex) {

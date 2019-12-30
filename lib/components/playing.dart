@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:page_transition/page_transition.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:Tunein/services/layout.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -16,6 +16,12 @@ import 'controlls.dart';
 import 'package:rxdart/rxdart.dart';
 
 class NowPlayingScreen extends StatefulWidget {
+  PageController controller;
+
+  NowPlayingScreen({controller}) {
+    this.controller = controller != null ? controller : new PageController();
+  }
+
   @override
   NowPlayingScreenState createState() => NowPlayingScreenState();
 }
@@ -32,6 +38,39 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   Widget build(BuildContext context) {
     final _screenHeight = MediaQuery.of(context).size.height;
+    BehaviorSubject<Tune> songStream = new BehaviorSubject<Tune>();
+    Tune song;
+    return PageView(
+      controller: widget.controller,
+      children: <Widget>[
+        PlayingPage(songStream),
+        AlbumSongs(songStream: songStream),
+      ],
+      physics: ClampingScrollPhysics(),
+    );
+  }
+}
+
+class PlayingPage extends StatefulWidget {
+  BehaviorSubject<Tune> getTuneWhenReady;
+
+  PlayingPage(this.getTuneWhenReady);
+
+  @override
+  _PlayingPageState createState() => _PlayingPageState();
+}
+
+class _PlayingPageState extends State<PlayingPage>
+    with AutomaticKeepAliveClientMixin<PlayingPage> {
+  final musicService = locator<MusicService>();
+  final themeService = locator<ThemeService>();
+  final layoutService = locator<LayoutService>();
+  bool isNewData = false;
+  Tune oldData;
+
+  @override
+  Widget build(BuildContext context) {
+    final _screenHeight = MediaQuery.of(context).size.height;
 
     return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
       stream: Observable.combineLatest2(
@@ -42,13 +81,19 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>
               snapshot) {
+        isNewData = false;
         if (!snapshot.hasData) {
           return Scaffold(
             backgroundColor: MyTheme.bgBottomBar,
           );
         }
+        if (oldData != null && snapshot.data.key.value.id != oldData.id) {
+          isNewData = true;
+          print("NEW DATA");
+        }
         final _state = snapshot.data.key.key;
         final _currentSong = snapshot.data.key.value;
+        oldData = _currentSong;
         final List<Tune> _favorites = snapshot.data.value;
 
         final int index =
@@ -60,6 +105,7 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
             backgroundColor: MyTheme.bgBottomBar,
           );
         }
+        widget.getTuneWhenReady.add(_currentSong);
 
         return Scaffold(
             body: StreamBuilder<List<int>>(
@@ -69,18 +115,60 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
                     return Container();
                   }
                   final List<int> colors = snapshot.data;
-                  return AnimatedContainer(
-                    padding: MediaQuery.of(context).padding,
-                    duration: Duration(milliseconds: 500),
-                    curve: Curves.decelerate,
-                    color: Color(colors[0]),
-                    child: getPlayinglayout(
-                        _currentSong, colors, _screenHeight, _isFavorited),
+                  Matrix4 transformation = Matrix4.rotationZ(1.5708);
+                  transformation.add(Matrix4.rotationY(3.14159));
+                  return Stack(
+                    children: <Widget>[
+                      AnimatedContainer(
+                        padding: MediaQuery.of(context).padding,
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.decelerate,
+                        color: Color(colors[0]),
+                        child: getPlayinglayout(
+                            _currentSong, colors, _screenHeight, _isFavorited),
+                      ),
+                      Positioned(
+                          right: 3,
+                          top: (_screenHeight / 2)-40,
+                          child: Container(
+                            child:
+                            RotatedBox(
+                              quarterTurns: -1,
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Album songs",
+                                      style: TextStyle(
+                                          color: Color(colors[1]).withOpacity(0.4),
+                                          fontSize: 12.5)
+                                  ),
+                                  Container(
+                                    constraints: BoxConstraints.tightFor(height: 4.0),
+                                    margin: EdgeInsets.only(top: 1),
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                        color: Color(colors[1]),
+                                        borderRadius:
+                                        BorderRadius.circular(9.5708)),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            /*Transform(
+                              alignment: FractionalOffset.center,
+                              child: ,
+                              transform: transformation,
+                            ),*/
+                          ))
+                    ],
                   );
                 }));
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   String getDuration(Tune _song) {
     final double _temp = _song.duration / 1000;
@@ -97,7 +185,9 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
       bool _isFavorited) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
     if (_currentSong == null || songs == null) {
-      return Container();
+      return Container(
+        height: _screenHeight,
+      );
     }
 
     String image = songs.value.albumArt;
@@ -106,6 +196,7 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
         Container(
+            height: _screenHeight,
             constraints: BoxConstraints(
                 maxHeight: _screenHeight / 2, minHeight: _screenHeight / 2),
             padding: const EdgeInsets.all(10),
@@ -202,13 +293,14 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                     Padding(
                       child: InkWell(
+                        radius: 90.0,
                         child: Icon(
                           Icons.album,
                           size: 30,
-                          color: Colors.white70,
+                          color: Color(colors[1]).withOpacity(.7),
                         ),
                         onTap: () {
-                          gotoFullAlbumPage(context,_currentSong);
+                          gotoFullAlbumPage(context, _currentSong);
                         },
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 20),
@@ -225,7 +317,58 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  gotoFullAlbumPage(context,Tune song){
-    MyUtils.createDelayedPageroute(context, SingleAlbumPage(song),this.widget);
+  gotoFullAlbumPage(context, Tune song) {
+    ///opens an other page, Deprecated in favor of a pageView slide
+    //MyUtils.createDelayedPageroute(context, SingleAlbumPage(song),this.widget);
+    layoutService.albumPlayerPageController
+        .nextPage(duration: Duration(milliseconds: 200), curve: Curves.easeIn);
   }
+}
+
+class AlbumSongs extends StatefulWidget {
+  Stream songStream;
+  Tune song;
+
+  AlbumSongs({songStream, song}) {
+    this.songStream = songStream;
+    this.song = song;
+    assert((song == null && songStream != null) ||
+        (song != null && songStream == null));
+  }
+
+  @override
+  _AlbumSongsState createState() => _AlbumSongsState();
+}
+
+class _AlbumSongsState extends State<AlbumSongs>
+    with AutomaticKeepAliveClientMixin<AlbumSongs> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.song != null) {
+      return SingleAlbumPage(widget.song);
+    } else
+      return StreamBuilder<Tune>(
+        stream: widget.songStream,
+        builder: (BuildContext context, AsyncSnapshot<Tune> snapshot) {
+          if (!snapshot.hasData) {
+            return Scaffold(
+              backgroundColor: MyTheme.bgBottomBar,
+            );
+          }
+          final _currentSong = snapshot.data;
+
+          if (_currentSong.id == null) {
+            return Scaffold(
+              backgroundColor: MyTheme.bgBottomBar,
+            );
+          }
+          return Scaffold(
+            body: SingleAlbumPage(_currentSong),
+          );
+        },
+      );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

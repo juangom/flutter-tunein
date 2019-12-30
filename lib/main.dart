@@ -52,13 +52,16 @@ class Wrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SlidingUpPanel(
-      panel: NowPlayingScreen(),
+      panel: NowPlayingScreen(controller: layoutService.albumPlayerPageController),
       controller: layoutService.globalPanelController,
       minHeight: 60,
       maxHeight: MediaQuery.of(context).size.height,
       backdropEnabled: true,
       backdropOpacity: 0.5,
       parallaxEnabled: true,
+        onPanelClosed:(){
+          layoutService.albumPlayerPageController.jumpToPage(0);
+        },
       collapsed: Material(
         child: BottomPanel(),
       ),

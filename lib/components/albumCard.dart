@@ -12,9 +12,9 @@ import '../globals.dart';
 class AlbumCard extends StatelessWidget {
 
   final Album _album;
+  final VoidCallback onTap;
 
-
-  AlbumCard({Key key,@required Album album}):
+  AlbumCard({Key key,@required Album album, this.onTap}):
         _album=album,
         super(key: key);
 
@@ -95,7 +95,7 @@ class AlbumCard extends StatelessWidget {
         ),
         enableFeedback: false,
         onTap: (){
-          print("tapped album ${_album.title}");
+
           ///Should be done in an other way, we already have the album data but our singleAlbumPAge doesn't take into consideration
           ///that we already have that data and will ask for it again from the music service
           gotoFullAlbumPage(context,_album.songs[0]);

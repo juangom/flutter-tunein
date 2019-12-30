@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class MyScrollbar extends StatefulWidget {
   final ScrollController controller;
-
-  MyScrollbar({Key key, this.controller}) : super(key: key);
+  final Color color;
+  MyScrollbar({Key key, this.controller,this.color}) : super(key: key);
   _MyScrollbarState createState() => _MyScrollbarState();
 }
 
 class _MyScrollbarState extends State<MyScrollbar> {
-  double scrollableAreaWidth = 25;
+  double scrollableAreaWidth = 10;
   double thumbWidth = 6;
   double thumbHeight = 50;
   RenderBox boxAfterRender;
@@ -95,7 +95,7 @@ class _MyScrollbarState extends State<MyScrollbar> {
       onVerticalDragEnd: (DragEndDetails details) =>
           _onDragEnd(context, details),
       child: Container(
-        color: MyTheme.darkBlack,
+        color: widget.color!=null?widget.color:MyTheme.darkBlack,
         width: scrollableAreaWidth,
         child: Align(
           alignment: Alignment.centerRight,

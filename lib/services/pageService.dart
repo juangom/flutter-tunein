@@ -24,7 +24,7 @@ class PageService {
   final int id;
 
   PageService(this.id) {
-    print(this.id);
+
     _initPageView();
     _initHeaderNavBar();
     _registerListeners();
