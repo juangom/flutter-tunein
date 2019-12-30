@@ -295,6 +295,7 @@ class MusicService {
         }
       }
     }
+    print("favorites : ${_favorites}");
     _favorites$.add(_favorites);
   }
 

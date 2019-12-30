@@ -57,15 +57,19 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        if (!layoutService.globalPanelController.isPanelClosed()) {
-          if(layoutService.albumPlayerPageController.page>0.0){
-            layoutService.albumPlayerPageController.jumpToPage(0);
-          }else{
-            layoutService.globalPanelController.close();
+       if(layoutService.pageServices[0].pageViewController.page==2.0 && layoutService.albumListPageController.page>0.0){
+          layoutService.albumListPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+        }else{
+          if (!layoutService.globalPanelController.isPanelClosed()) {
+            if(layoutService.albumPlayerPageController.page>0.0){
+              layoutService.albumPlayerPageController.jumpToPage(0);
+            }else{
+              layoutService.globalPanelController.close();
+            }
+          } else {
+            _androidAppRetain.invokeMethod("sendToBackground");
+            return Future.value(false);
           }
-        } else {
-          _androidAppRetain.invokeMethod("sendToBackground");
-          return Future.value(false);
         }
       },
       child: Scaffold(

@@ -52,6 +52,7 @@ class _TracksPageState extends State<TracksPage>
       musicService.playerState$.listen((MapEntry<PlayerState, Tune> value){
         if(value!=null && songs!=null){
           int indexOfThePlayingSong =songs.indexOf(value.value);
+          if(indexOfThePlayingSong>0)
           /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
           print(" the ideal position would be equal to the desired pool and a portion of the next pool so that the final position to scroll to would be determined by creating a virtual pool between the previous"

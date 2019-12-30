@@ -95,10 +95,11 @@ class AlbumCard extends StatelessWidget {
         ),
         enableFeedback: false,
         onTap: (){
-
-          ///Should be done in an other way, we already have the album data but our singleAlbumPAge doesn't take into consideration
-          ///that we already have that data and will ask for it again from the music service
-          gotoFullAlbumPage(context,_album.songs[0]);
+          if(onTap!=null){
+            onTap();
+          }else{
+            gotoFullAlbumPage(context,_album.songs[0]);
+          }
         },
       ),
     );

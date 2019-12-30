@@ -115,8 +115,6 @@ class _PlayingPageState extends State<PlayingPage>
                     return Container();
                   }
                   final List<int> colors = snapshot.data;
-                  Matrix4 transformation = Matrix4.rotationZ(1.5708);
-                  transformation.add(Matrix4.rotationY(3.14159));
                   return Stack(
                     children: <Widget>[
                       AnimatedContainer(
@@ -153,12 +151,6 @@ class _PlayingPageState extends State<PlayingPage>
                                 ],
                               ),
                             ),
-
-                            /*Transform(
-                              alignment: FractionalOffset.center,
-                              child: ,
-                              transform: transformation,
-                            ),*/
                           ))
                     ],
                   );

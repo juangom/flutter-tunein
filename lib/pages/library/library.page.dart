@@ -23,7 +23,7 @@ class LibraryPage extends StatelessWidget {
             children: [
               TracksPage(),
               ArtistsPage(),
-              AlbumsPage(),
+              AlbumsPage(controller: layoutService.albumListPageController),
             ],
           ),
         )
