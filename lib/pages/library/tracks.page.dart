@@ -64,7 +64,7 @@ class _TracksPageState extends State<TracksPage>
 
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
           controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
-            milliseconds: (pow(log(indexOfThePlayingSong*2), 2)).floor()
+            milliseconds: (pow(log(indexOfThePlayingSong*2), 2)).floor() + 50
           ),
             curve: Curves.fastOutSlowIn
           );

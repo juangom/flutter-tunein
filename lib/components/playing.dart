@@ -44,7 +44,7 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
       controller: widget.controller,
       children: <Widget>[
         PlayingPage(songStream),
-        AlbumSongs(songStream: songStream),
+        AlbumSongs(songStream: musicService.playerState$),
       ],
       physics: ClampingScrollPhysics(),
     );
@@ -339,15 +339,15 @@ class _AlbumSongsState extends State<AlbumSongs>
     if (widget.song != null) {
       return SingleAlbumPage(widget.song);
     } else
-      return StreamBuilder<Tune>(
+      return StreamBuilder<MapEntry<PlayerState, Tune>>(
         stream: widget.songStream,
-        builder: (BuildContext context, AsyncSnapshot<Tune> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot) {
           if (!snapshot.hasData) {
             return Scaffold(
               backgroundColor: MyTheme.bgBottomBar,
             );
           }
-          final _currentSong = snapshot.data;
+          final _currentSong = snapshot.data.value;
 
           if (_currentSong.id == null) {
             return Scaffold(
