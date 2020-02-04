@@ -60,7 +60,7 @@ class AlbumGridCell extends StatelessWidget {
                           album.artist!=null?album.artist:"Unknown Artist",
                           overflow: TextOverflow.ellipsis,
                           strutStyle: StrutStyle(
-                            height: 0.5,
+                            height: 0.8,
                             forceStrutHeight: true
                           ),
                           style: TextStyle(
