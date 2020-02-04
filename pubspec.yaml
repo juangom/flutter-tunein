@@ -18,6 +18,7 @@ dependencies:
   uuid: ^2.0.2
   page_transition: "^1.1.5"
   flutter_custom_dialog: ^1.0.14
+  fading_edge_scrollview: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

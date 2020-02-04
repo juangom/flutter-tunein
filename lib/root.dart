@@ -27,13 +27,14 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   void initState() {
 
     loadFiles();
-
+    musicService.showUI();
     super.initState();
   }
 
   @override
   void dispose() {
     _startupStatus.close();
+    musicService.hideUI();
     super.dispose();
   }
 
@@ -61,8 +62,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           layoutService.albumListPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
         }else{
           if (!layoutService.globalPanelController.isPanelClosed()) {
-            if(layoutService.albumPlayerPageController.page>0.0){
-              layoutService.albumPlayerPageController.jumpToPage(0);
+            if(layoutService.albumPlayerPageController.page!=1){
+              layoutService.albumPlayerPageController.jumpToPage(1);
             }else{
               layoutService.globalPanelController.close();
             }

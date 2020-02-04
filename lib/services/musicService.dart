@@ -8,7 +8,6 @@ import 'package:rxdart/rxdart.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-
 import 'locator.dart';
 
 final themeService = locator<ThemeService>();
@@ -51,6 +50,13 @@ class MusicService {
         _songs$.add(data);
       },
     );
+  }
+
+  showUI(){
+    //AudioService.connect();
+  }
+  hideUI(){
+    //AudioService.disconnect();
   }
 
   Future<void> fetchAlbums() async {
@@ -155,6 +161,8 @@ class MusicService {
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
     return _playlist.indexOf(song);
   }
+
+
 
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
 

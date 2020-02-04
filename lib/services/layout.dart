@@ -43,7 +43,10 @@ class LayoutService {
   }
 
   void _initPlayingPageView() {
-    _albumPlayerPageController = PageController();
+    _albumPlayerPageController = PageController(
+      initialPage: 1,
+      keepPage: true
+    );
   }
 
   void _initAlbumListPageView() {

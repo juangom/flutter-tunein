@@ -12,8 +12,8 @@ class MyCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onContextTap;
   final musicService = locator<MusicService>();
-
-  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap})
+  final List<Color>colors;
+  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap, this.colors})
       : _song = song,
         onTap=onTap,
         onContextTap=onContextTap,
@@ -30,7 +30,7 @@ class MyCard extends StatelessWidget {
         }
         final Tune _currentSong = snapshot.data.value;
         final bool _isSelectedSong = _song == _currentSong;
-        final _textColor = _isSelectedSong ? Colors.white : Colors.white54;
+        final _textColor = _isSelectedSong ? colors!=null?colors[1]:Colors.white : colors!=null?colors[1].withAlpha(65):Colors.white54;
         final _fontWeight = _isSelectedSong ? FontWeight.w900 : FontWeight.w400;
 
         return Container(
@@ -81,7 +81,7 @@ class MyCard extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: _fontWeight,
-                                        color: Colors.white,
+                                        color: colors!=null?colors[1]:Colors.white,
                                       ),
                                     ),
                                   ),

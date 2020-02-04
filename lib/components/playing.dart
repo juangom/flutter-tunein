@@ -14,12 +14,15 @@ import 'package:flutter/widgets.dart';
 import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'controlls.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:Tunein/pages/single/playingQueue.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   PageController controller;
 
   NowPlayingScreen({controller}) {
-    this.controller = controller != null ? controller : new PageController();
+    this.controller = controller != null ? controller : new PageController(
+      initialPage: 1
+    );
   }
 
   @override
@@ -43,6 +46,7 @@ class NowPlayingScreenState extends State<NowPlayingScreen> {
     return PageView(
       controller: widget.controller,
       children: <Widget>[
+        playingQueue(),
         PlayingPage(songStream),
         AlbumSongs(songStream: musicService.playerState$),
       ],
@@ -151,7 +155,36 @@ class _PlayingPageState extends State<PlayingPage>
                                 ],
                               ),
                             ),
-                          ))
+                          )
+                      ),
+                      Positioned(
+                          left: 3,
+                          top: (_screenHeight / 2)-40,
+                          child: Container(
+                            child:
+                            RotatedBox(
+                              quarterTurns: 1,
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Playing queue",
+                                      style: TextStyle(
+                                          color: Color(colors[1]).withOpacity(0.4),
+                                          fontSize: 12.5)
+                                  ),
+                                  Container(
+                                    constraints: BoxConstraints.tightFor(height: 4.0),
+                                    margin: EdgeInsets.only(top: 1),
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                        color: Color(colors[1]),
+                                        borderRadius:
+                                        BorderRadius.circular(9.5708)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                      )
                     ],
                   );
                 }));
