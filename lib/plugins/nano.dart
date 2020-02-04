@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:path/path.dart';
 class Nano {
   MethodChannel platform = MethodChannel('android_app_retain');
 
@@ -65,9 +65,17 @@ class Nano {
     sdContents = sdContents.handleError((data) {});
     await for (var data in sdContents) {
       if (data.path.endsWith(".mp3")) {
-        _musicFiles.add(data.path);
+        if(validateMusicFile(data.path))_musicFiles.add(data.path);
       }
     }
+  }
+
+  bool validateMusicFile(String path){
+    String filename = basename(path);
+    if(filename.startsWith(new RegExp(r'([_.\-\!\?])'))){
+      return false;
+    }
+    return true;
   }
 
   Future<void> getMusicFiles() async {
