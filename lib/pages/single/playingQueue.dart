@@ -97,7 +97,9 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
       builder: (BuildContext context, AsyncSnapshot<MapEntry<List<Playback>,MapEntry<List<Tune>,List<Tune>>>> snapshot){
 
         if(!snapshot.hasData){
-          return Container();
+          return Container(
+            color: MyTheme.bgBottomBar,
+          );
         }
 
         final bool _isShuffle = snapshot.data.key.contains(Playback.shuffle);

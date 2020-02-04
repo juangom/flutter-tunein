@@ -60,7 +60,7 @@ class Wrapper extends StatelessWidget {
       backdropOpacity: 0.5,
       parallaxEnabled: true,
         onPanelClosed:(){
-          layoutService.albumPlayerPageController.jumpToPage(0);
+          layoutService.albumPlayerPageController.jumpToPage(1);
         },
       collapsed: Material(
         child: BottomPanel(),

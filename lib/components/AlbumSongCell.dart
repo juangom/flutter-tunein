@@ -7,17 +7,18 @@ import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/globals.dart';
 
-class GridCell extends StatelessWidget {
-  GridCell(this.song);
+class AlbumGridCell extends StatelessWidget {
+  AlbumGridCell(this.album, this.imageHeight, this.panelHeight);
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   @required
-  final Tune song;
-
+  final Album album;
+  final double imageHeight;
+  final double panelHeight;
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<int>>(
-      stream: themeService.getThemeColors(song).asStream(),
+      stream: themeService.getThemeColors(album.songs[0]).asStream(),
       builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
         List<int> songColors;
         if(snapshot.hasData) {
@@ -30,8 +31,11 @@ class GridCell extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                song.albumArt == null ? Image.asset("images/cover.png") : Image
-                    .file(File(song.albumArt)),
+                album.albumArt == null ? Image.asset("images/cover.png",height: imageHeight+2,fit: BoxFit.cover,) : Image(
+                  image: FileImage(File(album.albumArt)),
+                  fit: BoxFit.fill,
+                  height: imageHeight+2,
+                ),
                 Expanded(
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 20),
@@ -44,7 +48,7 @@ class GridCell extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Text(
-                            song.title,
+                            album.title!=null?album.title:"Unknown Title",
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 13.5,
@@ -53,8 +57,12 @@ class GridCell extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          song.artist,
+                          album.artist!=null?album.artist:"Unknown Artist",
                           overflow: TextOverflow.ellipsis,
+                          strutStyle: StrutStyle(
+                            height: 0.5,
+                            forceStrutHeight: true
+                          ),
                           style: TextStyle(
                               fontSize: 12.5,
                               color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7)

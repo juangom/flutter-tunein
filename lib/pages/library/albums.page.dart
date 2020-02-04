@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:Tunein/components/AlbumSongCell.dart';
+import 'package:Tunein/components/gridcell.dart';
+import 'package:Tunein/models/playerstate.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
 import 'package:Tunein/services/locator.dart';
@@ -7,6 +10,7 @@ import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'package:rxdart/rxdart.dart';
+
 class AlbumsPage extends StatefulWidget {
 
   PageController controller;
@@ -22,6 +26,9 @@ class _AlbumsPageState extends State<AlbumsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+
+    final double itemWidth = size.width / 3;
     return Container(
       child:  StreamBuilder(
         stream: musicService.albums$,
@@ -37,39 +44,23 @@ class _AlbumsPageState extends State<AlbumsPage> {
           return PageView(
             controller: widget.controller,
             children: <Widget>[
-              Container(
-                child: ListView.builder(itemBuilder: (context, index){
-                  return Row(
-                    children: <Widget>[
-                      Expanded(
-                        child:  AlbumCard(album: _albums[3*index],
-                          onTap: (){
-                            goToAlbumSongsList(_albums[3*index]);
-                          },
-                        ),
-                        flex: 4,
-                      ),
-                      Expanded(
-                        child:  AlbumCard(album: _albums[(3*index)+1],
-                          onTap: (){
-                            goToAlbumSongsList(_albums[(3*index)+1]);
-                          },
-                        ),
-                        flex: 4,
-                      ),
-                      Expanded(
-                        child:  AlbumCard(album: _albums[(3*index)+2],
-                          onTap: (){
-                            goToAlbumSongsList(_albums[(3*index)+2]);
-                          },
-                        ),
-                        flex: 4,
-                      )
-                    ],
+              GridView.builder(
+                padding: EdgeInsets.all(0),
+                itemCount: _albums.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 3,
+                  crossAxisSpacing: 3,
+                  childAspectRatio: (itemWidth / (itemWidth + 50)),
+                ),
+                itemBuilder: (BuildContext context, int index) {
+                  return GestureDetector(
+                    onTap: () {
+                      goToAlbumSongsList(_albums[index]);
+                    },
+                    child: AlbumGridCell(_albums[index],135,80),
                   );
                 },
-                  itemCount: (_albums.length/3).round()>=_albums.length/3?(_albums.length/3).round():(_albums.length/3).round()+1,
-                ),
               ),
               StreamBuilder<Album>(
                 stream: currentAlbum,
