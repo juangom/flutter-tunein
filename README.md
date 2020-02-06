@@ -10,20 +10,28 @@
 ## Todos
 
 - [x] Retrieve songs
-- [ ] Retrieve from SD
+- [x] Retrieve from SD
 - [x] Play
 - [x] Pause
 - [x] Seek
 - [x] Shuffle
-- [x] favorites
-- [ ] playlists
+- [x] Favorites
+- [x] Album list
+- [x] Playing queue
+- [x] Android X migration
+- [ ] Artist list
+- [ ] Playlists
 - [ ] Search songs
-
+- [ ] Commands and System integration
+- [ ] FTP song registry 
+- [ ] Spotify integration
 ## 📸 ScreenShots
+|                                           |                                          |                                           |                                          |
+| ----------------------------------------- | -----------------------------------------| ----------------------------------------- | -----------------------------------------|
+| <img src="screenshots/1.png" width="250"> | <img src="screenshots/2.png" width="250">| <img src="screenshots/3.png" width="250"> | <img src="screenshots/4.png" width="250">|
 |                                           |                                          |
 | ----------------------------------------- | -----------------------------------------|
-| <img src="screenshots/2.jpg" width="250"> | <img src="screenshots/1.jpg" width="250">|
-
+| <img src="screenshots/5.png" width="250"> | <img src="screenshots/6.png" width="250">|
 
 ## Support me
 
@@ -33,6 +41,11 @@ You can support me by:
 
 Buy me a cup of coffee ☕️:
 
-<a href="https://www.buymeacoffee.com/bq6EgoCp0" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+*NOT there yet*
+
+
+## Contact me
+
+*email:* kadhem03@gmail.com
 
 Thank you in advance 👍
