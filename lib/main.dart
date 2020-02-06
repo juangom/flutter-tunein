@@ -13,9 +13,9 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 Nano nano = Nano();
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await SimplePermissions.requestPermission(Permission.ReadExternalStorage);
   setupLocator();
-
   runApp(new MyApp());
 }
 

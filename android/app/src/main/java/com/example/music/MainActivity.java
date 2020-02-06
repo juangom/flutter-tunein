@@ -3,18 +3,15 @@ package com.example.music;
 import android.os.Bundle;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.graphics.Palette;
+import androidx.palette.graphics.Palette;
 
 import android.media.MediaMetadataRetriever;
-import android.renderscript.Sampler;
 
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
-import com.mpatric.mp3agic.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

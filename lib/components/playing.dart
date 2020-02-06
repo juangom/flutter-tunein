@@ -77,7 +77,7 @@ class _PlayingPageState extends State<PlayingPage>
     final _screenHeight = MediaQuery.of(context).size.height;
 
     return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
-      stream: Observable.combineLatest2(
+      stream: Rx.combineLatest2(
         musicService.playerState$,
         musicService.favorites$,
         (a, b) => MapEntry(a, b),

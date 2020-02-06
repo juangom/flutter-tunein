@@ -14,7 +14,7 @@ class NowPlayingSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<MapEntry<Duration, MapEntry<PlayerState, Tune>>>(
-      stream: Observable.combineLatest2(musicService.position$,
+      stream: Rx.combineLatest2(musicService.position$,
           musicService.playerState$, (a, b) => MapEntry(a, b)),
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<Duration, MapEntry<PlayerState, Tune>>>

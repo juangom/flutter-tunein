@@ -89,7 +89,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
 
     return StreamBuilder<MapEntry<List<Playback>,MapEntry<List<Tune>,List<Tune>>>>(
-      stream: Observable.combineLatest2(
+      stream: Rx.combineLatest2(
         musicService.playback$,
         musicService.playlist$,
             (a, b) => MapEntry(a, b),
