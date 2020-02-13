@@ -38,7 +38,7 @@ class AlbumGridCell extends StatelessWidget {
                 ),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 4),
                     width: double.infinity,
                     color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey,
                     child: Column(

@@ -9,10 +9,11 @@ class ThemeService {
   BehaviorSubject<List<int>> get color$ => _color$;
 
   Map<String, List<int>> _savedColors;
-  Map<String, List<int>> _artistDavedColors;
+  Map<String, List<int>> _artistSavedColors;
   ThemeService() {
     _initStreams();
     _savedColors = Map<String, List<int>>();
+    _artistSavedColors= Map<String, List<int>>();
   }
 
 
@@ -81,8 +82,9 @@ class ThemeService {
 
   Future<List<int>> getArtistColors(Artist artist) async{
     List<int> color=[];
-    if (_artistDavedColors.containsKey(artist.id)) {
-      color.addAll(_artistDavedColors[artist.id]);
+    if (_artistSavedColors.containsKey(artist.id)) {
+      
+      color.addAll(_artistSavedColors[artist.id]);
 
 
       return color;
@@ -108,8 +110,7 @@ class ThemeService {
       }while(_colors.length<3);
     }
     color.addAll(_colors);
-    _artistDavedColors[artist.id.toString()] = _colors;
-
+    _artistSavedColors[artist.id.toString()] = _colors;
 
     return color;
   }

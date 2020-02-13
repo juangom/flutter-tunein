@@ -24,6 +24,7 @@ class ArtistGridCell extends StatelessWidget {
         if(snapshot.hasData) {
           songColors=snapshot.data;
         }
+
         return AnimatedContainer(
           duration: Duration(milliseconds: 180),
             color: MyTheme.darkgrey,
