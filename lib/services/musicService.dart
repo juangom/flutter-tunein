@@ -15,6 +15,7 @@ final themeService = locator<ThemeService>();
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
   BehaviorSubject<List<Album>> _albums$;
+  BehaviorSubject<List<Artist>> _artists$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$;
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>
       _playlist$; //key is normal, value is shuffle
@@ -28,6 +29,7 @@ class MusicService {
 
   BehaviorSubject<List<Tune>> get songs$ => _songs$;
   BehaviorSubject<List<Album>> get albums$ => _albums$;
+  BehaviorSubject<List<Artist>> get artists$ => _artists$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> get playerState$ =>
       _playerState$;
   BehaviorSubject<Duration> get position$ => _position$;
@@ -107,6 +109,31 @@ class MusicService {
     }
 
   }
+
+  Future<void> fetchArtists() async {
+    Map<String,Artist> artists = {};
+    int currentIndex = 0;
+    List<Album> ItemsList =_albums$.value;
+    ItemsList.forEach((Album album){
+      if(artists["${album.artist}"]!=null){
+        artists["${album.artist}"].albums.add(album);
+      }else{
+        artists["${album.artist}"]= new Artist(currentIndex,album.artist, null);
+        artists["${album.artist}"].albums.add(album);
+        currentIndex++;
+      }
+    });
+    List <Artist> newAlbumList =artists.values.toList();
+    newAlbumList.sort((a, b) {
+      if(a.name==null || b.name ==null ) return 1;
+      return a.name
+          .toLowerCase()
+          .compareTo(b.name.toLowerCase());
+    });
+    _artists$.add(newAlbumList);
+
+  }
+
 
   void playMusic(Tune song) {
     _audioPlayer.play(song.uri);
@@ -343,6 +370,7 @@ class MusicService {
     _isAudioSeeking$ = BehaviorSubject<bool>.seeded(false);
     _songs$ = BehaviorSubject<List<Tune>>();
     _albums$ = BehaviorSubject<List<Album>>();
+    _artists$ = BehaviorSubject<List<Artist>>();
     _position$ = BehaviorSubject<Duration>();
     _playlist$ = BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>();
     _playback$ = BehaviorSubject<List<Playback>>.seeded([]);

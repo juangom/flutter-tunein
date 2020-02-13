@@ -233,5 +233,26 @@ class Album {
     return 'Album{id: $id, title: $title, artist: $artist, albumArt: $albumArt, songs: $songs}';
   }
 
+}
+
+
+class Artist {
+  int id;
+  String name;
+  String coverArt;
+  List<Album> albums=[];
+  Artist(this.id, this.name, this.coverArt);
+
+  Artist.fromMap(Map m) {
+    id= m["id"];
+    name = m["name"];
+    coverArt = m["coverArt"];
+  }
+
+  @override
+  String toString() {
+    return 'Artist{id: $id, name: $name, coverArt: $coverArt, albums: $albums}';
+  }
+
 
 }
