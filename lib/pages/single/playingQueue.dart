@@ -80,7 +80,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
            if(controller.hasClients)
             controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
-                milliseconds: (pow(log((indexOfThePlayingSong+(1/(1+indexOfThePlayingSong)))*2), 2)).floor() + 50
+                milliseconds: (pow(log((indexOfThePlayingSong>0?indexOfThePlayingSong:1)*2), 2)).floor() + 50
             ),
                 curve: Curves.fastOutSlowIn
             );
@@ -323,7 +323,6 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                             song: _playlist[newIndex],
                                             colors: bgColor!=null?[Color(bgColor[0]),Color(bgColor[1])]:null,
                                             onTap: (){
-                                              musicService.updatePlaylist(_playlist);
                                               switch (_state) {
                                                 case PlayerState.playing:
                                                   if (_isSelectedSong) {
