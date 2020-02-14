@@ -113,42 +113,46 @@ class MyCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                flex: 12,
               ),
-              Material(
-                child: PopupMenuButton<ContextMenuOptions>(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      splashColor: MyTheme.darkgrey,
-                      radius: 30.0,
-                      child: Padding(
-                          padding: const EdgeInsets.only(right: 10.0),
-                          child:Icon(
-                            IconData(0xea7c, fontFamily: 'boxicons'),
-                            size: 22,
-                            color: Colors.white70,
-                          )
+              Expanded(
+                flex: 2,
+                child: Material(
+                  child: PopupMenuButton<ContextMenuOptions>(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: MyTheme.darkgrey,
+                        radius: 30.0,
+                        child: Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child:Icon(
+                              IconData(0xea7c, fontFamily: 'boxicons'),
+                              size: 22,
+                              color: Colors.white70,
+                            )
+                        ),
                       ),
                     ),
+                    elevation: 3.2,
+                    onCanceled: () {
+                      print('You have not chosen anything');
+                    },
+                    tooltip: 'Playing options',
+                    onSelected: (ContextMenuOptions choice){
+                      onContextSelect(choice);
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return choices.map((ContextMenuOptions choice) {
+                        return PopupMenuItem<ContextMenuOptions>(
+                          value: choice,
+                          child: Text(choice.title),
+                        );
+                      }).toList();
+                    },
                   ),
-                  elevation: 3.2,
-                  onCanceled: () {
-                    print('You have not chosen anything');
-                  },
-                  tooltip: 'This is tooltip',
-                  onSelected: (ContextMenuOptions choice){
-                    onContextSelect(choice);
-                  },
-                  itemBuilder: (BuildContext context) {
-                    return choices.map((ContextMenuOptions choice) {
-                      return PopupMenuItem<ContextMenuOptions>(
-                        value: choice,
-                        child: Text(choice.title),
-                      );
-                    }).toList();
-                  },
+                  color: Colors.transparent,
                 ),
-                color: Colors.transparent,
               )
             ],
           ),

@@ -202,11 +202,15 @@ class MusicService {
 
   void startWithAndShuffleQueue(Tune song,List<Tune> queue){
     stopMusic();
-    playMusic(song);
-    queue.remove(song);
     updatePlaylist(queue);
     updatePlayback(Playback.shuffle);
-    _playlist$.value.value.insert(0, song);
+    List<Tune> newqueue = _playlist$.value.value;
+    newqueue.remove(song);
+    newqueue.insert(0, song);
+    _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
+    Future.delayed(Duration(milliseconds: 100),(){
+      playMusic(song);
+    });
   }
 
   void startWithAndShuffleAlbum(Tune song){
@@ -216,10 +220,12 @@ class MusicService {
     album =_albums$.value.where((elem){
       return ((song.album==elem.title) && (song.artist==elem.artist));
     }).toList()[0];
-    album.songs.remove(song);
     updatePlaylist(album.songs);
     updatePlayback(Playback.shuffle);
-    _playlist$.value.value.insert(0, song);
+    List<Tune> newqueue = _playlist$.value.value;
+    newqueue.remove(song);
+    newqueue.insert(0, song);
+    _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
   }
 
 
