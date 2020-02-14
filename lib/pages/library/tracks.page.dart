@@ -11,7 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:Tunein/models/playback.dart';
 import 'dart:math';
 import 'dart:core';
-
+import 'package:Tunein/values/contextMenus.dart';
 
 class TracksPage extends StatefulWidget {
   _TracksPageState createState() => _TracksPageState();
@@ -159,6 +159,26 @@ class _TracksPageState extends State<TracksPage>
                               return InkWell(
                                 enableFeedback: false,
                                 child: MyCard(
+                                  choices: songCardContextMenulist,
+                                  onContextSelect: (choice){
+                                      switch(choice.id){
+                                        case 1: {
+                                          musicService.playOne(_songs[newIndex]);
+                                          break;
+                                        }
+                                        case 2:{
+                                          musicService.startWithAndShuffleQueue(_songs[newIndex], _songs);
+                                          break;
+                                        }
+                                        case 3:{
+                                          musicService.startWithAndShuffleAlbum(_songs[newIndex]);
+                                          break;
+                                        }
+                                      }
+                                  },
+                                  onContextCancel: (choice){
+                                    print("Cancelled");
+                                  },
                                   song: _songs[newIndex],
                                   onTap: (){
                                     musicService.updatePlaylist(_songs);
@@ -213,4 +233,5 @@ class _TracksPageState extends State<TracksPage>
 
   @override
   bool get wantKeepAlive => true;
+
 }

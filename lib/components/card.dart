@@ -6,18 +6,23 @@ import 'package:Tunein/services/musicService.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/globals.dart';
-
+import 'package:Tunein/models/ContextMenuOption.dart';
 class MyCard extends StatelessWidget {
   final Tune _song;
   final VoidCallback onTap;
   final VoidCallback onContextTap;
   final musicService = locator<MusicService>();
   final List<Color>colors;
-  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap, this.colors})
+  List<ContextMenuOptions> choices;
+  final void Function(ContextMenuOptions) onContextSelect;
+  final void Function(ContextMenuOptions) onContextCancel;
+  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap, this.colors, @required this.choices, @required this.onContextCancel, @required this.onContextSelect})
       : _song = song,
         onTap=onTap,
         onContextTap=onContextTap,
         super(key: key);
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,27 +114,42 @@ class MyCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                constraints: BoxConstraints.expand(width: 30),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    splashColor: MyTheme.darkgrey,
-                    radius: 30.0,
-                    child: Padding(
-                        padding: const EdgeInsets.only(right: 10.0),
-                        child:Icon(
-                          IconData(0xea7c, fontFamily: 'boxicons'),
-                          size: 22,
-                          color: Colors.white70,
-                        )
+              Material(
+                child: PopupMenuButton<ContextMenuOptions>(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: MyTheme.darkgrey,
+                      radius: 30.0,
+                      child: Padding(
+                          padding: const EdgeInsets.only(right: 10.0),
+                          child:Icon(
+                            IconData(0xea7c, fontFamily: 'boxicons'),
+                            size: 22,
+                            color: Colors.white70,
+                          )
+                      ),
                     ),
-                    onTap: (){
-                      onContextTap!=null?onContextTap():null;
-                    },
                   ),
+                  elevation: 3.2,
+                  onCanceled: () {
+                    print('You have not chosen anything');
+                  },
+                  tooltip: 'This is tooltip',
+                  onSelected: (ContextMenuOptions choice){
+                    onContextSelect(choice);
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return choices.map((ContextMenuOptions choice) {
+                      return PopupMenuItem<ContextMenuOptions>(
+                        value: choice,
+                        child: Text(choice.title),
+                      );
+                    }).toList();
+                  },
                 ),
-              ),
+                color: Colors.transparent,
+              )
             ],
           ),
         );
@@ -137,3 +157,5 @@ class MyCard extends StatelessWidget {
     );
   }
 }
+
+

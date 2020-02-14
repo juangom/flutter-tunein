@@ -6,6 +6,7 @@ import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -88,6 +89,26 @@ class _AlbumSongListState extends State<AlbumSongList> {
 
                               return MyCard(
                                 song: widget.album.songs[newIndex],
+                                choices: songCardContextMenulist,
+                                onContextSelect: (choice){
+                                  switch(choice.id){
+                                    case 1: {
+                                      musicService.playOne(widget.album.songs[newIndex]);
+                                      break;
+                                    }
+                                    case 2:{
+                                      musicService.startWithAndShuffleQueue(widget.album.songs[newIndex], widget.album.songs);
+                                      break;
+                                    }
+                                    case 3:{
+                                      musicService.startWithAndShuffleAlbum(widget.album.songs[newIndex]);
+                                      break;
+                                    }
+                                  }
+                                },
+                                onContextCancel: (choice){
+                                  print("Cancelled");
+                                },
                                 onTap: (){
                                   musicService.updatePlaylist(widget.album.songs);
                                   switch (_state) {

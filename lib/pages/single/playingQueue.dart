@@ -10,6 +10,7 @@ import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:rxdart/rxdart.dart';
@@ -268,7 +269,8 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                         child: Container(
                           alignment: Alignment.center,
                           child: Row(
-                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Expanded(
                                 child: FadingEdgeScrollView.fromScrollView(
@@ -298,6 +300,26 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                               _currentSong == _playlist[newIndex];
 
                                           return MyCard(
+                                            choices: songCardContextMenulist,
+                                            onContextSelect: (choice){
+                                              switch(choice.id){
+                                                case 1: {
+                                                  musicService.playOne(_playlist[newIndex]);
+                                                  break;
+                                                }
+                                                case 2:{
+                                                  musicService.startWithAndShuffleQueue(_playlist[newIndex], _playlist);
+                                                  break;
+                                                }
+                                                case 3:{
+                                                  musicService.startWithAndShuffleAlbum(_playlist[newIndex]);
+                                                  break;
+                                                }
+                                              }
+                                            },
+                                            onContextCancel: (choice){
+                                              print("Cancelled");
+                                            },
                                             song: _playlist[newIndex],
                                             colors: bgColor!=null?[Color(bgColor[0]),Color(bgColor[1])]:null,
                                             onTap: (){

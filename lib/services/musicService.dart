@@ -190,6 +190,38 @@ class MusicService {
   }
 
 
+  /// specific song card actions
+  ///
+  ///
+
+  void playOne(Tune song){
+    stopMusic();
+    playMusic(song);
+    updatePlaylist([song]);
+  }
+
+  void startWithAndShuffleQueue(Tune song,List<Tune> queue){
+    stopMusic();
+    playMusic(song);
+    queue.remove(song);
+    updatePlaylist(queue);
+    updatePlayback(Playback.shuffle);
+    _playlist$.value.value.insert(0, song);
+  }
+
+  void startWithAndShuffleAlbum(Tune song){
+    stopMusic();
+    playMusic(song);
+    Album album;
+    album =_albums$.value.where((elem){
+      return ((song.album==elem.title) && (song.artist==elem.artist));
+    }).toList()[0];
+    album.songs.remove(song);
+    updatePlaylist(album.songs);
+    updatePlayback(Playback.shuffle);
+    _playlist$.value.value.insert(0, song);
+  }
+
 
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
 
