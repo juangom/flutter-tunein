@@ -7,11 +7,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audioplayer: ^0.5.2
+  audioplayer:
+    git:
+      url: https://github.com/budo385/audioplayer
   path_provider: ^0.4.1
   rxdart: ^0.23.1
   sliding_up_panel: ^0.3.4
   shared_preferences: ^0.5.3+1
+  media_notification:
+    git:
+      url: https://github.com/moda20/flutter_media_notification
   simple_permissions:
     git:
       url: https://github.com/tq-systems/simple_permissions.git

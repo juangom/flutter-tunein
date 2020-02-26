@@ -19,10 +19,11 @@
 - [x] Album list
 - [x] Playing queue
 - [x] Android X migration
+- [x] Notification and Lock Screen Controls
 - [ ] Artist list
 - [ ] Playlists
 - [ ] Search songs
-- [ ] Commands and System integration
+- [ ] System integration
 - [ ] FTP song registry 
 - [ ] Spotify integration
 ## 📸 ScreenShots
@@ -31,7 +32,7 @@
 | <img src="screenshots/1.png" width="250"> | <img src="screenshots/2.png" width="250"> | <img src="screenshots/3.png" width="250"> | <img src="screenshots/4.png" width="250">|
 |                                           |                                           |
 |                                           |                                           |
-| <img src="screenshots/5.png" width="250"> | <img src="screenshots/6.png" width="250"> |
+| <img src="screenshots/5.png" width="250"> | <img src="screenshots/6.png" width="250"> | <img src="screenshots/7.png" width="250">
 
 ## Support me
 

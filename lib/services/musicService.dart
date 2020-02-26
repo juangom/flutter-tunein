@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:media_notification/media_notification.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,11 +59,87 @@ class MusicService {
     );
   }
 
-  showUI(){
+  showUI() async{
     //AudioService.connect();
+    MediaNotification.show(title: 'No song', author: 'no Author', play: false,image: null);
+    ByteData dibd = await rootBundle.load("images/cover.png");
+    List<int> defaultImageBytes = dibd.buffer.asUint8List();
+    _playerState$.listen((data) async{
+      print(data.value.albumArt);
+      List<int> SongColors = await themeService.getThemeColors(data.value);
+      switch(data.key){
+
+        case PlayerState.playing:
+          MediaNotification.show(
+            title: '${data.value.title}',
+            author: '${data.value.artist}',
+            play: true,
+            image: data.value.albumArt,
+            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
+            titleColor: Color(SongColors[1]),
+            subtitleColor: Color(SongColors[1]).withAlpha(50),
+            iconColor: Color(SongColors[1]),
+            bgColor: Color(SongColors[0])
+          );
+          break;
+        case PlayerState.paused:
+          MediaNotification.show(
+            title: '${data.value.title}',
+            author: '${data.value.artist}',
+            play: false,
+            image: data.value.albumArt,
+            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
+            titleColor: Color(SongColors[1]),
+            subtitleColor: Color(SongColors[1]).withAlpha(50),
+            iconColor: Color(SongColors[1]),
+            bgColor: Color(SongColors[0])
+          );
+          break;
+        case PlayerState.stopped:
+          MediaNotification.show(
+            title: '${data.value.title}',
+            author: '${data.value.artist}',
+            play: false,
+            image: data.value.albumArt,
+            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
+            titleColor: Color(SongColors[1]),
+            subtitleColor: Color(SongColors[1]).withAlpha(50),
+            iconColor: Color(SongColors[1]),
+            bgColor: Color(SongColors[0])
+          );
+          break;
+      }
+    });
+    MediaNotification.setListener('play', () {
+      if(_playerState$.value.value!=null){
+        playMusic(_playerState$.value.value);
+      }
+    });
+
+    MediaNotification.setListener('pause', () {
+      if(_playerState$.value.value!=null){
+        pauseMusic(_playerState$.value.value);
+      }
+    });
+
+    MediaNotification.setListener('next', () {
+      if(_playerState$.value.value!=null){
+       playNextSong();
+      }
+    });
+
+    MediaNotification.setListener('prev', () {
+      if(_playerState$.value.value!=null){
+        playPreviousSong();
+      }
+    });
+    MediaNotification.setListener('select', () {
+      print("selectedd");
+    });
   }
   hideUI(){
     //AudioService.disconnect();
+    MediaNotification.hide();
   }
 
   Future<void> fetchAlbums() async {

@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: "Tune In Music Player",
       home: Wrapper(
         child: Column(
           mainAxisSize: MainAxisSize.max,

@@ -28,13 +28,15 @@ packages:
       name: audio_service
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.1"
+    version: "0.6.2"
   audioplayer:
     dependency: "direct main"
     description:
-      name: audioplayer
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "18bf65259ae73c0214f6a55c64aedec49b9749ff"
+      url: "https://github.com/budo385/audioplayer"
+    source: git
     version: "0.5.2"
   boolean_selector:
     dependency: transitive
@@ -89,7 +91,7 @@ packages:
       name: flutter_custom_dialog
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.14"
+    version: "1.0.16"
   flutter_isolate:
     dependency: transitive
     description:
@@ -102,13 +104,18 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   get_it:
     dependency: "direct main"
     description:
       name: get_it
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3+1"
+    version: "1.1.0"
   image:
     dependency: transitive
     description:
@@ -123,6 +130,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.12.6"
+  media_notification:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "033769ca26eeca9ebca7112822ba23e4305b19b1"
+      url: "https://github.com/moda20/flutter_media_notification"
+    source: git
+    version: "0.0.5"
   meta:
     dependency: transitive
     description:
@@ -185,7 +201,28 @@ packages:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.3+1"
+    version: "0.5.6+2"
+  shared_preferences_macos:
+    dependency: transitive
+    description:
+      name: shared_preferences_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1+6"
+  shared_preferences_platform_interface:
+    dependency: transitive
+    description:
+      name: shared_preferences_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.3"
+  shared_preferences_web:
+    dependency: transitive
+    description:
+      name: shared_preferences_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2+4"
   simple_permissions:
     dependency: "direct main"
     description:
@@ -206,7 +243,7 @@ packages:
       name: sliding_up_panel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.4"
+    version: "0.3.6"
   source_span:
     dependency: transitive
     description:
@@ -262,7 +299,7 @@ packages:
       name: uuid
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.4"
   vector_math:
     dependency: transitive
     description:
@@ -279,4 +316,4 @@ packages:
     version: "3.5.0"
 sdks:
   dart: ">=2.6.0 <3.0.0"
-  flutter: ">=1.5.0 <2.0.0"
+  flutter: ">=1.12.13+hotfix.4 <2.0.0"
