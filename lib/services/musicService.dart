@@ -356,6 +356,7 @@ class MusicService {
 
   void _onSongComplete() {
     final List<Playback> _playback = _playback$.value;
+    print(_playback);
     if (_playback.contains(Playback.repeatSong)) {
       _playSameSong();
       return;
@@ -512,12 +513,30 @@ class MusicService {
       }
     });
 
+    //This will synchronize the playing states of
     _audioStateChangeSub =
         _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
       if (state == AudioPlayerState.COMPLETED) {
         _onSongComplete();
+        print("stopp state out should go to next song");
+      }
+      if(state == AudioPlayerState.PAUSED){
+        print("pausing should start now");
+        //pauseMusic(_playerState$.value.value);
+        updatePlayerState(PlayerState.paused,_playerState$.value.value);
+      }
+      /*if(state == AudioPlayerState.STOPPED){
+        print("stopping should start now");
+        //stopMusic();
+        updatePlayerState(PlayerState.stopped,_playerState$.value.value);
+      }*/
+      if(state == AudioPlayerState.PLAYING){
+        print("PLaying should start now");
+        //stopMusic();
+        updatePlayerState(PlayerState.playing,_playerState$.value.value);
       }
     });
+
   }
 
   void dispose() {

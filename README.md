@@ -20,10 +20,10 @@
 - [x] Playing queue
 - [x] Android X migration
 - [x] Notification and Lock Screen Controls
-- [ ] Artist list
+- [x] System integration
+- [x] Artist list
 - [ ] Playlists
 - [ ] Search songs
-- [ ] System integration
 - [ ] FTP song registry 
 - [ ] Spotify integration
 ## 📸 ScreenShots
