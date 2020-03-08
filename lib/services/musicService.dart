@@ -103,6 +103,7 @@ class MusicService {
               bgColor: Color(SongColors[0]));
           break;
         case PlayerState.paused:
+          print("shoudl pause");
           MediaNotification.setTo(false);
           break;
         case PlayerState.stopped:
@@ -520,9 +521,14 @@ class MusicService {
         _onSongComplete();
         print("stopp state out should go to next song");
       }
+      if (state == AudioPlayerState.PAUSED) {
+        MediaNotification.setTo(false);
+      }
+
     });
 
     _audioPlayer.onPlaybackKeyEvent.listen((data) {
+      print(data);
       switch (data) {
         case PlayBackKeys.PAUSE_KEY:
           updatePlayerState(PlayerState.paused, _playerState$.value.value);
