@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
@@ -33,13 +34,20 @@ class MusicService {
   Tune _defaultSong;
 
   BehaviorSubject<List<Tune>> get songs$ => _songs$;
+
   BehaviorSubject<List<Album>> get albums$ => _albums$;
+
   BehaviorSubject<List<Artist>> get artists$ => _artists$;
+
   BehaviorSubject<MapEntry<PlayerState, Tune>> get playerState$ =>
       _playerState$;
+
   BehaviorSubject<Duration> get position$ => _position$;
+
   BehaviorSubject<List<Playback>> get playback$ => _playback$;
+
   BehaviorSubject<List<Tune>> get favorites$ => _favorites$;
+
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>> get playlist$ => _playlist$;
 
   StreamSubscription _audioPositionSub;
@@ -59,169 +67,164 @@ class MusicService {
     );
   }
 
-  showUI() async{
-    //AudioService.connect();
-    MediaNotification.show(title: 'No song', author: 'no Author', play: false,image: null);
+  showUI() async {
     ByteData dibd = await rootBundle.load("images/cover.png");
     List<int> defaultImageBytes = dibd.buffer.asUint8List();
-    _playerState$.listen((data) async{
+    //AudioService.connect();
+    MediaNotification.show(
+        title: 'No song',
+        author: 'no Author',
+        play: false,
+        image: null,
+        BitmapImage: defaultImageBytes,
+        iconColor: Colors.white,
+        titleColor: Colors.white,
+        subtitleColor: Colors.white.withAlpha(50),
+        bgColor: MyTheme.darkBlack);
+
+    _playerState$.listen((data) async {
       print(data.value.albumArt);
       List<int> SongColors = await themeService.getThemeColors(data.value);
-      switch(data.key){
+      switch (data.key) {
 
+        ///Playing status means that it is a new song and it needs to load its new content like colors and image
+        ///in other cases it will be just stopping the player or pausing it requiring no change in content data
         case PlayerState.playing:
           MediaNotification.show(
-            title: '${data.value.title}',
-            author: '${data.value.artist}',
-            play: true,
-            image: data.value.albumArt,
-            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
-            titleColor: Color(SongColors[1]),
-            subtitleColor: Color(SongColors[1]).withAlpha(50),
-            iconColor: Color(SongColors[1]),
-            bgColor: Color(SongColors[0])
-          );
+              title: '${data.value.title}',
+              author: '${data.value.artist}',
+              play: true,
+              image: data.value.albumArt,
+              BitmapImage:
+                  data.value.albumArt == null ? defaultImageBytes : null,
+              titleColor: Color(SongColors[1]),
+              subtitleColor: Color(SongColors[1]).withAlpha(50),
+              iconColor: Color(SongColors[1]),
+              bgColor: Color(SongColors[0]));
           break;
         case PlayerState.paused:
-          MediaNotification.show(
-            title: '${data.value.title}',
-            author: '${data.value.artist}',
-            play: false,
-            image: data.value.albumArt,
-            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
-            titleColor: Color(SongColors[1]),
-            subtitleColor: Color(SongColors[1]).withAlpha(50),
-            iconColor: Color(SongColors[1]),
-            bgColor: Color(SongColors[0])
-          );
+          MediaNotification.setTo(false);
           break;
         case PlayerState.stopped:
-          MediaNotification.show(
-            title: '${data.value.title}',
-            author: '${data.value.artist}',
-            play: false,
-            image: data.value.albumArt,
-            BitmapImage:data.value.albumArt==null?defaultImageBytes:null,
-            titleColor: Color(SongColors[1]),
-            subtitleColor: Color(SongColors[1]).withAlpha(50),
-            iconColor: Color(SongColors[1]),
-            bgColor: Color(SongColors[0])
-          );
+          MediaNotification.setTo(false);
           break;
       }
     });
     MediaNotification.setListener('play', () {
-      if(_playerState$.value.value!=null){
+      if (_playerState$.value.value != null) {
+        print("playing shoud slart");
+        print("${_playerState$.value.key}");
         playMusic(_playerState$.value.value);
       }
     });
 
     MediaNotification.setListener('pause', () {
-      if(_playerState$.value.value!=null){
+      if (_playerState$.value.value != null) {
+        print("pausing shoud slart");
+        print("${_playerState$.value.key}");
         pauseMusic(_playerState$.value.value);
       }
     });
 
     MediaNotification.setListener('next', () {
-      if(_playerState$.value.value!=null){
-       playNextSong();
+      print("next shoud slart");
+      print("${_playerState$.value.key}");
+      if (_playerState$.value.value != null) {
+        playNextSong();
       }
     });
 
     MediaNotification.setListener('prev', () {
-      if(_playerState$.value.value!=null){
+      if (_playerState$.value.value != null) {
+        print("${_playerState$.value.key}");
         playPreviousSong();
       }
     });
+
     MediaNotification.setListener('select', () {
       print("selectedd");
     });
   }
-  hideUI(){
+
+  hideUI() {
     //AudioService.disconnect();
     MediaNotification.hide();
   }
 
   Future<void> fetchAlbums() async {
-    Map<String,Album> albums = {};
+    Map<String, Album> albums = {};
     int currentIndex = 0;
-    List<Tune> ItemsList =_songs$.value;
-    ItemsList.forEach((Tune tune){
-      if(albums["${tune.album}${tune.artist}"]!=null){
+    List<Tune> ItemsList = _songs$.value;
+    ItemsList.forEach((Tune tune) {
+      if (albums["${tune.album}${tune.artist}"] != null) {
         albums["${tune.album}${tune.artist}"].songs.add(tune);
-      }else{
-        albums["${tune.album}${tune.artist}"]= new Album(currentIndex, tune.album, tune.artist, tune.albumArt);
+      } else {
+        albums["${tune.album}${tune.artist}"] =
+            new Album(currentIndex, tune.album, tune.artist, tune.albumArt);
         albums["${tune.album}${tune.artist}"].songs.add(tune);
         currentIndex++;
       }
     });
-    List <Album> newAlbumList =albums.values.toList();
+    List<Album> newAlbumList = albums.values.toList();
     newAlbumList.sort((a, b) {
-      if(a.title==null || b.title ==null ) return 1;
-      return a.title
-          .toLowerCase()
-          .compareTo(b.title.toLowerCase());
+      if (a.title == null || b.title == null) return 1;
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
     });
     _albums$.add(newAlbumList);
-
   }
 
-  BehaviorSubject<List<Album>> fetchAlbum ({String title, int id, String artist}){
-
-    if(artist==null && id==null && title==null){
+  BehaviorSubject<List<Album>> fetchAlbum(
+      {String title, int id, String artist}) {
+    if (artist == null && id == null && title == null) {
       return BehaviorSubject<List<Album>>();
-    }else{
+    } else {
       List<Album> albums = _albums$.value.toList();
 
-      List <Album> finalAlbums =  albums.where((elem){
+      List<Album> finalAlbums = albums.where((elem) {
         bool finalDecision = true;
-        if(title!=null) {
-          finalDecision = finalDecision && (elem.title==title);
+        if (title != null) {
+          finalDecision = finalDecision && (elem.title == title);
         }
-        if(id!=null) {
-          finalDecision = finalDecision && (elem.id==id);
+        if (id != null) {
+          finalDecision = finalDecision && (elem.id == id);
         }
-        if(artist!=null) {
-          finalDecision = finalDecision && (elem.artist==artist);
+        if (artist != null) {
+          finalDecision = finalDecision && (elem.artist == artist);
         }
         return finalDecision;
       }).toList();
       return BehaviorSubject<List<Album>>.seeded(finalAlbums);
     }
-
   }
 
   Future<void> fetchArtists() async {
-    Map<String,Artist> artists = {};
+    Map<String, Artist> artists = {};
     int currentIndex = 0;
-    List<Album> ItemsList =_albums$.value;
-    ItemsList.forEach((Album album){
-      if(artists["${album.artist}"]!=null){
+    List<Album> ItemsList = _albums$.value;
+    ItemsList.forEach((Album album) {
+      if (artists["${album.artist}"] != null) {
         artists["${album.artist}"].albums.add(album);
-      }else{
-        artists["${album.artist}"]= new Artist(currentIndex,album.artist, null);
+      } else {
+        artists["${album.artist}"] =
+            new Artist(currentIndex, album.artist, null);
         artists["${album.artist}"].albums.add(album);
         currentIndex++;
       }
     });
-    List <Artist> newAlbumList =artists.values.toList();
+    List<Artist> newAlbumList = artists.values.toList();
     newAlbumList.sort((a, b) {
-      if(a.name==null || b.name ==null ) return 1;
-      return a.name
-          .toLowerCase()
-          .compareTo(b.name.toLowerCase());
+      if (a.name == null || b.name == null) return 1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     _artists$.add(newAlbumList);
-
   }
 
-
-  void playMusic(Tune song) {
+  void playMusic(Tune song) async {
     _audioPlayer.play(song.uri);
     updatePlayerState(PlayerState.playing, song);
   }
 
-  void pauseMusic(Tune song) {
+  void pauseMusic(Tune song) async {
     _audioPlayer.pause();
     updatePlayerState(PlayerState.paused, song);
   }
@@ -230,7 +233,7 @@ class MusicService {
     _audioPlayer.stop();
   }
 
-  void updatePlayerState(PlayerState state, Tune song) {
+  void updatePlayerState(PlayerState state, Tune song) async {
     _playerState$.add(MapEntry(state, song));
     themeService.updateTheme(song);
   }
@@ -270,18 +273,17 @@ class MusicService {
     return _playlist.indexOf(song);
   }
 
-
   /// specific song card actions
   ///
   ///
 
-  void playOne(Tune song){
+  void playOne(Tune song) {
     stopMusic();
     playMusic(song);
     updatePlaylist([song]);
   }
 
-  void startWithAndShuffleQueue(Tune song,List<Tune> queue){
+  void startWithAndShuffleQueue(Tune song, List<Tune> queue) {
     stopMusic();
     updatePlaylist(queue);
     updatePlayback(Playback.shuffle);
@@ -289,17 +291,17 @@ class MusicService {
     newqueue.remove(song);
     newqueue.insert(0, song);
     _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
-    Future.delayed(Duration(milliseconds: 100),(){
+    Future.delayed(Duration(milliseconds: 100), () {
       playMusic(song);
     });
   }
 
-  void startWithAndShuffleAlbum(Tune song){
+  void startWithAndShuffleAlbum(Tune song) {
     stopMusic();
     playMusic(song);
     Album album;
-    album =_albums$.value.where((elem){
-      return ((song.album==elem.title) && (song.artist==elem.artist));
+    album = _albums$.value.where((elem) {
+      return ((song.album == elem.title) && (song.artist == elem.artist));
     }).toList()[0];
     updatePlaylist(album.songs);
     updatePlayback(Playback.shuffle);
@@ -309,9 +311,7 @@ class MusicService {
     _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
   }
 
-
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
-
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
@@ -520,23 +520,38 @@ class MusicService {
         _onSongComplete();
         print("stopp state out should go to next song");
       }
-      if(state == AudioPlayerState.PAUSED){
-        print("pausing should start now");
-        //pauseMusic(_playerState$.value.value);
-        updatePlayerState(PlayerState.paused,_playerState$.value.value);
-      }
-      /*if(state == AudioPlayerState.STOPPED){
-        print("stopping should start now");
-        //stopMusic();
-        updatePlayerState(PlayerState.stopped,_playerState$.value.value);
-      }*/
-      if(state == AudioPlayerState.PLAYING){
-        print("PLaying should start now");
-        //stopMusic();
-        updatePlayerState(PlayerState.playing,_playerState$.value.value);
-      }
     });
 
+    _audioPlayer.onPlaybackKeyEvent.listen((data) {
+      switch (data) {
+        case PlayBackKeys.PAUSE_KEY:
+          updatePlayerState(PlayerState.paused, _playerState$.value.value);
+          break;
+        case PlayBackKeys.NEXT_KEY:
+          playNextSong();
+          break;
+        case PlayBackKeys.PREV_KEY:
+          playPreviousSong();
+          break;
+        case PlayBackKeys.REWIND_KEY:
+          _playSameSong();
+          break;
+        case PlayBackKeys.STOP_KEY:
+          updatePlayerState(PlayerState.stopped, _playerState$.value.value);
+          break;
+        case PlayBackKeys.SEEK_KEY:
+          //Not implemented on part of the plugin yet
+          // TODO: Handle this case.
+          break;
+        case PlayBackKeys.FAST_FORWARD_KEY:
+          //Not implemented on part of the plugin yet
+          // TODO: Handle this case.
+          break;
+        case PlayBackKeys.PLAY_KEY:
+          updatePlayerState(PlayerState.playing, _playerState$.value.value);
+          break;
+      }
+    });
   }
 
   void dispose() {

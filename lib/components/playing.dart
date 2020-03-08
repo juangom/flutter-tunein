@@ -69,8 +69,7 @@ class _PlayingPageState extends State<PlayingPage>
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   final layoutService = locator<LayoutService>();
-  bool isNewData = false;
-  Tune oldData;
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,19 +84,14 @@ class _PlayingPageState extends State<PlayingPage>
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>
               snapshot) {
-        isNewData = false;
         if (!snapshot.hasData) {
           return Scaffold(
             backgroundColor: MyTheme.bgBottomBar,
           );
         }
-        if (oldData != null && snapshot.data.key.value.id != oldData.id) {
-          isNewData = true;
-          print("NEW DATA");
-        }
+
         final _state = snapshot.data.key.key;
         final _currentSong = snapshot.data.key.value;
-        oldData = _currentSong;
         final List<Tune> _favorites = snapshot.data.value;
 
         final int index =

@@ -18,17 +18,13 @@ class ThemeService {
 
 
   void updateTheme(Tune song) async {
-  print(song.title);
     if (_savedColors.containsKey(song.id)) {
-      print(song.id);
       _color$.add(_savedColors[song.id]);
-      print(_color$.value);
       return;
     }
 
 
     String path = song.albumArt;
-    print(path);
     if (path == null) {
       _color$.add([0xff111111, 0xffffffff]);
       return;

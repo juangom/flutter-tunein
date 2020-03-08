@@ -9,6 +9,7 @@ dependencies:
     sdk: flutter
   audioplayer:
     git:
+      ref: master
       url: https://github.com/moda20/audioplayer
   path_provider: ^0.4.1
   rxdart: ^0.23.1

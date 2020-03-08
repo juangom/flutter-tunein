@@ -33,9 +33,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: "323b2ade3247defaec93c3d480ab3e2fd77e520c"
-      url: "/Users/kadhem/Documents/flutter_projects/audioplayer"
+      ref: master
+      resolved-ref: "69ecdd36afef93ed045f9805af0d755e4ab11da2"
+      url: "https://github.com/moda20/audioplayer"
     source: git
     version: "0.5.2"
   boolean_selector:
@@ -135,8 +135,8 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "3a1a3ca67b1b57906c8a6e08fa1fa204ef2c1812"
-      url: "/Users/kadhem/Documents/flutter_projects/flutter_media_notification_ex"
+      resolved-ref: c9808b92707f75df5e1a8a506e8167bc1f79e720
+      url: "https://github.com/moda20/flutter_media_notification"
     source: git
     version: "0.0.5"
   meta:
