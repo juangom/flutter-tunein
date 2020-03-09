@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,10 @@ import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/globals.dart';
 
 class ArtistGridCell extends StatelessWidget {
-  ArtistGridCell(this.artist, this.imageHeight, this.panelHeight);
+  final void Function(ContextMenuOptions) onContextSelect;
+  final void Function(ContextMenuOptions) onContextCancel;
+  List<ContextMenuOptions> choices;
+  ArtistGridCell(this.artist, this.imageHeight, this.panelHeight,{this.onContextCancel, this.onContextSelect, this.choices});
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   @required
@@ -100,24 +104,42 @@ class ArtistGridCell extends StatelessWidget {
                             ),
                             Expanded(
                               flex: 2,
-                              child:  Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  splashColor: MyTheme.darkgrey,
-                                  radius: 30.0,
-                                  child: Padding(
-                                      padding: const EdgeInsets.only(right: 10.0),
-                                      child:Icon(
-                                        IconData(0xea7c, fontFamily: 'boxicons'),
-                                        size: 22,
-                                        color: (songColors!=null?new Color(songColors[1]):Colors.black87).withOpacity(.7),
-                                      )
+                              child:  choices!=null?Material(
+                                child: PopupMenuButton<ContextMenuOptions>(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      splashColor: MyTheme.darkgrey,
+                                      radius: 30.0,
+                                      child: Padding(
+                                          padding: const EdgeInsets.only(right: 10.0),
+                                          child:Icon(
+                                            IconData(0xea7c, fontFamily: 'boxicons'),
+                                            size: 22,
+                                            color: Colors.white70,
+                                          )
+                                      ),
+                                    ),
                                   ),
-                                  onTap: (){
-
+                                  elevation: 3.2,
+                                  onCanceled: () {
+                                    print('You have not chosen anything');
+                                  },
+                                  tooltip: 'Playing options',
+                                  onSelected: (ContextMenuOptions choice){
+                                    onContextSelect!=null?onContextSelect(choice):null;
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return choices.map((ContextMenuOptions choice) {
+                                      return PopupMenuItem<ContextMenuOptions>(
+                                        value: choice,
+                                        child: Text(choice.title),
+                                      );
+                                    }).toList();
                                   },
                                 ),
-                              ),
+                                color: Colors.transparent,
+                              ):Container(),
                             )
                           ],
                         ),

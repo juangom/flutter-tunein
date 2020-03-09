@@ -312,6 +312,41 @@ class MusicService {
     _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
   }
 
+
+
+  ///Specific artist context menu functions
+  ///
+  ///
+
+  void playAllArtistAlbums(Artist artist){
+    List<Tune> artistAlbumsSongs = [];
+
+    artist.albums.forEach((album){
+      artistAlbumsSongs.addAll(album.songs);
+    });
+
+    if(artistAlbumsSongs.length!=0){
+      stopMusic();
+      updatePlaylist(artistAlbumsSongs);
+      playMusic(artistAlbumsSongs[0]);
+    }
+  }
+  void suffleAllArtistAlbums(Artist artist){
+    List<Tune> artistAlbumsSongs = [];
+
+    artist.albums.forEach((album){
+      artistAlbumsSongs.addAll(album.songs);
+    });
+
+    if(artistAlbumsSongs.length!=0){
+      stopMusic();
+      updatePlaylist(artistAlbumsSongs);
+      updatePlayback(Playback.shuffle);
+      List<Tune> newqueue = _playlist$.value.value;
+      playMusic(newqueue[0]);
+    }
+  }
+
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
     final List<Tune> _playlist =
@@ -522,7 +557,9 @@ class MusicService {
         print("stopp state out should go to next song");
       }
       if (state == AudioPlayerState.PAUSED) {
-        MediaNotification.setTo(false);
+        print("paused");
+        //MediaNotification.setTo(false);
+        updatePlayerState(PlayerState.paused, _playerState$.value.value);
       }
 
     });

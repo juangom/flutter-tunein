@@ -19,3 +19,16 @@ final songCardContextMenulist=[
     icon: Icons.shuffle,
   ),
 ];
+
+final artistCardContextMenulist=[
+  ContextMenuOptions(
+    id: 1,
+    title: "Play All",
+    icon: Icons.play_circle_outline,
+  ),
+  ContextMenuOptions(
+    id: 2,
+    title: "Shuffle",
+    icon: Icons.shuffle,
+  ),
+];

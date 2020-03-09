@@ -4,6 +4,7 @@ import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/ArtistCell.dart';
 import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
 import 'package:Tunein/services/locator.dart';
@@ -58,7 +59,27 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     onTap: () {
 
                     },
-                    child: ArtistGridCell(_artists[index],125,80),
+                    child: ArtistGridCell(
+                        _artists[index],
+                        125,
+                        80,
+                      choices: artistCardContextMenulist,
+                      onContextSelect: (choice){
+                        switch(choice.id){
+                          case 1: {
+                            musicService.playAllArtistAlbums(_artists[index]);
+                            break;
+                          }
+                          case 2:{
+                            musicService.suffleAllArtistAlbums(_artists[index]);
+                            break;
+                          }
+                        }
+                      },
+                      onContextCancel: (choice){
+                        print("Cancelled");
+                      },
+                    ),
                   );
                 },
               ),
