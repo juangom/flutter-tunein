@@ -473,6 +473,19 @@ class MusicService {
     return _songs$.value;
   }
 
+  Future<List<Tune>> retrievePlaylists() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    List<String> _savedStrings = _prefs.getStringList("playlists") ?? [];
+    List<Tune> _songs = [];
+
+    for (String data in _savedStrings) {
+      final Tune song = _decodeSongFromJson(data);
+      _songs.add(song);
+    }
+    _songs$.add(_songs);
+    return _songs$.value;
+  }
+
   void retrieveFavorites() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     final List<Tune> _fetchedSongs = _songs$.value;

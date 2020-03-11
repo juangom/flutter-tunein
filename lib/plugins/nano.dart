@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:audio_service/audio_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
@@ -255,4 +256,19 @@ class Artist {
   }
 
 
+}
+
+class Playlist {
+  int id;
+  String name;
+  List<Tune> songs;
+  PlaybackState playbackState;
+  Playlist(this.id, this.name, this.songs, this.playbackState);
+
+  Playlist.fromMap(Map m) {
+    id= m["id"];
+    name = m["name"];
+    songs = m["songs"];
+    playbackState= m["playbackState"];
+  }
 }

@@ -71,13 +71,16 @@ class _AlbumSongListState extends State<AlbumSongList> {
                                 return Container();
                               }
                               if (index == 0) {
-                                return PageHeader(
-                                  "Suffle",
-                                  "All Tracks",
-                                  MapEntry(
-                                      IconData(Icons.shuffle.codePoint,
-                                          fontFamily: Icons.shuffle.fontFamily),
-                                      Colors.white),
+                                return Material(
+                                  child: PageHeader(
+                                    "Suffle",
+                                    "All Tracks",
+                                    MapEntry(
+                                        IconData(Icons.shuffle.codePoint,
+                                            fontFamily: Icons.shuffle.fontFamily),
+                                        Colors.white),
+                                  ),
+                                  color: Colors.transparent,
                                 );
                               }
 
