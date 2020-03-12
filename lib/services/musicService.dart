@@ -20,6 +20,7 @@ final themeService = locator<ThemeService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
+  BehaviorSubject<List<Playlist>> _playlists$;
   BehaviorSubject<List<Album>> _albums$;
   BehaviorSubject<List<Artist>> _artists$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$;
@@ -49,6 +50,7 @@ class MusicService {
   BehaviorSubject<List<Tune>> get favorites$ => _favorites$;
 
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>> get playlist$ => _playlist$;
+  BehaviorSubject<List<Playlist>> get playlists$ => _playlists$;
 
   StreamSubscription _audioPositionSub;
   StreamSubscription _audioStateChangeSub;
@@ -473,17 +475,34 @@ class MusicService {
     return _songs$.value;
   }
 
-  Future<List<Tune>> retrievePlaylists() async {
+  Future<List<Playlist>> retrievePlaylists() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     List<String> _savedStrings = _prefs.getStringList("playlists") ?? [];
-    List<Tune> _songs = [];
+    List<Playlist> _playLists = [];
 
     for (String data in _savedStrings) {
-      final Tune song = _decodeSongFromJson(data);
-      _songs.add(song);
+      final Playlist song = _decodePlaylistFromJson(data);
+      _playLists.add(song);
     }
-    _songs$.add(_songs);
-    return _songs$.value;
+    _playlists$.add(_playLists);
+    return _playlists$.value;
+  }
+
+
+  Future<bool> addPlaylist(Playlist playlist) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    List<Playlist> _playlists = _playlists$.value;
+    _playlists.add(playlist);
+    List<String> _encodedStrings = [];
+    for (Playlist pl in _playlists) {
+      _encodedStrings.add(_encodePlaylistToJson(pl));
+    }
+    try{
+      await _prefs.setStringList("playlists", _encodedStrings);
+    }catch (e){
+      return false;
+    }
+    return true;
   }
 
   void retrieveFavorites() async {
@@ -515,6 +534,18 @@ class MusicService {
     return _song;
   }
 
+  Playlist _decodePlaylistFromJson(String ecodedSong) {
+    final _playlistMap = json.decode(ecodedSong);
+    final Playlist _playlist = Playlist.fromMap(_playlistMap);
+    return _playlist;
+  }
+
+  String _encodePlaylistToJson(Playlist playlist) {
+    final _songMap = Playlist.toMap(playlist);
+    final data = json.encode(_songMap);
+    return data;
+  }
+
   Tune _decodeSongPlusFromJson(String ecodedSong) {
     final _songMap = json.decode(ecodedSong);
     final Tune _song = Tune.fromMap(_songMap);
@@ -534,6 +565,7 @@ class MusicService {
     return _map;
   }
 
+
   void _initStreams() {
     _nano = Nano();
     _isAudioSeeking$ = BehaviorSubject<bool>.seeded(false);
@@ -542,6 +574,7 @@ class MusicService {
     _artists$ = BehaviorSubject<List<Artist>>();
     _position$ = BehaviorSubject<Duration>();
     _playlist$ = BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>();
+    _playlists$ = BehaviorSubject<List<Playlist>>();
     _playback$ = BehaviorSubject<List<Playback>>.seeded([]);
     _favorites$ = BehaviorSubject<List<Tune>>.seeded([]);
     _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
@@ -616,6 +649,7 @@ class MusicService {
     _songs$.close();
     _playerState$.close();
     _playlist$.close();
+    _playlists$.close();
     _position$.close();
     _playback$.close();
     _favorites$.close();

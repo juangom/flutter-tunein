@@ -47,12 +47,14 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       await musicService.fetchSongs();
       await musicService.fetchAlbums();
       await musicService.fetchArtists();
+      await musicService.retrievePlaylists();
       musicService.saveFiles();
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     } else {
       await musicService.fetchAlbums();
       await musicService.fetchArtists();
+      await musicService.retrievePlaylists();
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     }

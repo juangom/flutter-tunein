@@ -260,15 +260,27 @@ class Artist {
 
 class Playlist {
   int id;
+  String covertArt;
   String name;
   List<Tune> songs;
   PlaybackState playbackState;
-  Playlist(this.id, this.name, this.songs, this.playbackState);
+  Playlist(this.id, this.name, this.songs, this.playbackState, this.covertArt);
 
   Playlist.fromMap(Map m) {
     id= m["id"];
     name = m["name"];
     songs = m["songs"];
     playbackState= m["playbackState"];
+    covertArt= m["covertArt"];
+  }
+
+  static Map toMap(Playlist playlist){
+    Map<String, dynamic> _map = {};
+    _map["name"] = playlist.name;
+    _map["id"] = playlist.id;
+    _map["songs"] = playlist.songs;
+    _map["playbackState"] = playlist.playbackState;
+    _map["covertArt"] = playlist.covertArt;
+    return _map;
   }
 }

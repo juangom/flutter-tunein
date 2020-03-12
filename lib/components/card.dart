@@ -115,7 +115,7 @@ class MyCard extends StatelessWidget {
                 ),
                 flex: 12,
               ),
-              Expanded(
+              choices!=null?Expanded(
                 flex: 2,
                 child: Material(
                   child: PopupMenuButton<ContextMenuOptions>(
@@ -153,7 +153,7 @@ class MyCard extends StatelessWidget {
                   ),
                   color: Colors.transparent,
                 ),
-              )
+              ):Container()
             ],
           ),
         );
