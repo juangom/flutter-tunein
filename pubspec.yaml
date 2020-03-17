@@ -12,8 +12,12 @@ dependencies:
       ref: master
       url: https://github.com/moda20/audioplayer
   path_provider: ^0.4.1
+  flutter_reorderable_list:
+    git:
+      url: https://github.com/martinory/flutter_reorderable_list.git
   rxdart: ^0.23.1
   sliding_up_panel: ^0.3.4
+  flutter_form_builder: ^3.8.1
   shared_preferences: ^0.5.3+1
   media_notification:
     git:
@@ -27,7 +31,8 @@ dependencies:
   page_transition: "^1.1.5"
   flutter_custom_dialog: ^1.0.14
   fading_edge_scrollview: ^1.1.0
-  audio_service: ^0.6.1
+  string_similarity: ^1.0.1
+  flushbar: ^1.9.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

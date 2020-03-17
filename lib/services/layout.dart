@@ -19,6 +19,11 @@ class LayoutService {
   PageController _albumListPageController;
   PageController get albumListPageController => _albumListPageController;
 
+  // global keys
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  GlobalKey<ScaffoldState> get scaffoldKey => _scaffoldKey;
+
   LayoutService() {
     _initGlobalPageView();
     _initSubPageViews();

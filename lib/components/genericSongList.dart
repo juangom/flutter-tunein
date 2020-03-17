@@ -18,13 +18,13 @@ class GenericSongList extends StatelessWidget {
   List<int> bgColor;
   ScrollController controller;
   List<Tune> songs;
-  List<ContextMenuOptions> contextMenuOptions;
+  List<ContextMenuOptions> Function(Tune) contextMenuOptions;
   void Function(ContextMenuOptions,Tune) onContextOptionSelect;
   void Function(Tune) onSongCardTap;
   final musicService = locator<MusicService>();
 
 
-  GenericSongList({this.bgColor, controller, this.songs, contextMenuOptions, this.onContextOptionSelect, this.onSongCardTap}){
+  GenericSongList({this.bgColor, controller, this.songs, this.contextMenuOptions, this.onContextOptionSelect, this.onSongCardTap}){
     if(controller!=null){
       this.controller=controller;
     }else{
@@ -33,7 +33,7 @@ class GenericSongList extends StatelessWidget {
     if(contextMenuOptions!=null){
       this.contextMenuOptions= contextMenuOptions;
     }else{
-      this.contextMenuOptions= songCardContextMenulist;
+      this.contextMenuOptions= (Tune)=>songCardContextMenulist;
     }
   }
 
@@ -75,7 +75,7 @@ class GenericSongList extends StatelessWidget {
 
                           return MyCard(
                             song: songs[newIndex],
-                            choices: contextMenuOptions,
+                            choices: contextMenuOptions(songs[newIndex]),
                             onContextSelect: (choice){
                               onContextOptionSelect!=null?onContextOptionSelect(choice,songs[newIndex]):null;
                             },

@@ -37,18 +37,28 @@ final artistCardContextMenulist=[
 final playlistCardContextMenulist=[
   ContextMenuOptions(
     id: 1,
+    title: "Add new Songs",
+    icon: Icons.add,
+  ),
+  ContextMenuOptions(
+    id: 2,
     title: "Play All",
     icon: Icons.play_circle_outline,
   ),
   ContextMenuOptions(
-    id: 2,
+    id: 3,
     title: "Shuffle",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
-    id: 3,
+    id: 4,
     title: "Edit playlist",
     icon: Icons.edit_attributes,
+  ),
+  ContextMenuOptions(
+    id: 5,
+    title: "Delete playlist",
+    icon: Icons.delete,
   ),
 ];
 
@@ -70,5 +80,30 @@ final playlistSongCardContextMenulist=[
     id: 3,
     title: "Stat with and shuffle album",
     icon: Icons.shuffle,
+  ),
+];
+
+
+///The context menu for the song cards found on the search page for playlists
+final playlistSearchSongCardContextMenulist=[
+  ContextMenuOptions(
+    id: 1,
+    title: "Add one",
+    icon: Icons.play_circle_outline,
+  ),
+  ContextMenuOptions(
+    id: 2,
+    title: "Add entire album",
+    icon: Icons.shuffle,
+  ),
+];
+
+
+///The context menu for the song cards found on the Edit Playlist page
+final editPlaylistSongCardContextMenulist=[
+  ContextMenuOptions(
+    id: 1,
+    title: "delete song",
+    icon: Icons.delete,
   ),
 ];

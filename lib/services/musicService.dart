@@ -493,8 +493,49 @@ class MusicService {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     List<Playlist> _playlists = _playlists$.value;
     _playlists.add(playlist);
+    _playlists$.add(_playlists);
     List<String> _encodedStrings = [];
     for (Playlist pl in _playlists) {
+      _encodedStrings.add(_encodePlaylistToJson(pl));
+    }
+    try{
+      await _prefs.setStringList("playlists", _encodedStrings);
+    }catch (e){
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> updateSongPlaylist(Playlist playlist) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    int _singlePlaylistIndex = _playlists$.value.indexWhere((pl){
+      return pl.id==playlist.id;
+    });
+    List<Playlist> newPlaylist = _playlists$.value;
+    newPlaylist[_singlePlaylistIndex]= playlist;
+    _playlists$.add(newPlaylist);
+    List<String> _encodedStrings = [];
+    for (Playlist pl in newPlaylist) {
+      _encodedStrings.add(_encodePlaylistToJson(pl));
+    }
+    try{
+      await _prefs.setStringList("playlists", _encodedStrings);
+    }catch (e){
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> deleteAPlaylist(Playlist playlist) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    int _singlePlaylistIndex = _playlists$.value.indexWhere((pl){
+      return pl.id==playlist.id;
+    });
+    List<Playlist> newPlaylist = _playlists$.value;
+    newPlaylist.removeAt(_singlePlaylistIndex);
+    _playlists$.add(newPlaylist);
+    List<String> _encodedStrings = [];
+    for (Playlist pl in newPlaylist) {
       _encodedStrings.add(_encodePlaylistToJson(pl));
     }
     try{
@@ -534,8 +575,9 @@ class MusicService {
     return _song;
   }
 
-  Playlist _decodePlaylistFromJson(String ecodedSong) {
-    final _playlistMap = json.decode(ecodedSong);
+  Playlist _decodePlaylistFromJson(String ecodedPlaylist) {
+    final _playlistMap = json.decode(ecodedPlaylist);
+    print(_playlistMap);
     final Playlist _playlist = Playlist.fromMap(_playlistMap);
     return _playlist;
   }

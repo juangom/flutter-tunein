@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:audio_service/audio_service.dart';
+import 'package:Tunein/models/playerstate.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
@@ -211,6 +211,19 @@ class Tune {
     albumArt = m["albumArt"];
     colors = m["colors"].cast<int>();
   }
+
+  Map toMap(){
+    Map<String, dynamic> _map = {};
+    _map["album"] = this.album;
+    _map["id"] = this.id;
+    _map["artist"] = this.artist;
+    _map["title"] = this.title;
+    _map["duration"] = this.duration;
+    _map["uri"] = this.uri;
+    _map["albumArt"] = this.albumArt;
+    _map["colors"] = this.colors;
+    return _map;
+  }
 }
 
 
@@ -259,28 +272,64 @@ class Artist {
 }
 
 class Playlist {
-  int id;
+  Uuid uuid = new Uuid();
+  String id;
   String covertArt;
   String name;
   List<Tune> songs;
-  PlaybackState playbackState;
-  Playlist(this.id, this.name, this.songs, this.playbackState, this.covertArt);
+  PlayerState playbackState;
+  DateTime creationDate;
+  Playlist(this.name, this.songs, this.playbackState, this.covertArt){
+    this.id= uuid.v1();
+    this.creationDate=DateTime.now();
+  }
 
   Playlist.fromMap(Map m) {
+
+    List<Tune> songlist=[];
+    (m["songs"] as List).forEach((songMap){
+      songlist.add(Tune.fromMap(songMap));
+    });
+
     id= m["id"];
     name = m["name"];
-    songs = m["songs"];
-    playbackState= m["playbackState"];
+    songs = songlist;
+    playbackState= StringToPlayerState(m["playbackState"]);
     covertArt= m["covertArt"];
+    creationDate= DateTime.parse(m["creationDate"]);
   }
 
   static Map toMap(Playlist playlist){
     Map<String, dynamic> _map = {};
+    //transforming the song list to a decodable format
+    List<Map> newSongsMap=[];
+    playlist.songs.forEach((song){
+      newSongsMap.add(song.toMap());
+    });
+
     _map["name"] = playlist.name;
     _map["id"] = playlist.id;
-    _map["songs"] = playlist.songs;
-    _map["playbackState"] = playlist.playbackState;
+    _map["songs"] = newSongsMap;
+    _map["playbackState"] = playlist.playbackState.index.toString();
     _map["covertArt"] = playlist.covertArt;
+    _map["creationDate"] = playlist.creationDate.toIso8601String();
     return _map;
+  }
+
+  PlayerState StringToPlayerState(String string){
+    switch(string){
+      case "1":{
+        return PlayerState.playing;
+      }
+      case "2":{
+        return PlayerState.paused;
+      }
+      case "3":{
+        return PlayerState.stopped;
+      }
+      default:{
+        return PlayerState.stopped;
+      }
+    }
   }
 }

@@ -80,6 +80,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
         }
       },
       child: Scaffold(
+        key: layoutService.scaffoldKey,
         bottomNavigationBar: BottomNavBar(),
         backgroundColor: MyTheme.darkBlack,
         body: StreamBuilder<StartupState>(
