@@ -64,18 +64,29 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-       if(layoutService.pageServices[0].pageViewController.page==2.0 && layoutService.albumListPageController.page>0.0){
-          layoutService.albumListPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
-        }else{
-          if (!layoutService.globalPanelController.isPanelClosed()) {
-            if(layoutService.albumPlayerPageController.page!=1){
-              layoutService.albumPlayerPageController.jumpToPage(1);
+        ///If the playing panel is open, go back to the player page and then close it first
+        if (!layoutService.globalPanelController.isPanelClosed()) {
+          if(layoutService.albumPlayerPageController.page!=1){
+            layoutService.albumPlayerPageController.jumpToPage(1);
+          }else{
+            layoutService.globalPanelController.close();
+          }
+        } else {
+          ///If the panel is not open
+          ///IF you are in the ALbums Page and you have opened the single page page
+          if(layoutService.pageServices[0].pageViewController.page==2.0 && layoutService.albumListPageController.page>0.0){
+            print("will go back to albumpage from singleAlbumpage");
+            layoutService.albumListPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+          }else{
+            ///If you are not in the albumPage and did not open the single album page
+            if(layoutService.pageServices[0].pageViewController.page!=0.0){
+              ///IF you are somewhere in the other pages like artist, or album  always go back to tracks
+              layoutService.pageServices[0].pageViewController.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
             }else{
-              layoutService.globalPanelController.close();
+              ///OtehrWise just put the app to backgRound
+              _androidAppRetain.invokeMethod("sendToBackground");
+              return Future.value(false);
             }
-          } else {
-            _androidAppRetain.invokeMethod("sendToBackground");
-            return Future.value(false);
           }
         }
       },

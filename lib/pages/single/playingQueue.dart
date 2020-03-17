@@ -178,6 +178,10 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                                 : _currentSong.title,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 2,
+                                            strutStyle: StrutStyle(
+                                              height: 1.4,
+                                              forceStrutHeight:true
+                                            ),
                                             style: TextStyle(
                                               fontSize: 17.5,
                                               fontWeight: FontWeight.w700,
