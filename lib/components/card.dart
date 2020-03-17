@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/globals.dart';
@@ -53,6 +54,7 @@ class MyCard extends StatelessWidget {
                       child:Container(
                         constraints: BoxConstraints.expand(),
                         child:  Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             Padding(
                               padding: EdgeInsets.only(right: 15),
@@ -71,7 +73,8 @@ class MyCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Flexible(
+                            Expanded(
+                              flex: 8,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -82,7 +85,10 @@ class MyCard extends StatelessWidget {
                                       (_song.title == null)
                                           ? "Unknon Title"
                                           : _song.title,
-                                      overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.fade,
+                                      maxLines: 1,
+                                      textWidthBasis: TextWidthBasis.parent,
+                                      softWrap: false,
                                       style: TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: _fontWeight,
