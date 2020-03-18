@@ -80,109 +80,154 @@ class BottomPanel extends StatelessWidget {
 
   getBottomPanelLayout(_state, _currentSong, _artists, colors) {
     return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(right: 0, left: 5),
+          child: _currentSong.albumArt != null
+              ? Image.file(File(_currentSong.albumArt))
+              : Image.asset("images/track.png"),
+        ),
         Expanded(
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
+              getSlider(colors, _currentSong),
               Padding(
-                padding: EdgeInsets.only(right: 20, left: 5),
-                child: _currentSong.albumArt != null
-                    ? Image.file(File(_currentSong.albumArt))
-                    : Image.asset("images/track.png"),
-              ),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                padding: EdgeInsets.only(left: 20, top: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        _currentSong.title,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color(colors[1]).withOpacity(.7),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              _currentSong.title,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Color(colors[1]).withOpacity(.7),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            _artists,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(colors[1]).withOpacity(.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_currentSong.uri == null) {
+                                return;
+                              }
+                              musicService.playPreviousSong();
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  child: Icon(
+                                    IconData(0xeb40, fontFamily: 'boxicons'),
+                                    color: new Color(colors[1]).withOpacity(.7),
+                                    size: 35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Text(
-                      _artists,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(colors[1]).withOpacity(.7),
-                      ),
-                    ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_currentSong.uri == null) {
+                                return;
+                              }
+                              if (PlayerState.paused == _state) {
+                                musicService.playMusic(_currentSong);
+                              } else {
+                                musicService.pauseMusic(_currentSong);
+                              }
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                  child: _state == PlayerState.playing
+                                      ? Icon(
+                                    Icons.pause,
+                                    color: Color(colors[1]).withOpacity(.7),
+                                  )
+                                      : Icon(
+                                    Icons.play_arrow,
+                                    color: Color(colors[1]).withOpacity(.7),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
                   ],
                 ),
-              ),
+              )
             ],
           ),
-        ),
-        Row(
-          children: <Widget>[
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  if (_currentSong.uri == null) {
-                    return;
-                  }
-                  musicService.playPreviousSong();
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Icon(
-                        IconData(0xeb40, fontFamily: 'boxicons'),
-                        color: new Color(colors[1]).withOpacity(.7),
-                        size: 35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  if (_currentSong.uri == null) {
-                    return;
-                  }
-                  if (PlayerState.paused == _state) {
-                    musicService.playMusic(_currentSong);
-                  } else {
-                    musicService.pauseMusic(_currentSong);
-                  }
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: _state == PlayerState.playing
-                          ? Icon(
-                        Icons.pause,
-                        color: Color(colors[1]).withOpacity(.7),
-                      )
-                          : Icon(
-                        Icons.play_arrow,
-                        color: Color(colors[1]).withOpacity(.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         )
       ],
     );
+  }
+
+
+  Widget getSlider(List<int> colors, Tune song){
+
+        return Stack(
+          children: <Widget>[
+            new LinearProgressIndicator(
+                value: 1.0,
+                valueColor: new AlwaysStoppedAnimation(Color(colors[0]))),
+            StreamBuilder(
+              stream: musicService.position$,
+              builder: (BuildContext context,
+                  AsyncSnapshot<Duration> snapshot) {
+                if (!snapshot.hasData) {
+                  return Container();
+                }
+                final Duration _currentDuration = snapshot.data;
+
+                return new LinearProgressIndicator(
+                  value: _currentDuration != null &&
+                      _currentDuration.inMilliseconds > 0
+                      ? (_currentDuration.inMilliseconds.toDouble()/song.duration)
+                      : 0.0,
+                  valueColor:
+                  new AlwaysStoppedAnimation(Color(colors[1])),
+                  backgroundColor: Color(colors[0]),
+                ) ;
+              },
+            )
+          ],
+        );
   }
 }
