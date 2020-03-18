@@ -20,7 +20,7 @@ class GenericSongList extends StatelessWidget {
   List<Tune> songs;
   List<ContextMenuOptions> Function(Tune) contextMenuOptions;
   void Function(ContextMenuOptions,Tune) onContextOptionSelect;
-  void Function(Tune) onSongCardTap;
+  void Function(Tune,PlayerState,bool) onSongCardTap;
   final musicService = locator<MusicService>();
 
 
@@ -84,7 +84,7 @@ class GenericSongList extends StatelessWidget {
                             },
                             onTap: (){
                               if(this.onSongCardTap!=null){
-                                this.onSongCardTap(_currentSong);
+                                this.onSongCardTap(songs[newIndex],_state, _isSelectedSong);
                               }else{
                                 musicService.updatePlaylist(songs);
                                 switch (_state) {

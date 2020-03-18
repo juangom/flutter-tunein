@@ -270,7 +270,7 @@ class SinglePlaylistPage extends StatelessWidget {
                         }
                       }
                     },
-                    onSongCardTap: (song){
+                    onSongCardTap: (song,state,isSelectedSong){
                       print("tapped ${song.title}");
                     },
                   ):

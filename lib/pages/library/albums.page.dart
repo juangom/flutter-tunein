@@ -84,9 +84,14 @@ class _AlbumsPageState extends State<AlbumsPage> {
   }
 
 
-  void goToAlbumSongsList(album){
-      currentAlbum.add(album);
-      widget.controller.nextPage(duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+  void goToAlbumSongsList(album) async {
+      List<Tune> returnedSongs = await  Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleAlbumPage(null,
+              album:album
+          ),
+        ),
+      );
   }
 
 

@@ -285,7 +285,7 @@ class _AddSongsToPlaylistState extends State<AddSongsToPlaylist> {
                    singleList[1].title= "${singleList[1].title} (+${numberOfSOngsInAlbum})";
                    return singleList;
                  },
-                 onSongCardTap: (song){
+                 onSongCardTap: (song,state,isSelectedSong){
 
                  },
                  onContextOptionSelect: (choice, song){
