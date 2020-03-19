@@ -170,7 +170,7 @@ class _SearchPageState extends State<SearchPage> {
                 });
                 return Column(
                   children: <Widget>[
-                    Row(
+                    _albums.length!=0?Row(
                       children: <Widget>[
                         Container(
                           padding:EdgeInsets.only(top:10, left: 10),
@@ -189,8 +189,8 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         )
                       ] ,
-                    ),
-                    Expanded(
+                    ):Container(),
+                    _albums.length!=0?Expanded(
                       flex:4,
                       child: Container(
                         height:80,
@@ -201,7 +201,7 @@ class _SearchPageState extends State<SearchPage> {
                                 child: Container(
                                   margin: EdgeInsets.only(right: 8),
                                   child: AlbumGridCell(
-                                      _albums[index],120,80
+                                      _albums[index],125,80
                                   ),
                                 ),
                                 onTap: (){
@@ -215,13 +215,14 @@ class _SearchPageState extends State<SearchPage> {
                           itemCount: _albums.length,
                           controller: controller,
                           shrinkWrap: false,
-                          itemExtent: 120,
+                          itemExtent: 122,
                           physics: AlwaysScrollableScrollPhysics(),
+                          cacheExtent: 122,
                         ),
                         padding: EdgeInsets.all(10),
                       ),
-                    ),
-                    Row(
+                    ):Container(),
+                    _songs.length!=0?Row(
                       children: <Widget>[
                         Container(
                           padding:EdgeInsets.only(bottom:10, left: 10),
@@ -240,8 +241,8 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         )
                       ] ,
-                    ),
-                    Expanded(
+                    ):Container(),
+                    _songs.length!=0?Expanded(
                       flex:7,
                       child: GenericSongList(
                         songs: _songs ,
@@ -296,7 +297,7 @@ class _SearchPageState extends State<SearchPage> {
                           }
                         },
                       ),
-                    )
+                    ):Container()
                   ]
                 );
               },
