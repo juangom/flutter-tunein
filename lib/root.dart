@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:Tunein/pages/collection/collection.page.dart';
 import 'package:Tunein/pages/library/library.page.dart';
+import 'package:Tunein/pages/settings/settings.page.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/settingService.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +22,7 @@ class Root extends StatefulWidget {
 class RootState extends State<Root> with TickerProviderStateMixin {
   final musicService = locator<MusicService>();
   final layoutService = locator<LayoutService>();
+  final SettingService = locator<settingService>();
   final _androidAppRetain = MethodChannel("android_app_retain");
 
   final StreamController<StartupState> _startupStatus =
@@ -58,6 +61,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     }
+
+    SettingService.fetchSettings();
   }
 
   @override
@@ -146,6 +151,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
                                   children: [
                                     LibraryPage(),
                                     CollectionPage(),
+                                    SettingsPage()
                                   ],
                                 ),
                               ),

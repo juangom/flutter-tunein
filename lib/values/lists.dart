@@ -19,6 +19,10 @@ final Map<int, List<MapEntry<String, GlobalKey>>> headerItems = {
     MapEntry("Playlists", GlobalKey()),
     MapEntry("Favorites", GlobalKey()),
   ],
+  2:[
+    MapEntry("General", GlobalKey()),
+    MapEntry("Servers", GlobalKey())
+  ]
 };
 
 final List<MapEntry<String, Icon>> bottomNavBarItems = [

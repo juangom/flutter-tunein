@@ -260,13 +260,22 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.23.1"
+  settings_ui:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "04b956f285072d37ab46189d73569d82ef5f6d37"
+      url: "/Users/kadhem/Documents/flutter_projects/flutter-settings-ui"
+    source: git
+    version: "0.2.0"
   shared_preferences:
     dependency: "direct main"
     description:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.6+2"
+    version: "0.5.6+3"
   shared_preferences_macos:
     dependency: transitive
     description:

@@ -33,7 +33,7 @@ class LayoutService {
   }
 
   void _initSubPageViews() {
-    _pageServices = List<PageService>(2);
+    _pageServices = List<PageService>(3);
     for (var i = 0; i < _pageServices.length; i++) {
       _pageServices[i] = PageService(i);
     }

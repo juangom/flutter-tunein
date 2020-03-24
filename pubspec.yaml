@@ -33,6 +33,9 @@ dependencies:
   fading_edge_scrollview: ^1.1.0
   string_similarity: ^1.0.1
   flushbar: ^1.9.1
+  settings_ui:
+    git:
+      url: /Users/kadhem/Documents/flutter_projects/flutter-settings-ui
 dev_dependencies:
   flutter_test:
     sdk: flutter

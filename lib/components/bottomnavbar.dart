@@ -1,4 +1,5 @@
 import 'package:Tunein/pages/search.dart';
+import 'package:Tunein/pages/settings/settings.page.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/values/lists.dart';
@@ -59,6 +60,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
     );
   }
 
+  _opeSettingsPage(){
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SettingsPage(),
+      ),
+    );
+  }
+
   _handleTap(int index) {
     switch (index) {
       case 0:
@@ -76,7 +85,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
         _navigate();
         break;
       case 4:
-        _navigate();
+        layoutService.changeGlobalPage(index);
+        _setBarIndex(index);
         break;
     }
   }
