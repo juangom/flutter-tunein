@@ -24,9 +24,14 @@
 - [x] Notification and Lock Screen Controls
 - [x] System integration
 - [x] Artist list
-- [ ] Playlists
-- [ ] Search songs
-- [ ] FTP song registry 
+- [x] Playlists
+- [x] Search songs
+- [ ] Finishing up the Settings page
+- [ ] Adding support for artist thumbnail update via online service
+- [ ] Adding a better landing page
+- [ ] Updating performance
+- [ ] Adding UPnP, DLNA v4.0 (DMS, DMP, DMC, maybe DMR), maybe Apple Airplay
+- [ ] FTP song registry
 - [ ] Spotify integration
 ## 📸 ScreenShots
 |                                           |                                           |                                           |                                          |
