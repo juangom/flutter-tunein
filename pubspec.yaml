@@ -35,7 +35,7 @@ dependencies:
   flushbar: ^1.9.1
   settings_ui:
     git:
-      url: /Users/kadhem/Documents/flutter_projects/flutter-settings-ui
+      url: https://github.com/moda20/flutter-settings-ui.git
 dev_dependencies:
   flutter_test:
     sdk: flutter
