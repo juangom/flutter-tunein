@@ -1,3 +1,4 @@
+import 'package:Tunein/services/languageService.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/settingService.dart';
@@ -12,4 +13,5 @@ void setupLocator() {
   locator.registerSingleton(ThemeService());
   locator.registerSingleton(LayoutService());
   locator.registerSingleton(settingService());
+  locator.registerSingleton(languageService());
 }

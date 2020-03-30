@@ -13,11 +13,12 @@ import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_reorderable_list/flutter_reorderable_list.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+
+
 class EditPlaylist extends StatefulWidget {
 
   Playlist playlist;
@@ -36,7 +37,6 @@ class _EditPlaylistState extends State<EditPlaylist> {
   List<Tune> songsToBeRemoved=[];
   ScrollController controller = new ScrollController();
 
-  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
   @override
   Widget build(BuildContext context) {
     return Material(

@@ -17,7 +17,6 @@ dependencies:
       url: https://github.com/martinory/flutter_reorderable_list.git
   rxdart: ^0.23.1
   sliding_up_panel: ^0.3.4
-  flutter_form_builder: ^3.8.1
   shared_preferences: ^0.5.3+1
   media_notification:
     git:
@@ -36,6 +35,7 @@ dependencies:
   settings_ui:
     git:
       url: https://github.com/moda20/flutter-settings-ui.git
+  flutter_i18n: ^0.13.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -44,6 +44,7 @@ dev_dependencies:
 flutter:
   assets:
     - images/
+    - locale/
   fonts:
     - family: Boxicons
       fonts:
