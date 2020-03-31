@@ -577,7 +577,6 @@ class MusicService {
 
   Playlist _decodePlaylistFromJson(String ecodedPlaylist) {
     final _playlistMap = json.decode(ecodedPlaylist);
-    print(_playlistMap);
     final Playlist _playlist = Playlist.fromMap(_playlistMap);
     return _playlist;
   }

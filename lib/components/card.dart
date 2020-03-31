@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/ContextMenuOption.dart';
+import 'package:marquee/marquee.dart';
+
 class MyCard extends StatelessWidget {
   final Tune _song;
   final VoidCallback onTap;
@@ -81,7 +83,7 @@ class MyCard extends StatelessWidget {
                                 children: <Widget>[
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text(
+                                    child: (!_isSelectedSong || _song.title.length<25)?Text(
                                       (_song.title == null)
                                           ? "Unknon Title"
                                           : _song.title,
@@ -94,7 +96,30 @@ class MyCard extends StatelessWidget {
                                         fontWeight: _fontWeight,
                                         color: colors!=null?colors[1]:Colors.white,
                                       ),
+                                    ): Container(
+                                      height: 14,
+                                      child: Marquee(
+                                        text: (_song.title == null)
+                                            ? "Unknon Title"
+                                            : _song.title,
+                                        style: TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: _fontWeight,
+                                          color: colors!=null?colors[1]:Colors.white,
+                                        ),
+                                        scrollAxis: Axis.horizontal,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        blankSpace: _song.title.length*2.0,
+                                        velocity: (_song.title == null)?30.0:_song.title.length*1.2,
+                                        pauseAfterRound: Duration(seconds: (1+_song.title.length*0.110).floor()),
+                                        startPadding: 0.0,
+                                        accelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*40),
+                                        accelerationCurve: Curves.linear,
+                                        decelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*30),
+                                        decelerationCurve: Curves.easeOut,
+                                      ),
                                     ),
+
                                   ),
                                   Text(
                                     (_song.artist == null)

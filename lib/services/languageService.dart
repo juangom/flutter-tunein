@@ -33,7 +33,7 @@ class languageService{
           useCountryCode: false,
           fallbackFile: 'en',
           basePath: 'locale',
-          forcedLocale: Locale('es')),
+          forcedLocale: Locale('en')),
     );
   }
 

@@ -204,9 +204,6 @@ class BottomPanel extends StatelessWidget {
 
         return Stack(
           children: <Widget>[
-            new LinearProgressIndicator(
-                value: 1.0,
-                valueColor: new AlwaysStoppedAnimation(Color(colors[0]))),
             StreamBuilder(
               stream: musicService.position$,
               builder: (BuildContext context,
