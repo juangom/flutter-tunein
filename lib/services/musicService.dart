@@ -56,7 +56,7 @@ class MusicService {
   StreamSubscription _audioStateChangeSub;
 
   MusicService() {
-    _defaultSong = Tune(null, " ", " ", " ", null, null, null, []);
+    _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null);
     _initStreams();
     _initAudioPlayer();
   }
@@ -169,6 +169,13 @@ class MusicService {
       }
     });
     List<Album> newAlbumList = albums.values.toList();
+    newAlbumList.forEach((album){
+      album.songs.sort((a,b){
+        if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
+        if(a.numberInAlbum < b.numberInAlbum) return -1;
+        else return 1;
+      });
+    });
     newAlbumList.sort((a, b) {
       if (a.title == null || b.title == null) return 1;
       return a.title.toLowerCase().compareTo(b.title.toLowerCase());

@@ -312,8 +312,11 @@ class _SearchPageState extends State<SearchPage> {
   void goToAlbumSongsList(album) async {
     List<Tune> returnedSongs = await  Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SingleAlbumPage(null,
-            album:album
+        builder: (context) => Container(
+          child: SingleAlbumPage(null,
+              album:album
+          ),
+          margin: EdgeInsets.only(bottom: 60),
         ),
       ),
     );

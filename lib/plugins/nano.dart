@@ -96,7 +96,6 @@ class Nano {
     for (var track in _musicFiles) {
       var data = await getFileMetaData(track);
       // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
-       //print(track);
       if (data!=null && data[2] != null) {
         if (data[2] is List<int>) {
           var digest = sha1.convert(data[2]).toString();
@@ -181,7 +180,10 @@ class Nano {
           _metaData[i][3],
           int.parse(_metaData[i][5]),
           _musicFiles[i],
-          albumArt, []);
+          albumArt,
+          [],
+          int.parse(_metaData[i][4]),
+      );
       tunes.add(tune);
     }
 
@@ -197,10 +199,11 @@ class Tune {
   int duration;
   String uri;
   String albumArt;
+  int numberInAlbum;
   List<int> colors;
 
   Tune(this.id, this.title, this.artist, this.album, this.duration, this.uri,
-      this.albumArt, this.colors);
+      this.albumArt, this.colors, this.numberInAlbum);
   Tune.fromMap(Map m) {
     id = m["id"];
     artist = m["artist"];
@@ -209,6 +212,7 @@ class Tune {
     duration = m["duration"];
     uri = m["uri"];
     albumArt = m["albumArt"];
+    numberInAlbum = m["numberInAlbum"];
     colors = m["colors"].cast<int>();
   }
 
@@ -222,6 +226,7 @@ class Tune {
     _map["uri"] = this.uri;
     _map["albumArt"] = this.albumArt;
     _map["colors"] = this.colors;
+    _map["numberInAlbum"] = this.numberInAlbum;
     return _map;
   }
 }

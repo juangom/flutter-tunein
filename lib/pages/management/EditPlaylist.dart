@@ -193,7 +193,8 @@ class _EditPlaylistState extends State<EditPlaylist> {
                                         0,
                                         "",
                                         null,
-                                        []
+                                        [],
+                                        null
                                     ),
                                     choices: null,
                                     onContextSelect: (choice){
