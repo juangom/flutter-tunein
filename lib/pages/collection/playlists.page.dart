@@ -112,98 +112,46 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                             physics: AlwaysScrollableScrollPhysics(),
                             itemCount: _playlists.length,
                             itemBuilder: (context, index) {
-                              return StreamBuilder<MapEntry<PlayerState, Tune>>(
-                                stream: musicService.playerState$,
-                                builder: (BuildContext context,
-                                    AsyncSnapshot<MapEntry<PlayerState, Tune>>
-                                    snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return Container();
-                                  }
-                                  int newIndex = index;
-                                  final PlayerState _state = snapshot.data.key;
-                                  final Tune _currentSong = snapshot.data.value;
+                              final Playlist _currentPlaylist = _playlists[index];
 
-                                  /* if (index == 0) {
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    child: PageHeader(
-                                      "Suffle",
-                                      "All Tracks",
-                                      MapEntry(
-                                          IconData(Icons.shuffle.codePoint,
-                                              fontFamily: Icons.shuffle.fontFamily),
-                                          Colors.white),
-                                    ),
-                                    onTap: (){
-                                      musicService.updatePlayback(Playback.shuffle);
-                                      switch (_state) {
-                                        case PlayerState.playing:
-                                          musicService.stopMusic();
-                                          musicService.playNextSong();
-                                          break;
-                                        case PlayerState.paused:
-                                          musicService.stopMusic();
-                                          musicService.playNextSong();
-                                          break;
-                                        case PlayerState.stopped:
-                                          musicService.playNextSong();
-                                          break;
-                                        default:
-                                          break;
+                              return InkWell(
+                                enableFeedback: false,
+                                child: PlaylistCell(
+                                  choices: playlistCardContextMenulist,
+                                  onContextSelect: (choice){
+                                    switch(choice.id){
+                                      case 1: {
+                                        openAddSongsToPlaylistPage(_currentPlaylist,context);
+                                        break;
                                       }
-                                    },
-                                  ),
-                                );
-                              }*/
-
-
-
-                                  /*final bool _isSelectedSong =
-                                  _currentSong == _playlists[newIndex];*/
-                                  final Playlist _currentPlaylist = _playlists[index];
-
-                                  return InkWell(
-                                    enableFeedback: false,
-                                    child: PlaylistCell(
-                                      choices: playlistCardContextMenulist,
-                                      onContextSelect: (choice){
-                                        switch(choice.id){
-                                          case 1: {
-                                            openAddSongsToPlaylistPage(_currentPlaylist,context);
-                                            break;
-                                          }
-                                          case 2: {
-                                            musicService.updatePlaylist(_currentPlaylist.songs);
-                                            musicService.playMusic(_currentPlaylist.songs[0]);
-                                            break;
-                                          }
-                                          case 3:{
-                                            musicService.updatePlaylist(_currentPlaylist.songs);
-                                            musicService.updatePlayback(Playback.shuffle);
-                                            musicService.playMusic(_currentPlaylist.songs[0]);
-                                            break;
-                                          }
-                                          case 4:{
-                                            openEditPlaylistPage(_currentPlaylist,context);
-                                            break;
-                                          }
-                                          case 5:{
-                                            deletePlaylist(_currentPlaylist,context,message: "Confirm deleting the playlist : \"${_currentPlaylist.name}\"");
-                                          }
-                                        }
-                                      },
-                                      onContextCancel: (){
-                                        print("Cancelled");
-                                      },
-                                      playlistItem: _playlists[newIndex],
-                                      onTap: (){
-                                        goToSinglePlaylistPage(_currentPlaylist);
-                                      },
-                                    ),
-                                  );
-                                },
+                                      case 2: {
+                                        musicService.updatePlaylist(_currentPlaylist.songs);
+                                        musicService.playMusic(_currentPlaylist.songs[0]);
+                                        break;
+                                      }
+                                      case 3:{
+                                        musicService.updatePlaylist(_currentPlaylist.songs);
+                                        musicService.updatePlayback(Playback.shuffle);
+                                        musicService.playMusic(_currentPlaylist.songs[0]);
+                                        break;
+                                      }
+                                      case 4:{
+                                        openEditPlaylistPage(_currentPlaylist,context);
+                                        break;
+                                      }
+                                      case 5:{
+                                        deletePlaylist(_currentPlaylist,context,message: "Confirm deleting the playlist : \"${_currentPlaylist.name}\"");
+                                      }
+                                    }
+                                  },
+                                  onContextCancel: (){
+                                    print("Cancelled");
+                                  },
+                                  playlistItem: _playlists[index],
+                                  onTap: (){
+                                    goToSinglePlaylistPage(_currentPlaylist);
+                                  },
+                                ),
                               );
                             },
                           );

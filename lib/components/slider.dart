@@ -8,8 +8,9 @@ import 'package:rxdart/rxdart.dart';
 
 class NowPlayingSlider extends StatelessWidget {
   final musicService = locator<MusicService>();
+  Tune currentSong;
   final List<int> colors;
-  NowPlayingSlider(this.colors);
+  NowPlayingSlider(this.colors, {this.currentSong});
 
   @override
   Widget build(BuildContext context) {

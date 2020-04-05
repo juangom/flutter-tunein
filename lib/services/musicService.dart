@@ -85,7 +85,6 @@ class MusicService {
         bgColor: MyTheme.darkBlack);
 
     _playerState$.listen((data) async {
-      print(data.value.albumArt);
       List<int> SongColors = await themeService.getThemeColors(data.value);
       switch (data.key) {
 
@@ -105,7 +104,6 @@ class MusicService {
               bgColor: Color(SongColors[0]));
           break;
         case PlayerState.paused:
-          print("shoudl pause");
           MediaNotification.setTo(false);
           break;
         case PlayerState.stopped:
@@ -241,6 +239,41 @@ class MusicService {
 
   void stopMusic() {
     _audioPlayer.stop();
+  }
+
+  //This was introduced to eliminate useless subscriptions to the playerState stream
+  void playOrPause(Tune song) async {
+    PlayerState _state = _playerState$.value.key;
+    final Tune _currentSong = _playerState$.value.value;
+    final bool _isSelectedSong =
+        _currentSong.id == song.id;
+    switch (_state) {
+      case PlayerState.playing:
+        if (_isSelectedSong) {
+          pauseMusic(_currentSong);
+        } else {
+          stopMusic();
+          playMusic(
+            song,
+          );
+        }
+        break;
+      case PlayerState.paused:
+        if (_isSelectedSong) {
+          playMusic(song);
+        } else {
+          stopMusic();
+          playMusic(
+            song,
+          );
+        }
+        break;
+      case PlayerState.stopped:
+        playMusic(song);
+        break;
+      default:
+        break;
+    }
   }
 
   void updatePlayerState(PlayerState state, Tune song) async {
@@ -566,7 +599,6 @@ class MusicService {
         }
       }
     }
-    print("favorites : ${_favorites}");
     _favorites$.add(_favorites);
   }
 
@@ -648,10 +680,8 @@ class MusicService {
         _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
       if (state == AudioPlayerState.COMPLETED) {
         _onSongComplete();
-        print("stopp state out should go to next song");
       }
       if (state == AudioPlayerState.PAUSED) {
-        print("paused");
         //MediaNotification.setTo(false);
         updatePlayerState(PlayerState.paused, _playerState$.value.value);
       }

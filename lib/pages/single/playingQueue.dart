@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:Tunein/components/card.dart';
@@ -27,6 +28,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
+  StreamSubscription<MapEntry<PlayerState, Tune>> scrollAnimationListener;
   ScrollController controller;
   List<Tune> songs;
 
@@ -40,12 +42,14 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
   @override
   bool get wantKeepAlive {
-    return true;
+    return false;
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    //This does create an error in case the controller is already disposed off automatically via the wantKeepAlive returning false
+    //controller.dispose();
+    scrollAnimationListener.cancel();
     super.dispose();
   }
 
@@ -62,13 +66,31 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
       }
     }
 
+    Future<bool> animate(int indexOfThePlayingSong, double numberOfSongsPerScreen) async{
+      if(this.controller.hasClients){
+        print("will animate");
+        await this.controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
+            milliseconds: (pow(log((indexOfThePlayingSong>0?indexOfThePlayingSong:1)*2), 2)).floor() + 50
+        ),
+            curve: Curves.fastOutSlowIn
+        );
+        return true;
+      }else {
+        print("controller has no clients #2");
+        return false;
+      }
+    }
+
+
     WidgetsBinding.instance.addPostFrameCallback((duration){
       double numberOfSongsPerScreen =((screensize.height-160)/62);
-      musicService.playerState$.listen((MapEntry<PlayerState, Tune> value){
-        if(value!=null && songs!=null){
-          int indexOfThePlayingSong =songs.indexOf(value.value);
-          if(indexOfThePlayingSong>0)
-            /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
+      scrollAnimationListener = musicService.playerState$.listen((MapEntry<PlayerState, Tune> value) async{
+        void delayedAction(){
+          Future.delayed(Duration(milliseconds: 80),() async{
+            if(value!=null && songs!=null){
+              int indexOfThePlayingSong =songs.indexOf(value.value);
+              if(indexOfThePlayingSong>0)
+                /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
           print(" the ideal position would be equal to the desired pool and a portion of the next pool so that the final position to scroll to would be determined by creating a virtual pool between the previous"
               "pool and the next one in order to put the desired song in the middle of the screen this will be done by finding out the difference between the position of the song in the pool and "
@@ -78,13 +100,21 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
 
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
-           if(controller.hasClients)
-            controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
-                milliseconds: (pow(log((indexOfThePlayingSong>0?indexOfThePlayingSong:1)*2), 2)).floor() + 50
-            ),
-                curve: Curves.fastOutSlowIn
-            );
+
+                 {
+                   bool didanimate = await animate(indexOfThePlayingSong,numberOfSongsPerScreen);
+                   if(didanimate==true){
+                     return;
+                   }else{
+                     delayedAction();
+                   }
+                 }
+            }else{
+
+            }
+          });
         }
+        delayedAction();
       });
     });
 
@@ -116,7 +146,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
             }
 
             Tune _currentSong = snapshotOne.data.value;
-
+            PlayerState _state = snapshotOne.data.key;
             return StreamBuilder(
               stream:  themeService.getThemeColors(_currentSong!=null?_currentSong:null).asStream(),
               builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot){
@@ -165,7 +195,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                   flex: 7,
                                   child: Container(
                                     margin: EdgeInsets.all(8).subtract(EdgeInsets.only(left: 8))
-                                        .add(EdgeInsets.only(top: 10)),
+                                        .add(EdgeInsets.only(top: (_currentSong.title != null && _currentSong.title.length>20)?_currentSong.title.length/13:10)),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.start,
@@ -227,7 +257,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                     ),*/
                                         Container(
                                           alignment: Alignment.bottomRight,
-                                          margin: EdgeInsets.all(5),
+                                          margin: EdgeInsets.all(5).subtract(EdgeInsets.only(bottom: (_currentSong.title != null && _currentSong.title.length>20)?3:0)),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: <Widget>[
@@ -249,7 +279,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                             ],
                                           ),
                                         ),
-                                        MusicBoardControls(bgColor)
+                                        MusicBoardControls(bgColor, currentSong: _currentSong,state: _state,)
                                       ],
                                     ),
                                     padding: EdgeInsets.all(7),
@@ -283,79 +313,38 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                         left:10
                                     )),
                                     controller: controller,
+                                    cacheExtent: 10,
                                     shrinkWrap: true,
                                     itemExtent: 62,
                                     physics: AlwaysScrollableScrollPhysics(),
                                     itemCount: _playlist.length,
                                     itemBuilder: (context, index) {
-                                      return StreamBuilder<MapEntry<PlayerState, Tune>>(
-                                        stream: musicService.playerState$,
-                                        builder: (BuildContext context,
-                                            AsyncSnapshot<MapEntry<PlayerState, Tune>>
-                                            snapshot) {
-                                          if (!snapshot.hasData) {
-                                            return Container();
+                                      int newIndex = index;
+                                      return MyCard(
+                                        choices: songCardContextMenulist,
+                                        onContextSelect: (choice){
+                                          switch(choice.id){
+                                            case 1: {
+                                              musicService.playOne(_playlist[newIndex]);
+                                              break;
+                                            }
+                                            case 2:{
+                                              musicService.startWithAndShuffleQueue(_playlist[newIndex], _playlist);
+                                              break;
+                                            }
+                                            case 3:{
+                                              musicService.startWithAndShuffleAlbum(_playlist[newIndex]);
+                                              break;
+                                            }
                                           }
-
-                                          int newIndex = index;
-                                          final PlayerState _state = snapshot.data.key;
-                                          final Tune _currentSong = snapshot.data.value;
-                                          final bool _isSelectedSong =
-                                              _currentSong == _playlist[newIndex];
-
-                                          return MyCard(
-                                            choices: songCardContextMenulist,
-                                            onContextSelect: (choice){
-                                              switch(choice.id){
-                                                case 1: {
-                                                  musicService.playOne(_playlist[newIndex]);
-                                                  break;
-                                                }
-                                                case 2:{
-                                                  musicService.startWithAndShuffleQueue(_playlist[newIndex], _playlist);
-                                                  break;
-                                                }
-                                                case 3:{
-                                                  musicService.startWithAndShuffleAlbum(_playlist[newIndex]);
-                                                  break;
-                                                }
-                                              }
-                                            },
-                                            onContextCancel: (choice){
-                                              print("Cancelled");
-                                            },
-                                            song: _playlist[newIndex],
-                                            colors: bgColor!=null?[Color(bgColor[0]),Color(bgColor[1])]:null,
-                                            onTap: (){
-                                              switch (_state) {
-                                                case PlayerState.playing:
-                                                  if (_isSelectedSong) {
-                                                    musicService.pauseMusic(_currentSong);
-                                                  } else {
-                                                    musicService.stopMusic();
-                                                    musicService.playMusic(
-                                                      _playlist[newIndex],
-                                                    );
-                                                  }
-                                                  break;
-                                                case PlayerState.paused:
-                                                  if (_isSelectedSong) {
-                                                    musicService.playMusic(_playlist[newIndex]);
-                                                  } else {
-                                                    musicService.stopMusic();
-                                                    musicService.playMusic(
-                                                      _playlist[newIndex],
-                                                    );
-                                                  }
-                                                  break;
-                                                case PlayerState.stopped:
-                                                  musicService.playMusic(_playlist[newIndex]);
-                                                  break;
-                                                default:
-                                                  break;
-                                              }
-                                            },
-                                          );
+                                        },
+                                        onContextCancel: (choice){
+                                          print("Cancelled");
+                                        },
+                                        song: _playlist[newIndex],
+                                        colors: bgColor!=null?[Color(bgColor[0]),Color(bgColor[1])]:null,
+                                        onTap: (){
+                                          musicService.playOrPause(_playlist[newIndex]);
                                         },
                                       );
                                     },

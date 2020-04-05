@@ -51,51 +51,12 @@ class _FavoritesPageState extends State<FavoritesPage>
                     childAspectRatio: (itemWidth / (itemWidth + 50)),
                   ),
                   itemBuilder: (BuildContext context, int index) {
-                    return StreamBuilder<MapEntry<PlayerState, Tune>>(
-                      stream: musicService.playerState$,
-                      builder: (context,
-                          AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot) {
-                        if (!snapshot.hasData) {
-                          return Container();
-                        }
-                        final PlayerState _state = snapshot.data.key;
-                        final Tune _currentSong = snapshot.data.value;
-                        final bool _isSelectedSong =
-                            _currentSong.id == _songs[index].id;
-                        return GestureDetector(
-                          onTap: () {
-                            musicService.updatePlaylist(_songs);
-                            switch (_state) {
-                              case PlayerState.playing:
-                                if (_isSelectedSong) {
-                                  musicService.pauseMusic(_currentSong);
-                                } else {
-                                  musicService.stopMusic();
-                                  musicService.playMusic(
-                                    _songs[index],
-                                  );
-                                }
-                                break;
-                              case PlayerState.paused:
-                                if (_isSelectedSong) {
-                                  musicService.playMusic(_songs[index]);
-                                } else {
-                                  musicService.stopMusic();
-                                  musicService.playMusic(
-                                    _songs[index],
-                                  );
-                                }
-                                break;
-                              case PlayerState.stopped:
-                                musicService.playMusic(_songs[index]);
-                                break;
-                              default:
-                                break;
-                            }
-                          },
-                          child: GridCell(_songs[index]),
-                        );
+                    return GestureDetector(
+                      onTap: () {
+                        musicService.updatePlaylist(_songs);
+                        musicService.playOrPause(_songs[index]);
                       },
+                      child: GridCell(_songs[index]),
                     );
                   },
                 );

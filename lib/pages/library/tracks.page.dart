@@ -105,116 +105,56 @@ class _TracksPageState extends State<TracksPage>
                         physics: AlwaysScrollableScrollPhysics(),
                         itemCount: _songs.length + 1,
                         itemBuilder: (context, index) {
-                          return StreamBuilder<MapEntry<PlayerState, Tune>>(
-                            stream: musicService.playerState$,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<MapEntry<PlayerState, Tune>>
-                                    snapshot) {
-                              if (!snapshot.hasData) {
-                                return Container();
-                              }
-                              int newIndex = index - 1;
-                              final PlayerState _state = snapshot.data.key;
-                              final Tune _currentSong = snapshot.data.value;
-
-                              if (index == 0) {
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    child: PageHeader(
-                                      "Suffle",
-                                      "All Tracks",
-                                      MapEntry(
-                                          IconData(Icons.shuffle.codePoint,
-                                              fontFamily: Icons.shuffle.fontFamily),
-                                          Colors.white),
-                                    ),
-                                    onTap: (){
-                                      musicService.updatePlayback(Playback.shuffle);
-                                      switch (_state) {
-                                        case PlayerState.playing:
-                                          musicService.stopMusic();
-                                          musicService.playNextSong();
-                                          break;
-                                        case PlayerState.paused:
-                                          musicService.stopMusic();
-                                          musicService.playNextSong();
-                                          break;
-                                        case PlayerState.stopped:
-                                          musicService.playNextSong();
-                                          break;
-                                        default:
-                                          break;
-                                      }
-                                    },
-                                  ),
-                                );
-                              }
-
-
-
-                              final bool _isSelectedSong =
-                                  _currentSong == _songs[newIndex];
-
-
-                              return InkWell(
-                                enableFeedback: false,
-                                child: MyCard(
-                                  choices: songCardContextMenulist,
-                                  onContextSelect: (choice){
-                                      switch(choice.id){
-                                        case 1: {
-                                          musicService.playOne(_songs[newIndex]);
-                                          break;
-                                        }
-                                        case 2:{
-                                          musicService.startWithAndShuffleQueue(_songs[newIndex], _songs);
-                                          break;
-                                        }
-                                        case 3:{
-                                          musicService.startWithAndShuffleAlbum(_songs[newIndex]);
-                                          break;
-                                        }
-                                      }
-                                  },
-                                  onContextCancel: (choice){
-                                    print("Cancelled");
-                                  },
-                                  song: _songs[newIndex],
-                                  onTap: (){
-                                    musicService.updatePlaylist(_songs);
-                                    switch (_state) {
-                                      case PlayerState.playing:
-                                        if (_isSelectedSong) {
-                                          musicService.pauseMusic(_currentSong);
-                                        } else {
-                                          musicService.stopMusic();
-                                          musicService.playMusic(
-                                            _songs[newIndex],
-                                          );
-                                        }
-                                        break;
-                                      case PlayerState.paused:
-                                        if (_isSelectedSong) {
-                                          musicService
-                                              .playMusic(_songs[newIndex]);
-                                        } else {
-                                          musicService.stopMusic();
-                                          musicService.playMusic(
-                                            _songs[newIndex],
-                                          );
-                                        }
-                                        break;
-                                      case PlayerState.stopped:
-                                        musicService.playMusic(_songs[newIndex]);
-                                        break;
-                                      default:
-                                        break;
-                                    }
-                                  },
+                          int newIndex = index - 1;
+                          if (index == 0) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                child: PageHeader(
+                                  "Suffle",
+                                  "All Tracks",
+                                  MapEntry(
+                                      IconData(Icons.shuffle.codePoint,
+                                          fontFamily: Icons.shuffle.fontFamily),
+                                      Colors.white),
                                 ),
-                              );
-                            },
+                                onTap: (){
+                                  musicService.updatePlayback(Playback.shuffle);
+                                  musicService.playNextSong();
+                                },
+                              ),
+                            );
+                          }
+
+                          return InkWell(
+                            enableFeedback: false,
+                            child: MyCard(
+                              choices: songCardContextMenulist,
+                              onContextSelect: (choice){
+                                switch(choice.id){
+                                  case 1: {
+                                    musicService.playOne(_songs[newIndex]);
+                                    break;
+                                  }
+                                  case 2:{
+                                    musicService.startWithAndShuffleQueue(_songs[newIndex], _songs);
+                                    break;
+                                  }
+                                  case 3:{
+                                    musicService.startWithAndShuffleAlbum(_songs[newIndex]);
+                                    break;
+                                  }
+                                }
+                              },
+                              onContextCancel: (choice){
+                                print("Cancelled");
+                              },
+                              song: _songs[newIndex],
+                              onTap: (){
+                                musicService.updatePlaylist(_songs);
+                                musicService.playOrPause(_songs[newIndex]);
+                              },
+                            ),
                           );
                         },
                       );

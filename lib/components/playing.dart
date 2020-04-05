@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
@@ -77,9 +78,9 @@ class _PlayingPageState extends State<PlayingPage>
 
     return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
       stream: Rx.combineLatest2(
-        musicService.playerState$,
+        musicService.playerState$.delay(Duration(milliseconds: 40)),
         musicService.favorites$,
-        (a, b) => MapEntry(a, b),
+            (a, b) => MapEntry(a, b),
       ),
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>
@@ -107,7 +108,7 @@ class _PlayingPageState extends State<PlayingPage>
 
         return Scaffold(
             body: StreamBuilder<List<int>>(
-                stream: themeService.color$,
+                stream: themeService.color$.distinct(),
                 builder: (context, AsyncSnapshot<List<int>> snapshot) {
                   if (!snapshot.hasData) {
                     return Container();
@@ -121,7 +122,7 @@ class _PlayingPageState extends State<PlayingPage>
                         curve: Curves.decelerate,
                         color: Color(colors[0]),
                         child: getPlayinglayout(
-                            _currentSong, colors, _screenHeight, _isFavorited),
+                            _currentSong, colors, _screenHeight, _isFavorited, _state),
                       ),
                       Positioned(
                           right: 3,
@@ -201,7 +202,7 @@ class _PlayingPageState extends State<PlayingPage>
   }
 
   getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
-      bool _isFavorited) {
+      bool _isFavorited, PlayerState state) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
     if (_currentSong == null || songs == null) {
       return Container(
@@ -327,7 +328,7 @@ class _PlayingPageState extends State<PlayingPage>
                   ],
                 ),
                 NowPlayingSlider(colors),
-                MusicBoardControls(colors),
+                MusicBoardControls(colors, state: state, currentSong: _currentSong,),
               ],
             ),
           ),

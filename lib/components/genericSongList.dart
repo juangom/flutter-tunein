@@ -87,33 +87,7 @@ class GenericSongList extends StatelessWidget {
                                 this.onSongCardTap(songs[newIndex],_state, _isSelectedSong);
                               }else{
                                 musicService.updatePlaylist(songs);
-                                switch (_state) {
-                                  case PlayerState.playing:
-                                    if (_isSelectedSong) {
-                                      musicService.pauseMusic(_currentSong);
-                                    } else {
-                                      musicService.stopMusic();
-                                      musicService.playMusic(
-                                        songs[newIndex],
-                                      );
-                                    }
-                                    break;
-                                  case PlayerState.paused:
-                                    if (_isSelectedSong) {
-                                      musicService.playMusic(songs[newIndex]);
-                                    } else {
-                                      musicService.stopMusic();
-                                      musicService.playMusic(
-                                        songs[newIndex],
-                                      );
-                                    }
-                                    break;
-                                  case PlayerState.stopped:
-                                    musicService.playMusic(songs[newIndex]);
-                                    break;
-                                  default:
-                                    break;
-                                }
+                                musicService.playOrPause(songs[newIndex]);
                               }
                             },
                           );

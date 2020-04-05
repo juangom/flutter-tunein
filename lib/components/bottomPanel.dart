@@ -95,7 +95,7 @@ class BottomPanel extends StatelessWidget {
             children: <Widget>[
               getSlider(colors, _currentSong),
               Padding(
-                padding: EdgeInsets.only(left: 20, top: 6),
+                padding: EdgeInsets.only(left: 20, top: 3),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -156,8 +156,8 @@ class BottomPanel extends StatelessWidget {
                         ),
                         Material(
                           color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
+                          child: IconButton(
+                            onPressed: () {
                               if (_currentSong.uri == null) {
                                 return;
                               }
@@ -167,23 +167,14 @@ class BottomPanel extends StatelessWidget {
                                 musicService.pauseMusic(_currentSong);
                               }
                             },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                                  child: _state == PlayerState.playing
-                                      ? Icon(
-                                    Icons.pause,
-                                    color: Color(colors[1]).withOpacity(.7),
-                                  )
-                                      : Icon(
-                                    Icons.play_arrow,
-                                    color: Color(colors[1]).withOpacity(.7),
-                                  ),
-                                ),
-                              ],
+                            icon: _state == PlayerState.playing
+                                ? Icon(
+                              Icons.pause,
+                              color: Color(colors[1]).withOpacity(.7),
+                            )
+                                : Icon(
+                              Icons.play_arrow,
+                              color: Color(colors[1]).withOpacity(.7),
                             ),
                           ),
                         ),
@@ -205,6 +196,7 @@ class BottomPanel extends StatelessWidget {
         return Stack(
           children: <Widget>[
             StreamBuilder(
+              initialData: Duration(milliseconds: 1),
               stream: musicService.position$,
               builder: (BuildContext context,
                   AsyncSnapshot<Duration> snapshot) {

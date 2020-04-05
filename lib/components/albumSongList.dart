@@ -62,87 +62,46 @@ class _AlbumSongListState extends State<AlbumSongList> {
                         physics: AlwaysScrollableScrollPhysics(),
                         itemCount: widget.album.songs.length + 1,
                         itemBuilder: (context, index) {
-                          return StreamBuilder<MapEntry<PlayerState, Tune>>(
-                            stream: musicService.playerState$,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<MapEntry<PlayerState, Tune>>
-                                snapshot) {
-                              if (!snapshot.hasData) {
-                                return Container();
-                              }
-                              if (index == 0) {
-                                return Material(
-                                  child: PageHeader(
-                                    "Suffle",
-                                    "All Tracks",
-                                    MapEntry(
-                                        IconData(Icons.shuffle.codePoint,
-                                            fontFamily: Icons.shuffle.fontFamily),
-                                        Colors.white),
-                                  ),
-                                  color: Colors.transparent,
-                                );
-                              }
+                          if (index == 0) {
+                            return Material(
+                              child: PageHeader(
+                                "Suffle",
+                                "All Tracks",
+                                MapEntry(
+                                    IconData(Icons.shuffle.codePoint,
+                                        fontFamily: Icons.shuffle.fontFamily),
+                                    Colors.white),
+                              ),
+                              color: Colors.transparent,
+                            );
+                          }
 
-                              int newIndex = index - 1;
-                              final PlayerState _state = snapshot.data.key;
-                              final Tune _currentSong = snapshot.data.value;
-                              final bool _isSelectedSong =
-                                  _currentSong == widget.album.songs[newIndex];
-
-                              return MyCard(
-                                song: widget.album.songs[newIndex],
-                                choices: songCardContextMenulist,
-                                onContextSelect: (choice){
-                                  switch(choice.id){
-                                    case 1: {
-                                      musicService.playOne(widget.album.songs[newIndex]);
-                                      break;
-                                    }
-                                    case 2:{
-                                      musicService.startWithAndShuffleQueue(widget.album.songs[newIndex], widget.album.songs);
-                                      break;
-                                    }
-                                    case 3:{
-                                      musicService.startWithAndShuffleAlbum(widget.album.songs[newIndex]);
-                                      break;
-                                    }
-                                  }
-                                },
-                                onContextCancel: (choice){
-                                  print("Cancelled");
-                                },
-                                onTap: (){
-                                  musicService.updatePlaylist(widget.album.songs);
-                                  switch (_state) {
-                                    case PlayerState.playing:
-                                      if (_isSelectedSong) {
-                                        musicService.pauseMusic(_currentSong);
-                                      } else {
-                                        musicService.stopMusic();
-                                        musicService.playMusic(
-                                          widget.album.songs[newIndex],
-                                        );
-                                      }
-                                      break;
-                                    case PlayerState.paused:
-                                      if (_isSelectedSong) {
-                                        musicService.playMusic(widget.album.songs[newIndex]);
-                                      } else {
-                                        musicService.stopMusic();
-                                        musicService.playMusic(
-                                          widget.album.songs[newIndex],
-                                        );
-                                      }
-                                      break;
-                                    case PlayerState.stopped:
-                                      musicService.playMusic(widget.album.songs[newIndex]);
-                                      break;
-                                    default:
-                                      break;
-                                  }
-                                },
-                              );
+                          int newIndex = index - 1;
+                          return MyCard(
+                            song: widget.album.songs[newIndex],
+                            choices: songCardContextMenulist,
+                            onContextSelect: (choice){
+                              switch(choice.id){
+                                case 1: {
+                                  musicService.playOne(widget.album.songs[newIndex]);
+                                  break;
+                                }
+                                case 2:{
+                                  musicService.startWithAndShuffleQueue(widget.album.songs[newIndex], widget.album.songs);
+                                  break;
+                                }
+                                case 3:{
+                                  musicService.startWithAndShuffleAlbum(widget.album.songs[newIndex]);
+                                  break;
+                                }
+                              }
+                            },
+                            onContextCancel: (choice){
+                              print("Cancelled");
+                            },
+                            onTap: (){
+                              musicService.updatePlaylist(widget.album.songs);
+                              musicService.playOrPause(widget.album.songs[newIndex]);
                             },
                           );
                         },
