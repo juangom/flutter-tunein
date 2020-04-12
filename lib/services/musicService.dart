@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,8 +17,8 @@ import 'package:audioplayer/audioplayer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'locator.dart';
-
 final themeService = locator<ThemeService>();
+final MusicServiceIsolate = locator<musicServiceIsolate>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -62,11 +64,8 @@ class MusicService {
   }
 
   Future<void> fetchSongs() async {
-    await _nano.fetchSongs().then(
-      (data) {
-        _songs$.add(data);
-      },
-    );
+    var data = await _nano.fetchSongs();
+    _songs$.add(data);
   }
 
   showUI() async {
@@ -153,32 +152,20 @@ class MusicService {
   }
 
   Future<void> fetchAlbums() async {
-    Map<String, Album> albums = {};
-    int currentIndex = 0;
-    List<Tune> ItemsList = _songs$.value;
-    ItemsList.forEach((Tune tune) {
-      if (albums["${tune.album}${tune.artist}"] != null) {
-        albums["${tune.album}${tune.artist}"].songs.add(tune);
-      } else {
-        albums["${tune.album}${tune.artist}"] =
-            new Album(currentIndex, tune.album, tune.artist, tune.albumArt);
-        albums["${tune.album}${tune.artist}"].songs.add(tune);
-        currentIndex++;
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+        sender: tempPort.sendPort,
+        command: "fetchAlbumsFromSongs",
+        message: _songs$.value
+    ));
+    return tempPort.forEach((dataAlbums){
+      if(dataAlbums!="OK"){
+        _albums$.add(dataAlbums);
+        tempPort.close();
+        return true;
       }
     });
-    List<Album> newAlbumList = albums.values.toList();
-    newAlbumList.forEach((album){
-      album.songs.sort((a,b){
-        if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
-        if(a.numberInAlbum < b.numberInAlbum) return -1;
-        else return 1;
-      });
-    });
-    newAlbumList.sort((a, b) {
-      if (a.title == null || b.title == null) return 1;
-      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-    });
-    _albums$.add(newAlbumList);
+
   }
 
   BehaviorSubject<List<Album>> fetchAlbum(
@@ -277,6 +264,14 @@ class MusicService {
   }
 
   void updatePlayerState(PlayerState state, Tune song) async {
+ /*   CrossIsolatesMessage newMessage = new CrossIsolatesMessage<MapEntry<PlayerState,Tune>>(
+      message: MapEntry(state,song),
+      sender: null,
+      command: "UPlayerstate"
+    );
+    MusicServiceIsolate.sendCrossIsolateMessage(newMessage).then((data){
+      print(data);
+    });*/
     _playerState$.add(MapEntry(state, song));
     themeService.updateTheme(song);
   }
@@ -495,11 +490,23 @@ class MusicService {
   Future<void> saveFiles() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     final List<Tune> _songs = _songs$.value;
-    List<String> _encodedStrings = [];
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+        sender: tempPort.sendPort,
+        command: "encodeSongsToStringList",
+        message: _songs
+    ));
+    /*List<String> _encodedStrings = [];
     for (Tune song in _songs) {
       _encodedStrings.add(_encodeSongToJson(song));
-    }
-    _prefs.setStringList("tunes", _encodedStrings);
+    }*/
+    return tempPort.forEach((data){
+      if(data!="OK"){
+        _prefs.setStringList("tunes", data);
+        tempPort.close();
+      }
+    });
+
   }
 
   Future<List<Tune>> retrieveFiles() async {
@@ -602,8 +609,8 @@ class MusicService {
     _favorites$.add(_favorites);
   }
 
-  String _encodeSongToJson(Tune song) {
-    final _songMap = songToMap(song);
+  static String _encodeSongToJson(Tune song) {
+    final _songMap = song.toMap();
     final data = json.encode(_songMap);
     return data;
   }
@@ -663,6 +670,15 @@ class MusicService {
         _defaultSong,
       ),
     );
+
+    MusicServiceIsolate.defaultReceivePort.listen((data){
+      CrossIsolatesMessage newData = data as CrossIsolatesMessage;
+      switch(newData.command){
+        case "UPlayerstate":{
+          _playerState$.add(newData.message);
+        }
+      }
+    });
   }
 
   void _initAudioPlayer() {

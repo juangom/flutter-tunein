@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,7 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
+import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/musicServiceIsolate.dart';
 class Nano {
+
+  final MusicServiceIsolate = locator<musicServiceIsolate>();
+
   MethodChannel platform = MethodChannel('android_app_retain');
 
   // used for app
@@ -61,14 +67,32 @@ class Nano {
     return file.writeAsString(jsonData);
   }
 
-  readExtDir(Directory dir) async {
-    Stream sdContents = dir.list(recursive: true);
+  Future<dynamic> readExtDir(Directory dir) async {
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+      sender: tempPort.sendPort,
+      command: "readExternalDirectory",
+      message: dir
+    ));
+    return tempPort.forEach((dataURL){
+      if(dataURL!="OK"){
+        if(dataURL!="0001"){
+          _musicFiles.add(dataURL);
+        }else{
+          tempPort.close();
+          return true;
+        }
+      }
+    });
+
+
+    /*Stream sdContents = dir.list(recursive: true);
     sdContents = sdContents.handleError((data) {});
     await for (var data in sdContents) {
       if (data.path.endsWith(".mp3")) {
         if(validateMusicFile(data.path))_musicFiles.add(data.path);
       }
-    }
+    }*/
   }
 
   bool validateMusicFile(String path){
@@ -93,6 +117,25 @@ class Nano {
   }
 
   Future getAllMetaData() async {
+
+    //Metadata is not currently possible through isolate as it is using platform methods that are only available from the main UI thread.
+    //The use of the traditional
+    /*ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage<List>(
+        sender: tempPort.sendPort,
+        command: "getAllTracksMetadata",
+        message: List.from(_musicFiles)
+    ));
+    return tempPort.forEach((metaDataList){
+      if(metaDataList!="OK"){
+        _metaData=metaDataList;
+        tempPort.close();
+        return true;
+      }else{
+
+      }
+    });*/
+
     for (var track in _musicFiles) {
       var data = await getFileMetaData(track);
       // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
@@ -168,6 +211,7 @@ class Nano {
     String appPath = await getLocalPath();
     List<Tune> tunes = List<Tune>();
     await getMusicFiles();
+    print("musicFileLength is : ${_musicFiles.length}");
     await getAllMetaData();
     cleanMetadata();
     for (var i = 0; i < _musicFiles.length; i++) {

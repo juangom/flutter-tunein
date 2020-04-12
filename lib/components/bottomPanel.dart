@@ -13,6 +13,7 @@ import '../globals.dart';
 class BottomPanel extends StatelessWidget {
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
+  Widget playPauseButton;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +80,9 @@ class BottomPanel extends StatelessWidget {
   }
 
   getBottomPanelLayout(_state, _currentSong, _artists, colors) {
+    /*if(playPauseButton==null){
+      playPauseButton = PlayPauseButton(_state,_currentSong,colors);
+    }*/
     return Row(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,5 +222,70 @@ class BottomPanel extends StatelessWidget {
             )
           ],
         );
+  }
+//Deprecated
+  Widget PlayPauseButton(PlayerState state, Tune _currentSong, List<int> colors){
+    PlayerState _state = state;
+    return PlayPauseButtonWidget(_state,colors);
+  }
+}
+
+class PlayPauseButtonWidget extends StatefulWidget {
+  PlayerState _state;
+  List<int> colors;
+
+
+  PlayPauseButtonWidget(this._state, this.colors);
+
+  @override
+  _PlayPauseButtonState createState() => _PlayPauseButtonState();
+}
+
+class _PlayPauseButtonState extends State<PlayPauseButtonWidget> {
+  Tune _currentSong;
+  PlayerState _state;
+  List<int> colors;
+  final musicService = locator<MusicService>();
+
+
+  @override
+  void initState() {
+    _currentSong=musicService.playerState$.value.value;
+    _state = widget._state;
+    colors=widget.colors;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: IconButton(
+        onPressed: () {
+          if (_currentSong.uri == null) {
+            return;
+          }
+          if (PlayerState.paused == _state) {
+            setState(() {
+              _state = PlayerState.playing;
+            });
+            musicService.playMusic(_currentSong);
+          } else {
+            setState(() {
+              _state=PlayerState.paused;
+            });
+            musicService.pauseMusic(_currentSong);
+          }
+        },
+        icon: _state == PlayerState.playing
+            ? Icon(
+          Icons.pause,
+          color: Color(colors[1]).withOpacity(.7),
+        )
+            : Icon(
+          Icons.play_arrow,
+          color: Color(colors[1]).withOpacity(.7),
+        ),
+      ),
+    );;
   }
 }

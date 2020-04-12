@@ -99,6 +99,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.13.0"
+  flutter_isolate:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "9291717133b1aecf2afe6e249eb63eed9eba33a2"
+      url: "https://github.com/rmawatson/flutter_isolate.git"
+    source: git
+    version: "1.0.0+11"
   flutter_localizations:
     dependency: transitive
     description: flutter

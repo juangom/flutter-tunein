@@ -46,8 +46,8 @@ class MusicBoardControls extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: new Color(colors[1]).withOpacity(.7),
                     borderRadius: BorderRadius.circular(30)),
-                height: 50,
-                width: 50,
+                height: 60,
+                width: 60,
                 child: Center(
                   child: AnimatedCrossFade(
                     duration: Duration(milliseconds: 200),

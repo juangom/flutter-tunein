@@ -5,6 +5,7 @@ import 'package:Tunein/pages/settings/settings.page.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   final musicService = locator<MusicService>();
   final layoutService = locator<LayoutService>();
   final SettingService = locator<settingService>();
+  final MusicServiceIsolate = locator<musicServiceIsolate>();
   final _androidAppRetain = MethodChannel("android_app_retain");
 
   final StreamController<StartupState> _startupStatus =
@@ -32,7 +34,11 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
     loadFiles();
     musicService.showUI();
-
+    MusicServiceIsolate.callerCreateIsolate().then((value){
+      MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
+        print("the returned value is ${retunedValue}");
+      });
+    });
     super.initState();
   }
 
@@ -47,11 +53,17 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     _startupStatus.add(StartupState.Busy);
     final data = await musicService.retrieveFiles();
     if (data.length == 0) {
+      print("gona fetch songs");
       await musicService.fetchSongs();
+      print("gona fetch albums");
       await musicService.fetchAlbums();
+      print("gona fetch artist");
       await musicService.fetchArtists();
+      print("gona fetch playlists");
       await musicService.retrievePlaylists();
+      print("gona saveFiles");
       musicService.saveFiles();
+      print("gona retrieve favorites");
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     } else {

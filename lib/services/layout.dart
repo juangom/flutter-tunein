@@ -18,8 +18,15 @@ class LayoutService {
   PageController get albumPlayerPageController => _albumPlayerPageController;
   PageController _albumListPageController;
   PageController get albumListPageController => _albumListPageController;
+  VoidCallback _onPanelOpenCallback;
+  VoidCallback get onPanelOpenCallback => _onPanelOpenCallback;
 
-  // global keys
+
+  set onPanelOpenCallback(VoidCallback value) {
+    _onPanelOpenCallback = value;
+
+
+  } // global keys
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   GlobalKey<ScaffoldState> get scaffoldKey => _scaffoldKey;
@@ -65,5 +72,13 @@ class LayoutService {
       duration: Duration(milliseconds: 200),
       curve: curve,
     );
+  }
+
+  //mainpanel functions
+
+  onPanelOpen(dynamic data){
+    if(onPanelOpenCallback!=null){
+      onPanelOpenCallback();
+    }
   }
 }

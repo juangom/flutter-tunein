@@ -70,18 +70,64 @@ class _PlayingPageState extends State<PlayingPage>
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   final layoutService = locator<LayoutService>();
+  MapEntry<MapEntry<PlayerState, Tune>, List<Tune>> tempState;
+  BehaviorSubject<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>> newStream = new BehaviorSubject<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>();
+  Timer isScheduelingtoPushData;
 
+  @override
+  void initState() {
+
+    Stream<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>  originalStream = Rx.combineLatest2(
+      musicService.playerState$,
+      musicService.favorites$,
+          (a, b) => MapEntry(a, b),
+    );
+
+    //
+    layoutService.onPanelOpenCallback= (){
+      if(tempState!=null){
+        newStream.add(tempState);
+        tempState=null;
+      }
+    };
+    //
+    originalStream.listen((Data){
+      if(!layoutService.globalPanelController.isPanelClosed()){
+        newStream.add(Data);
+      }else{
+        tempState=Data;
+        if(isScheduelingtoPushData==null){
+          isScheduelingtoPushData = Timer(Duration(milliseconds: 4000),(){
+            if(tempState!=null){
+              newStream.add(tempState);
+              tempState=null;
+            }
+            isScheduelingtoPushData=null;
+          });
+        }else{
+          isScheduelingtoPushData.cancel();
+          isScheduelingtoPushData = Timer(Duration(milliseconds: 4000),(){
+            if(tempState!=null){
+              newStream.add(tempState);
+              tempState=null;
+            }
+            isScheduelingtoPushData=null;
+          });
+        }
+      }
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final _screenHeight = MediaQuery.of(context).size.height;
 
+
+
     return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
-      stream: Rx.combineLatest2(
-        musicService.playerState$.delay(Duration(milliseconds: 40)),
-        musicService.favorites$,
-            (a, b) => MapEntry(a, b),
-      ),
+      stream: newStream,
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>
               snapshot) {
