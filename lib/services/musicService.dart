@@ -349,6 +349,17 @@ class MusicService {
     _playlist$.add(MapEntry(_playlist$.value.key, newqueue));
   }
 
+  void playAlbum(Tune song) {
+    Album album;
+    album = _albums$.value.where((elem) {
+      return ((song.album == elem.title) && (song.artist == elem.artist));
+    }).toList()[0];
+    print(album.songs.length);
+    updatePlaylist(album.songs);
+    stopMusic();
+    playMusic(song);
+  }
+
 
 
   ///Specific artist context menu functions
@@ -386,9 +397,12 @@ class MusicService {
 
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
+
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
-    int _index = _playlist.indexOf(_currentSong);
+    int _index = _playlist.indexWhere((elem){
+      return elem.id==_currentSong.id;
+    });
     int nextSongIndex = _index + 1;
     int prevSongIndex = _index - 1;
 

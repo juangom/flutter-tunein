@@ -94,6 +94,9 @@ class _AlbumSongListState extends State<AlbumSongList> {
                                   musicService.startWithAndShuffleAlbum(widget.album.songs[newIndex]);
                                   break;
                                 }
+                                case 4:{
+                                  musicService.playAlbum(widget.album.songs[newIndex]);
+                                }
                               }
                             },
                             onContextCancel: (choice){

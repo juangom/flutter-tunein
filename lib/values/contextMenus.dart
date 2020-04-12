@@ -9,6 +9,11 @@ final songCardContextMenulist=[
     icon: Icons.play_circle_outline,
   ),
   ContextMenuOptions(
+    id: 4,
+    title: "Play Album",
+    icon: Icons.album,
+  ),
+  ContextMenuOptions(
     id: 2,
     title: "Stat with and shuffle queue",
     icon: Icons.shuffle,

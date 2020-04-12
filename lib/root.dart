@@ -31,14 +31,15 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       StreamController<StartupState>();
   @override
   void initState() {
-
-    loadFiles();
-    musicService.showUI();
     MusicServiceIsolate.callerCreateIsolate().then((value){
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
         print("the returned value is ${retunedValue}");
       });
+      loadFiles();
     });
+
+    musicService.showUI();
+
     super.initState();
   }
 

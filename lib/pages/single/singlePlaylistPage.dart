@@ -268,6 +268,9 @@ class SinglePlaylistPage extends StatelessWidget {
                           musicService.startWithAndShuffleAlbum(tune);
                           break;
                         }
+                        case 4:{
+                          musicService.playAlbum(tune);
+                        }
                       }
                     },
                     onSongCardTap: (song,state,isSelectedSong){

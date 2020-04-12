@@ -144,6 +144,9 @@ class _TracksPageState extends State<TracksPage>
                                     musicService.startWithAndShuffleAlbum(_songs[newIndex]);
                                     break;
                                   }
+                                  case 4:{
+                                    musicService.playAlbum(_songs[newIndex]);
+                                  }
                                 }
                               },
                               onContextCancel: (choice){

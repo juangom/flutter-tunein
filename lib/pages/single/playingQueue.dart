@@ -336,6 +336,9 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                               musicService.startWithAndShuffleAlbum(_playlist[newIndex]);
                                               break;
                                             }
+                                            case 4:{
+                                              musicService.playAlbum(_playlist[newIndex]);
+                                            }
                                           }
                                         },
                                         onContextCancel: (choice){

@@ -294,6 +294,9 @@ class _SearchPageState extends State<SearchPage> {
                               musicService.startWithAndShuffleAlbum(song);
                               break;
                             }
+                            case 4:{
+                              musicService.playAlbum(song);
+                            }
                           }
                         },
                       ),
