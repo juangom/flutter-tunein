@@ -149,6 +149,15 @@ class musicServiceIsolate {
           }
           break;
         }
+
+        case "encodeArtistsToStringList":{
+          if(incomingMessage.message!=null){
+            saveArtiststoPref(incomingMessage.message,(data){
+              incomingMessage.sender.send(data);
+            });
+          }
+          break;
+        }
         default:
           break;
       }
@@ -302,6 +311,23 @@ class musicServiceIsolate {
     });
     print("albums length : ${newAlbumList.length}");
     callback(newAlbumList);
+  }
+
+  //encoding artists to save in prefs in the main isolate
+
+  static saveArtiststoPref(List<Artist> artists, Function(List<String>) callback) async{
+    List<String> _encodedStrings = [];
+    for (Artist artist in artists) {
+      _encodedStrings.add(_encodeArtistToJson(artist));
+    }
+    print("encoded ${_encodedStrings.length} artist");
+    callback(_encodedStrings);
+  }
+
+  static String _encodeArtistToJson(Artist artist) {
+    final _ArtistMap = artist.toMap(artist);
+    final data = json.encode(_ArtistMap);
+    return data;
   }
 
   // encoding songs to save in prefs in main isolate

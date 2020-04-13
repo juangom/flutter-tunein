@@ -52,6 +52,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
   Future loadFiles() async {
     _startupStatus.add(StartupState.Busy);
+    SettingService.fetchSettings();
     final data = await musicService.retrieveFiles();
     if (data.length == 0) {
       print("gona fetch songs");
@@ -64,18 +65,23 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       await musicService.retrievePlaylists();
       print("gona saveFiles");
       musicService.saveFiles();
+      print("gona save artist");
+      musicService.saveArtists();
       print("gona retrieve favorites");
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     } else {
       await musicService.fetchAlbums();
-      await musicService.fetchArtists();
+      final data =await musicService.retrieveArtists();
+      if(data.length==0){
+        await musicService.fetchArtists();
+        await musicService.saveArtists();
+      }
       await musicService.retrievePlaylists();
       musicService.retrieveFavorites();
       _startupStatus.add(StartupState.Success);
     }
 
-    SettingService.fetchSettings();
   }
 
   @override

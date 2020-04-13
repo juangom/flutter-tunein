@@ -291,6 +291,22 @@ class Album {
     albumArt = m["albumArt"];
   }
 
+  Map toMap(Album album){
+    Map<String, dynamic> _map = {};
+    //transforming the song list to a decodable format
+    List<Map> newSongsMap=[];
+    album.songs.forEach((song){
+      newSongsMap.add(song.toMap());
+    });
+
+    _map["artist"] = album.artist;
+    _map["id"] = album.id;
+    _map["songs"] = newSongsMap;
+    _map["title"] = album.title;
+    _map["albumArt"] = album.albumArt;
+    return _map;
+  }
+
   @override
   String toString() {
     return 'Album{id: $id, title: $title, artist: $artist, albumArt: $albumArt, songs: $songs}';
@@ -304,18 +320,42 @@ class Artist {
   String name;
   String coverArt;
   List<Album> albums=[];
+  Map<String,String> apiData=Map<String,String>();
   Artist(this.id, this.name, this.coverArt);
 
   Artist.fromMap(Map m) {
     id= m["id"];
     name = m["name"];
     coverArt = m["coverArt"];
+    List<Album> artistList=[];
+    (m["albums"] as List).forEach((AlbumMap){
+      artistList.add(Album.fromMap(AlbumMap));
+    });
+    apiData=Map<String, String>.from(m["apiData"]);
+  }
+
+
+  Map toMap(Artist artist){
+    Map<String, dynamic> _map = {};
+    //transforming the song list to a decodable format
+    List<Map> newAlbumsMap=[];
+    artist.albums.forEach((album){
+      newAlbumsMap.add(album.toMap(album));
+    });
+
+    _map["name"] = artist.name;
+    _map["id"] = artist.id;
+    _map["albums"] = newAlbumsMap;
+    _map["apiData"] = artist.apiData;
+    _map["covertArt"] = artist.coverArt;
+    return _map;
   }
 
   @override
   String toString() {
-    return 'Artist{id: $id, name: $name, coverArt: $coverArt, albums: $albums}';
+    return 'Artist{id: $id, name: $name, coverArt: $coverArt, albums: $albums, apiData :$apiData}';
   }
+
 
 
 }

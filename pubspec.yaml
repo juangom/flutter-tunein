@@ -40,6 +40,8 @@ dependencies:
   flutter_isolate:
     git:
       url: https://github.com/rmawatson/flutter_isolate.git
+  dio: ^3.0.9
+  dio_flutter_transformer: ^3.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

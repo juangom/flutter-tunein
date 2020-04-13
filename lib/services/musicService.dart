@@ -192,7 +192,7 @@ class MusicService {
     }
   }
 
-  Future<void> fetchArtists() async {
+  Future<List> fetchArtists() async {
     Map<String, Artist> artists = {};
     int currentIndex = 0;
     List<Album> ItemsList = _albums$.value;
@@ -523,6 +523,42 @@ class MusicService {
 
   }
 
+  Future<void> saveArtists() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final List<Artist> _songs = _artists$.value;
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+        sender: tempPort.sendPort,
+        command: "encodeArtistsToStringList",
+        message: _songs
+    ));
+    /*List<String> _encodedStrings = [];
+    for (Tune song in _songs) {
+      _encodedStrings.add(_encodeSongToJson(song));
+    }*/
+    return tempPort.forEach((data){
+      if(data!="OK"){
+        _prefs.setStringList("artists", data);
+        tempPort.close();
+      }
+    });
+
+  }
+
+
+  Future<List<Artist>> retrieveArtists() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    List<String> _savedStrings = _prefs.getStringList("artists") ?? [];
+    List<Artist> _artists = [];
+
+    for (String data in _savedStrings) {
+      final Artist artist = _decodeArtistFromJson(data);
+      _artists.add(artist);
+    }
+    _artists$.add(_artists);
+    return _artists$.value;
+  }
+
   Future<List<Tune>> retrieveFiles() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     List<String> _savedStrings = _prefs.getStringList("tunes") ?? [];
@@ -633,6 +669,12 @@ class MusicService {
     final _songMap = json.decode(ecodedSong);
     final Tune _song = Tune.fromMap(_songMap);
     return _song;
+  }
+
+  Artist _decodeArtistFromJson(String ecodedSong) {
+    final _artistMap = json.decode(ecodedSong);
+    final Artist _artist = Artist.fromMap(_artistMap);
+    return _artist;
   }
 
   Playlist _decodePlaylistFromJson(String ecodedPlaylist) {
