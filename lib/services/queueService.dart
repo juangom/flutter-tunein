@@ -106,6 +106,7 @@ class QueueService {
 
   Future<bool> stopQueue() async{
     if(currentQueueState!=QueueState.PAUSED && currentQueueState!=QueueState.STOPPED){
+      print("queue going to stop");
       switch(currentQueueState){
 
         case QueueState.STARTING:
@@ -151,6 +152,10 @@ class QueueService {
     currentRunner = Timer.periodic(queueInterval, (timer){
      List<QueueItem> queue =  _queue$.value;
      currentQueueState = QueueState.ONGOING;
+     if(queue.length<=currentIndexProcess+1){
+       stopQueue();
+       return;
+     }
      if(queue[currentIndexProcess].execute !=null){
        print("will execute processs of item ${queue[currentIndexProcess].name}");
        queue[currentIndexProcess].execute().then((data){
