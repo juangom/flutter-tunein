@@ -10,6 +10,7 @@ import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/queueService.dart';
+import 'package:Tunein/services/settingService.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ final MusicServiceIsolate = locator<musicServiceIsolate>();
 final RequestSettings = locator<Requests>();
 final utilsRequests = locator<UtilsRequests>();
 final queueService = locator<QueueService>();
+final SettingsService = locator<settingService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -553,26 +555,31 @@ class MusicService {
   }
 
   Future<bool> getArtistDataAndSaveIt() async{
-    if(_artists$.value.length!=0){
-      List<Artist> artists = _artists$.value;
-      artists.forEach((elem){
-        if(elem.coverArt==null){
-          queueService.addItemsToQueue(QueueItem(
-              name: "item ${elem.id}",
-              execute: () async{
-                Artist artist = await artistThumbRetreival(elem);
-                _artists$.add(artists);
-                await saveArtists();
-                return true;
-              }
-          ));
-        }
-      });
-      return queueService.startQueue();
+    if(SettingsService.settings$.value[SettingsIds.SET_ARTIST_THUMB_UPDATE]=="true"){
+      if(_artists$.value.length!=0){
+        List<Artist> artists = _artists$.value;
+        artists.forEach((elem){
+          if(elem.coverArt==null){
+            queueService.addItemsToQueue(QueueItem(
+                name: "item ${elem.id}",
+                execute: () async{
+                  Artist artist = await artistThumbRetreival(elem);
+                  _artists$.add(artists);
+                  await saveArtists();
+                  return true;
+                }
+            ));
+          }
+        });
+        return queueService.startQueue();
+      }else{
+        print("artist list is empty");
+        return false;
+      }
     }else{
-      print("artist list is empty");
-      return false;
+      print("artist Thumb fetch is disabled");
     }
+
   }
 
   Future<Artist> artistThumbRetreival(Artist artist) async{

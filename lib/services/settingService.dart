@@ -22,7 +22,8 @@ final themeService = locator<ThemeService>();
 enum SettingsIds{
   SET_LANG,
   SET_ARTIST_THUMB_UPDATE,
-  SET_DISCOG_API_KEY
+  SET_DISCOG_API_KEY,
+  SET_DISCOG_THUMB_QUALITY
 }
 
 
@@ -48,7 +49,13 @@ class settingService{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     try{
       SettingsIds.values.toList().forEach((setting){
-        settingsMap[setting] = _prefs.getString(getEnumValue(setting).toString());
+        String storedSettingValue = _prefs.getString(getEnumValue(setting).toString());
+        if(storedSettingValue==null){
+          settingsMap[setting] = getDefaultSetting(setting);
+        }else{
+          settingsMap[setting] = storedSettingValue;
+        }
+
       });
     }catch (e){
       return false;
@@ -85,6 +92,24 @@ class settingService{
 
 
   //Utils
+
+  //will return the default setting for each settingID
+  getDefaultSetting(SettingsIds setting){
+    switch(setting){
+      case SettingsIds.SET_LANG:
+      return "English";
+        break;
+      case SettingsIds.SET_ARTIST_THUMB_UPDATE:
+        return "false";
+        break;
+      case SettingsIds.SET_DISCOG_API_KEY:
+        return null;
+        break;
+      case SettingsIds.SET_DISCOG_THUMB_QUALITY:
+        return "Low";
+        break;
+    }
+  }
 
   String getEnumValue(SettingsIds set){
     return set.toString().split('.').last;

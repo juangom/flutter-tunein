@@ -99,6 +99,40 @@ class DialogService{
           );
         });
   }
+  static Future<bool> showAlertDialog(context, {String message, Color titleColor, Color messageColor ,String title}){
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              title,
+              style: TextStyle(
+                  color: titleColor!=null?titleColor:Colors.white70
+              ),
+            ),
+            content: Text(
+              message!=null?message:"Alert",
+              style: TextStyle(
+                color: messageColor!=null?messageColor:Colors.white
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "OK",
+                  style: TextStyle(
+                      color: MyTheme.darkRed
+                  ),
+                ),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop(true);
+                },
+              ),
+            ],
+          );
+        });
+  }
 
 }
 

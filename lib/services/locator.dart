@@ -14,12 +14,14 @@ import 'package:get_it/get_it.dart';
 GetIt locator = new GetIt();
 
 void setupLocator() {
+  locator.registerSingleton(ThemeService());
+  locator.registerSingleton(settingService());
   locator.registerSingleton(musicServiceIsolate());
   locator.registerSingleton(QueueService());
   locator.registerSingleton(MusicService());
-  locator.registerSingleton(ThemeService());
+
   locator.registerSingleton(LayoutService());
-  locator.registerSingleton(settingService());
+
   locator.registerSingleton(languageService());
   locator.registerSingleton(httpRequests());
   locator.registerSingleton(Requests());
