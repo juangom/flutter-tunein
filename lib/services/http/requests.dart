@@ -1,12 +1,26 @@
+import 'dart:async';
+
 import 'package:Tunein/plugins/nano.dart';
 import 'package:dio/dio.dart';
-import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'package:Tunein/services/http/httpRequests.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/settingService.dart';
 
 
 
 class Requests {
+
+  final requestService  = locator<httpRequests>();
+  final SettingsService  = locator<settingService>();
+
+  Map<SettingsIds,String> Settings = new Map();
+  StreamSubscription settingStreamSubscription;
+
+  Requests(){
+    settingStreamSubscription = SettingsService.settings$.listen((data){
+      Settings=data;
+    });
+  }
 
   static String SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search";
   static String SPOTIFY_API_KEY = "https://api.spotify.com/v1/search";
@@ -19,7 +33,6 @@ class Requests {
   static String DISCOGS_API_TOKEN = "xhvYJGwbYCsfKYrbGisBLoNlowOsnZSRUrBAStCR";
 
 
-  final requestService  = locator<httpRequests>();
 
 
   Future spotifySearch(String searchTerm, {String type="artist"}) async {
@@ -50,11 +63,8 @@ class Requests {
         data: {
           "q":searchTerm,
           "type":type,
-          "token":DISCOGS_API_TOKEN
+          "token":Settings[SettingsIds.SET_DISCOG_API_KEY]
         },
-        headers: {
-          "Authorization":"Bearer "+SPOTIFY_API_KEY
-        }
     );
 
     if(requestResqponse.data !=null){
@@ -64,28 +74,28 @@ class Requests {
   }
 
 
-  Future<dynamic> getArtistDataFromDiscogs(Artist artist) async{
+  Future<Map> getArtistDataFromDiscogs(Artist artist) async{
 
     if(artist.name==null) return null;
 
     if(artist.apiData["discogID"]==null){
+      print("not gone use discogID");
       dynamic result = await discogsSearch(artist.name);
       //discogs specific response schema
-
-      if(result.results.length==0){
+      if(result["results"].length==0){
         return null;
       }
       //by default the most accurate result from the search is the first one
       //This could be added as a configuration option in the future
-      return result.results[0];
+      return result["results"][0];
     }else{
+      print("gone use discogID");
       Response requestResqponse = await requestService.get(
           url: DISCOGS_ARTIST_URL+artist.apiData["discogID"],
           data: {
             "token":DISCOGS_API_TOKEN
           }
       );
-
       if(requestResqponse.data !=null){
         return requestResqponse.data;
       }else{
@@ -94,4 +104,8 @@ class Requests {
     }
   }
 
+
+  void dispose(){
+    settingStreamSubscription?.cancel();
+  }
 }

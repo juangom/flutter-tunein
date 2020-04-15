@@ -6,8 +6,12 @@ import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/http/requests.dart';
+import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/queueService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_notification/media_notification.dart';
@@ -19,6 +23,9 @@ import 'dart:convert';
 import 'locator.dart';
 final themeService = locator<ThemeService>();
 final MusicServiceIsolate = locator<musicServiceIsolate>();
+final RequestSettings = locator<Requests>();
+final utilsRequests = locator<UtilsRequests>();
+final queueService = locator<QueueService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -525,15 +532,15 @@ class MusicService {
 
   Future<void> saveArtists() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final List<Artist> _songs = _artists$.value;
+    final List<Artist> _artists = _artists$.value;
     ReceivePort tempPort = ReceivePort();
     MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
         sender: tempPort.sendPort,
         command: "encodeArtistsToStringList",
-        message: _songs
+        message: _artists
     ));
     /*List<String> _encodedStrings = [];
-    for (Tune song in _songs) {
+    for (Tune song in _artists) {
       _encodedStrings.add(_encodeSongToJson(song));
     }*/
     return tempPort.forEach((data){
@@ -545,6 +552,63 @@ class MusicService {
 
   }
 
+  Future<bool> getArtistDataAndSaveIt() async{
+    if(_artists$.value.length!=0){
+      List<Artist> artists = _artists$.value;
+      artists.forEach((elem){
+        if(elem.coverArt==null){
+          queueService.addItemsToQueue(QueueItem(
+              name: "item ${elem.id}",
+              execute: () async{
+                Artist artist = await artistThumbRetreival(elem);
+                _artists$.add(artists);
+                await saveArtists();
+                return true;
+              }
+          ));
+        }
+      });
+      return queueService.startQueue();
+    }else{
+      print("artist list is empty");
+      return false;
+    }
+  }
+
+  Future<Artist> artistThumbRetreival(Artist artist) async{
+    //print("gone get thumb for artist ${artist.name}");
+    Map data = await RequestSettings.getArtistDataFromDiscogs(artist);
+    //This condition means that the artist doesn't have a discogID set up already,
+    // here we should save the Discog ID with the artist, this should be done elsewhere !!
+    if(data["id"]!=null){
+      artist.apiData["discogID"]= data["id"].toString();
+    }
+    if(data["thumb"]!=null){
+      List<int> imageBytes = await utilsRequests.getNetworkImage(data["thumb"]);
+      //print("imageBytes got from NEtwork");
+      //print(imageBytes);
+      var digest = sha1.convert(imageBytes).toString();
+      await _nano.writeImage(digest, imageBytes);
+      var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
+      artist.coverArt =  albumArt;
+    }else{
+      //this condition means that the data is brought from the ID artist search
+      if(data["images"]!=null && data["images"].length!=0){
+        //print(data["images"]);
+        List<dynamic> dataImages = (data["images"]);
+        String imagetOUser = dataImages.firstWhere((item){
+          return item["type"]=="primary";
+        })["uri150"];
+
+        List<int> imageBytes = await utilsRequests.getNetworkImage(imagetOUser);
+        var digest = sha1.convert(imageBytes).toString();
+        await _nano.writeImage(digest, imageBytes);
+        var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
+        artist.coverArt =  albumArt;
+      }
+    }
+    return artist;
+  }
 
   Future<List<Artist>> retrieveArtists() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();

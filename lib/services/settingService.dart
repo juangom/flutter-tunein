@@ -21,7 +21,8 @@ final themeService = locator<ThemeService>();
 
 enum SettingsIds{
   SET_LANG,
-  SET_ARTIST_THUMB_UPDATE
+  SET_ARTIST_THUMB_UPDATE,
+  SET_DISCOG_API_KEY
 }
 
 
@@ -38,7 +39,7 @@ class settingService{
   }
 
   _initStreams(){
-    _settings$ = BehaviorSubject<Map<SettingsIds,String>>();
+    _settings$ = BehaviorSubject<Map<SettingsIds,String>>.seeded(Map());
   }
 
 

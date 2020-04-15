@@ -52,7 +52,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
   Future loadFiles() async {
     _startupStatus.add(StartupState.Busy);
-    SettingService.fetchSettings();
+    await SettingService.fetchSettings();
     final data = await musicService.retrieveFiles();
     if (data.length == 0) {
       print("gona fetch songs");
@@ -79,6 +79,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       }
       await musicService.retrievePlaylists();
       musicService.retrieveFavorites();
+      await musicService.getArtistDataAndSaveIt();
       _startupStatus.add(StartupState.Success);
     }
 

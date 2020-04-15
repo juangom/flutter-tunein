@@ -211,7 +211,6 @@ class Nano {
     String appPath = await getLocalPath();
     List<Tune> tunes = List<Tune>();
     await getMusicFiles();
-    print("musicFileLength is : ${_musicFiles.length}");
     await getAllMetaData();
     cleanMetadata();
     for (var i = 0; i < _musicFiles.length; i++) {
@@ -289,6 +288,11 @@ class Album {
     artist = m["artist"];
     title = m["title"];
     albumArt = m["albumArt"];
+    List<Tune> albumSongs = [];
+    (m["songs"] as List).forEach((element){
+      albumSongs.add(Tune.fromMap(element));
+    });
+    songs=albumSongs;
   }
 
   Map toMap(Album album){
@@ -296,7 +300,8 @@ class Album {
     //transforming the song list to a decodable format
     List<Map> newSongsMap=[];
     album.songs.forEach((song){
-      newSongsMap.add(song.toMap());
+      Map songAsAMap = song.toMap();
+      newSongsMap.add(songAsAMap);
     });
 
     _map["artist"] = album.artist;
@@ -327,10 +332,11 @@ class Artist {
     id= m["id"];
     name = m["name"];
     coverArt = m["coverArt"];
-    List<Album> artistList=[];
+    List<Album> albumsList=[];
     (m["albums"] as List).forEach((AlbumMap){
-      artistList.add(Album.fromMap(AlbumMap));
+      albumsList.add(Album.fromMap(AlbumMap));
     });
+    albums=albumsList;
     apiData=Map<String, String>.from(m["apiData"]);
   }
 
@@ -347,7 +353,7 @@ class Artist {
     _map["id"] = artist.id;
     _map["albums"] = newAlbumsMap;
     _map["apiData"] = artist.apiData;
-    _map["covertArt"] = artist.coverArt;
+    _map["coverArt"] = artist.coverArt;
     return _map;
   }
 

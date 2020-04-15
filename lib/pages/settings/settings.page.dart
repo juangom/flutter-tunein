@@ -76,6 +76,26 @@ class SettingsPage extends StatelessWidget {
 
                             ],
                           ),
+                          SettingsSection(
+                            title: 'Advanced Settings',
+                            tiles: [
+                              SettingsTile(
+                                title: 'Discogs API Token',
+                                subtitle: _settings[SettingsIds.SET_LANG],
+                                leading: Icon(
+                                  Icons.vpn_key,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async {
+                                  String newKey = await openDiscogKeyTypeDialog(gcontext, _settings[SettingsIds.SET_DISCOG_API_KEY]);
+                                  if(newKey!=_settings[SettingsIds.SET_DISCOG_API_KEY] && newKey!=null){
+                                    SettingService.updateSingleSetting(SettingsIds.SET_DISCOG_API_KEY, newKey);
+                                  }
+                                },
+                              ),
+
+                            ],
+                          ),
                         ],
                       ),
                     );
@@ -163,6 +183,60 @@ class SettingsPage extends StatelessWidget {
               color:Colors.transparent
             ),
             actions: <Widget>[
+              FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop(null))
+            ],
+          );
+        });
+  }
+
+  Future<String> openDiscogKeyTypeDialog(context, String current){
+    String currentKey = "";
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              "Discog API key",
+              style: TextStyle(
+                  color: Colors.white70
+              ),
+            ),
+            content: TextField(
+              autofocus: true,
+              onChanged: (string){
+                currentKey=string;
+              },
+              style: TextStyle(
+                color: Colors.white,
+              ),
+              decoration: InputDecoration(
+                  hintText: "${current}",
+                  hintStyle: TextStyle(
+                      color: MyTheme.grey500.withOpacity(0.2)
+                  )
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Save Changes",
+                  style: TextStyle(
+                      color: MyTheme.grey300
+                  ),
+                ),
+                onPressed: (){
+                  print("keyset is ${currentKey}");
+                  Navigator.of(context, rootNavigator: true).pop(currentKey);
+                },
+              ),
               FlatButton(
                   child: Text(
                     "Cancel",
