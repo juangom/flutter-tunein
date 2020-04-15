@@ -29,14 +29,15 @@ class ArtistGridCell extends StatelessWidget {
           songColors=snapshot.data;
         }
 
+        int numberOfSongsPresentForThisArtist =countSongsInAlbums(artist.albums);
         return AnimatedContainer(
-          duration: Duration(milliseconds: 180),
+          duration: Duration(milliseconds: 150),
             color: MyTheme.darkgrey,
             curve: Curves.fastOutSlowIn,
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                artist.coverArt == null ? Image.asset("images/artist.jpg",height: imageHeight+2, width: double.infinity, fit: BoxFit.cover,) : Image(
+                artist.coverArt == null ? Image.asset("images/artist.jpg",height: imageHeight+2, width: double.infinity, fit: BoxFit.cover) : Image(
                   image: FileImage(File(artist.coverArt)),
                   fit: BoxFit.none,
                   height: imageHeight+2,
@@ -74,7 +75,7 @@ class ArtistGridCell extends StatelessWidget {
                                 children: <Widget>[
                                   Padding(
                                     child: Text(
-                                      artist.albums.length!=0?"${artist.albums.length} Albums":"No Albums",
+                                      artist.albums.length!=0?"${artist.albums.length} ${artist.albums.length>1?"Albums":"Album"}":"No Albums",
                                       overflow: TextOverflow.ellipsis,
                                       strutStyle: StrutStyle(
                                           height: 0.8,
@@ -88,7 +89,7 @@ class ArtistGridCell extends StatelessWidget {
                                     padding: EdgeInsets.only(bottom: 2),
                                   ),
                                   Text(
-                                    artist.albums.length!=0?"${countSongsInAlbums(artist.albums)} Song(s)":"No Songs",
+                                    artist.albums.length!=0?"${numberOfSongsPresentForThisArtist} ${numberOfSongsPresentForThisArtist>1?"Songs":"Song"}":"No Songs",
                                     overflow: TextOverflow.ellipsis,
                                     strutStyle: StrutStyle(
                                         height: 0.8,
@@ -116,7 +117,7 @@ class ArtistGridCell extends StatelessWidget {
                                           child:Icon(
                                             IconData(0xea7c, fontFamily: 'boxicons'),
                                             size: 22,
-                                            color: Colors.white70,
+                                            color: (songColors!=null?new Color(songColors[1]):Colors.black54).withOpacity(.7),
                                           )
                                       ),
                                     ),

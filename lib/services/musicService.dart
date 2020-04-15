@@ -563,9 +563,12 @@ class MusicService {
             queueService.addItemsToQueue(QueueItem(
                 name: "item ${elem.id}",
                 execute: () async{
-                  Artist artist = await artistThumbRetreival(elem);
-                  _artists$.add(artists);
-                  await saveArtists();
+                  //If the settings are changed after the queu is started this condition would account for that
+                  if(SettingsService.settings$.value[SettingsIds.SET_ARTIST_THUMB_UPDATE]=="true"){
+                    Artist artist = await artistThumbRetreival(elem);
+                    _artists$.add(artists);
+                    await saveArtists();
+                  }
                   return true;
                 }
             ));

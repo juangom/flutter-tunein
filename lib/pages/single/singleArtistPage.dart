@@ -128,7 +128,7 @@ class SingleArtistPage extends StatelessWidget {
                                           )
                                         ],
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                                 padding: EdgeInsets.all(10),
@@ -193,23 +193,23 @@ class SingleArtistPage extends StatelessWidget {
                                   Text(
                                     (artist.albums.length == 0)
                                         ? "No Albums"
-                                        : "${artist.albums.length} album(s)",
+                                        : "${artist.albums.length} ${artist.albums.length>1?"albums":"album"}",
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 15.5,
                                       fontWeight: FontWeight.w400,
-                                      color: bgColor!=null?Color(bgColor[2]):Colors.white,
+                                      color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white,
                                     ),
                                   ),
                                   Text(
                                     (artist.albums.length == 0)
                                         ? "No Songs"
-                                        : "${countSongsInAlbums(artist.albums)} song(s)",
+                                        : "${countSongsInAlbums(artist.albums)} ${countSongsInAlbums(artist.albums)>1?"songs":"song"}",
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 15.5,
                                       fontWeight: FontWeight.w400,
-                                      color: Colors.white,
+                                      color: bgColor!=null?Color(bgColor[2]).withAlpha(150):Colors.white,
                                     ),
                                   ),
                                   Container(
