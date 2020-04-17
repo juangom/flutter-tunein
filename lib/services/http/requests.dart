@@ -115,9 +115,9 @@ class Requests {
       }
       //by default the most accurate result from the search is the first one
       //This could be added as a configuration option in the future
-      String id =  result["results"][0]["id"];
+      int id =  result["results"][0]["id"];
       Response requestResqponse = await requestService.get(
-          url: DISCOGS_ARTIST_URL+id,
+          url: DISCOGS_ARTIST_URL+id.toString(),
           data: {
             "token":DISCOGS_API_TOKEN
           }

@@ -32,15 +32,19 @@ class ArtistGridCell extends StatelessWidget {
         int numberOfSongsPresentForThisArtist =countSongsInAlbums(artist.albums);
         return AnimatedContainer(
           duration: Duration(milliseconds: 150),
-            color: MyTheme.darkgrey,
             curve: Curves.fastOutSlowIn,
+            decoration: BoxDecoration(
+              color: (songColors!=null?new Color(songColors[0]).withAlpha(100):MyTheme.darkgrey).withOpacity(.7),
+              backgroundBlendMode: BlendMode.colorBurn
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
                 artist.coverArt == null ? Image.asset("images/artist.jpg",height: imageHeight+2, width: double.infinity, fit: BoxFit.cover) : Image(
                   image: FileImage(File(artist.coverArt)),
-                  fit: BoxFit.none,
+                  fit: BoxFit.fill,
                   height: imageHeight+2,
+                  colorBlendMode: BlendMode.darken,
                 ),
                 Expanded(
                   child: Container(
