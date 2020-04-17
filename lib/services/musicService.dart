@@ -568,6 +568,9 @@ class MusicService {
                     Artist artist = await artistThumbRetreival(elem);
                     _artists$.add(artists);
                     await saveArtists();
+                  }else{
+                    //Stop the queue
+                    queueService.stopQueue();
                   }
                   return true;
                 }
@@ -587,35 +590,42 @@ class MusicService {
 
   Future<Artist> artistThumbRetreival(Artist artist) async{
     //print("gone get thumb for artist ${artist.name}");
-    Map data = await RequestSettings.getArtistDataFromDiscogs(artist);
+    Map data = await RequestSettings.getDiscogArtistData(artist);
     //This condition means that the artist doesn't have a discogID set up already,
     // here we should save the Discog ID with the artist, this should be done elsewhere !!
-    if(data["id"]!=null){
+    if(data !=null && data["id"]!=null && artist.apiData["discogID"]==null){
       artist.apiData["discogID"]= data["id"].toString();
     }
-    if(data["thumb"]!=null){
-      List<int> imageBytes = await utilsRequests.getNetworkImage(data["thumb"]);
-      //print("imageBytes got from NEtwork");
-      //print(imageBytes);
+
+    if(data !=null && data["images"]!=null && data["images"].length!=0){
+      //print(data["images"]);
+      List<dynamic> dataImages = (data["images"]);
+      Map imagetOUserMap = dataImages.firstWhere((item){
+        return item["type"]=="primary";
+      });
+      String imagetOUser="";
+      String ThumbQualitySetting = SettingsService.getCurrentMemorySetting(SettingsIds.SET_DISCOG_THUMB_QUALITY);
+
+      switch(ThumbQualitySetting){
+        case "Low":{
+          imagetOUser= imagetOUserMap["uri150"];
+          break;
+        }
+        case "Medium":{
+          imagetOUser= imagetOUserMap["uri150"];
+          break;
+        }
+        case "High":{
+          imagetOUser= imagetOUserMap["uri"];
+          break;
+        }
+      }
+
+      List<int> imageBytes = await utilsRequests.getNetworkImage(imagetOUser);
       var digest = sha1.convert(imageBytes).toString();
       await _nano.writeImage(digest, imageBytes);
       var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
       artist.coverArt =  albumArt;
-    }else{
-      //this condition means that the data is brought from the ID artist search
-      if(data["images"]!=null && data["images"].length!=0){
-        //print(data["images"]);
-        List<dynamic> dataImages = (data["images"]);
-        String imagetOUser = dataImages.firstWhere((item){
-          return item["type"]=="primary";
-        })["uri150"];
-
-        List<int> imageBytes = await utilsRequests.getNetworkImage(imagetOUser);
-        var digest = sha1.convert(imageBytes).toString();
-        await _nano.writeImage(digest, imageBytes);
-        var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
-        artist.coverArt =  albumArt;
-      }
     }
     return artist;
   }

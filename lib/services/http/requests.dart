@@ -105,6 +105,44 @@ class Requests {
   }
 
 
+  Future<Map> getDiscogArtistData(Artist artist) async{
+    if(artist.name==null) return null;
+    if(artist.apiData["discogID"]==null){
+      dynamic result = await discogsSearch(artist.name);
+      //discogs specific response schema
+      if(result["results"].length==0){
+        return null;
+      }
+      //by default the most accurate result from the search is the first one
+      //This could be added as a configuration option in the future
+      String id =  result["results"][0]["id"];
+      Response requestResqponse = await requestService.get(
+          url: DISCOGS_ARTIST_URL+id,
+          data: {
+            "token":DISCOGS_API_TOKEN
+          }
+      );
+      if(requestResqponse.data !=null){
+        return requestResqponse.data;
+      }else{
+        return null;
+      }
+    }else{
+      Response requestResqponse = await requestService.get(
+          url: DISCOGS_ARTIST_URL+artist.apiData["discogID"],
+          data: {
+            "token":DISCOGS_API_TOKEN
+          }
+      );
+      if(requestResqponse.data !=null){
+        return requestResqponse.data;
+      }else{
+        return null;
+      }
+    }
+  }
+
+
   void dispose(){
     settingStreamSubscription?.cancel();
   }

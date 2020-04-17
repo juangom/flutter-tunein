@@ -76,6 +76,11 @@ class settingService{
     }
   }
 
+
+  getCurrentMemorySetting(SettingsIds setting){
+    return _settings$.value[setting];
+  }
+
   updateSingleSetting(SettingsIds setting, String value) async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     try{
