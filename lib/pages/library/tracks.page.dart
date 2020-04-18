@@ -21,11 +21,15 @@ class _TracksPageState extends State<TracksPage>
     with AutomaticKeepAliveClientMixin<TracksPage> {
   final musicService = locator<MusicService>();
   ScrollController controller;
-
+  ScrollPosition listPosition;
   List<Tune> songs;
   @override
   void initState() {
     controller = ScrollController();
+    controller.addListener((){
+      listPosition =  controller.positions.toList()[0];
+    });
+
     super.initState();
   }
 
@@ -129,6 +133,7 @@ class _TracksPageState extends State<TracksPage>
                           return InkWell(
                             enableFeedback: false,
                             child: MyCard(
+                              ScreenSize: screensize,
                               choices: songCardContextMenulist,
                               onContextSelect: (choice){
                                 switch(choice.id){

@@ -33,7 +33,7 @@ class _AlbumSongListState extends State<AlbumSongList> {
 
   @override
   Widget build(BuildContext context) {
-
+    Size screenSize = MediaQuery.of(context).size;
 
     return StreamBuilder(
       stream:  themeService.getThemeColors(widget.album.songs[0]).asStream(),
@@ -80,6 +80,8 @@ class _AlbumSongListState extends State<AlbumSongList> {
                           return MyCard(
                             song: widget.album.songs[newIndex],
                             choices: songCardContextMenulist,
+                            ScreenSize: screenSize,
+                            StaticContextMenuFromBottom: 0.0,
                             onContextSelect: (choice){
                               switch(choice.id){
                                 case 1: {

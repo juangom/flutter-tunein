@@ -163,6 +163,7 @@ class _AddSongsToPlaylistState extends State<AddSongsToPlaylist> {
 
   @override
   Widget build(BuildContext Gcontext) {
+    Size screenSize = MediaQuery.of(context).size;
     return Container(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -256,6 +257,7 @@ class _AddSongsToPlaylistState extends State<AddSongsToPlaylist> {
                 });
                return GenericSongList(
                  songs: _songs ,
+                 screenSize:screenSize,
                  contextMenuOptions:(song){
 
                    int numberOfSOngsInAlbum = musicService.albums$.value.firstWhere((album){

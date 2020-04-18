@@ -39,6 +39,7 @@ class _EditPlaylistState extends State<EditPlaylist> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -168,6 +169,7 @@ class _EditPlaylistState extends State<EditPlaylist> {
                                         return MyCard(
                                           song: widget.playlist.songs[index],
                                           choices: editPlaylistSongCardContextMenulist,
+                                          ScreenSize: screenSize,
                                           onContextSelect: (choice){
                                             switch(choice.id){
                                               case 1:{

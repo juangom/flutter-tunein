@@ -22,9 +22,10 @@ class GenericSongList extends StatelessWidget {
   void Function(ContextMenuOptions,Tune) onContextOptionSelect;
   void Function(Tune,PlayerState,bool) onSongCardTap;
   final musicService = locator<MusicService>();
+  final Size screenSize;
+  final double staticOffsetFromBottom;
 
-
-  GenericSongList({this.bgColor, controller, this.songs, this.contextMenuOptions, this.onContextOptionSelect, this.onSongCardTap}){
+  GenericSongList({this.bgColor, controller, this.songs, this.contextMenuOptions, this.onContextOptionSelect, this.onSongCardTap, this.screenSize, this.staticOffsetFromBottom}){
     if(controller!=null){
       this.controller=controller;
     }else{
@@ -75,6 +76,8 @@ class GenericSongList extends StatelessWidget {
 
                           return MyCard(
                             song: songs[newIndex],
+                            ScreenSize: screenSize,
+                            StaticContextMenuFromBottom: staticOffsetFromBottom,
                             choices: contextMenuOptions(songs[newIndex]),
                             onContextSelect: (choice){
                               onContextOptionSelect!=null?onContextOptionSelect(choice,songs[newIndex]):null;

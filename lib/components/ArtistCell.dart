@@ -40,11 +40,24 @@ class ArtistGridCell extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
-                artist.coverArt == null ? Image.asset("images/artist.jpg",height: imageHeight+2, width: double.infinity, fit: BoxFit.cover) : Image(
+                /*artist.coverArt == null ? Image.asset("images/artist.jpg",height: imageHeight+2, width: double.infinity, fit: BoxFit.cover) : Image(
                   image: FileImage(File(artist.coverArt)),
                   fit: BoxFit.fill,
                   height: imageHeight+2,
                   colorBlendMode: BlendMode.darken,
+                ),*/
+                FadeInImage(
+                  placeholder: AssetImage('images/artist.jpg'),
+                  fadeInDuration: Duration(milliseconds: 200),
+                  fadeOutDuration: Duration(milliseconds: 100),
+                  height: imageHeight+2,
+                  repeat: ImageRepeat.noRepeat,
+                  fit: artist.coverArt != null?BoxFit.fill:BoxFit.cover,
+                  image: artist.coverArt != null
+                      ? FileImage(
+                    new File(artist.coverArt),
+                  )
+                      : AssetImage('images/artist.jpg'),
                 ),
                 Expanded(
                   child: Container(

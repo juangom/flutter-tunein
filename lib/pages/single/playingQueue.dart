@@ -56,7 +56,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     final screensize = MediaQuery.of(context).size;
-
+    Timer currentDelayedAnimate;
     double getSongPosition(int indexOfThePlayingSong,double numberOfSongsPerScreen){
       double finalNumber =((((indexOfThePlayingSong)/numberOfSongsPerScreen) - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor()));
       if(finalNumber.abs() <numberOfSongsPerScreen/2){
@@ -86,11 +86,12 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
       double numberOfSongsPerScreen =((screensize.height-160)/62);
       scrollAnimationListener = musicService.playerState$.listen((MapEntry<PlayerState, Tune> value) async{
         void delayedAction(){
-          Future.delayed(Duration(milliseconds: 80),() async{
-            if(value!=null && songs!=null){
-              int indexOfThePlayingSong =songs.indexOf(value.value);
-              if(indexOfThePlayingSong>0)
-                /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
+          if(currentDelayedAnimate==null){
+            currentDelayedAnimate = Timer(Duration(milliseconds: 80),() async{
+              if(value!=null && songs!=null){
+                int indexOfThePlayingSong =songs.indexOf(value.value);
+                if(indexOfThePlayingSong>0)
+                  /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
           print(" the ideal position would be equal to the desired pool and a portion of the next pool so that the final position to scroll to would be determined by creating a virtual pool between the previous"
               "pool and the next one in order to put the desired song in the middle of the screen this will be done by finding out the difference between the position of the song in the pool and "
@@ -101,18 +102,23 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
 
-                 {
-                   bool didanimate = await animate(indexOfThePlayingSong,numberOfSongsPerScreen);
-                   if(didanimate==true){
-                     return;
-                   }else{
-                     delayedAction();
-                   }
-                 }
-            }else{
+                {
+                  bool didanimate = await animate(indexOfThePlayingSong,numberOfSongsPerScreen);
+                  if(didanimate==true){
+                    currentDelayedAnimate?.cancel();
+                    currentDelayedAnimate=null;
+                    return;
 
-            }
-          });
+                  }else{
+                    delayedAction();
+                  }
+                }
+              }else{
+
+              }
+            });
+          }
+
         }
         delayedAction();
       });
@@ -195,7 +201,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                   flex: 7,
                                   child: Container(
                                     margin: EdgeInsets.all(8).subtract(EdgeInsets.only(left: 8))
-                                        .add(EdgeInsets.only(top: (_currentSong.title != null && _currentSong.title.length>20)?_currentSong.title.length/13:10)),
+                                        .add(EdgeInsets.only(top: (_currentSong.title != null && _currentSong.title.length>27)?_currentSong.title.length/(_currentSong.title.length-12):10)),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.start,
@@ -322,6 +328,8 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                       int newIndex = index;
                                       return MyCard(
                                         choices: songCardContextMenulist,
+                                        ScreenSize: screensize,
+                                        StaticContextMenuFromBottom: 0.0,
                                         onContextSelect: (choice){
                                           switch(choice.id){
                                             case 1: {
