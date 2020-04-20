@@ -325,6 +325,7 @@ class Artist {
   String name;
   String coverArt;
   List<Album> albums=[];
+  List<int> colors=List<int>();
   Map<String,String> apiData=Map<String,String>();
   Artist(this.id, this.name, this.coverArt);
 
@@ -338,6 +339,11 @@ class Artist {
     });
     albums=albumsList;
     apiData=Map<String, String>.from(m["apiData"]);
+    List<int> colorList =[];
+    (m["colors"] as List).forEach((colorElem){
+      colorList.add(int.tryParse(colorElem.toString()));
+    });
+    colors=colorList;
   }
 
 
@@ -354,6 +360,7 @@ class Artist {
     _map["albums"] = newAlbumsMap;
     _map["apiData"] = artist.apiData;
     _map["coverArt"] = artist.coverArt;
+    _map["colors"] = artist.colors;
     return _map;
   }
 

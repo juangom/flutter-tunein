@@ -42,6 +42,8 @@ dependencies:
       url: https://github.com/rmawatson/flutter_isolate.git
   dio: ^3.0.9
   dio_flutter_transformer: ^3.0.2
+  morpheus: ^1.2.2+1
+  animations: ^1.0.0+5
 dev_dependencies:
   flutter_test:
     sdk: flutter

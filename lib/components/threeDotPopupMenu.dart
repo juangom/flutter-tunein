@@ -18,41 +18,38 @@ class ThreeDotPopupMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-        flex: 2,
-        child: Container(
-          padding: EdgeInsets.all(4),
-          child: GestureDetector(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                splashColor: MyTheme.darkgrey,
-                radius: 30.0,
-                child: Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child:Icon(
-                      IconData(0xea7c, fontFamily: 'boxicons'),
-                      size: 22,
-                      color: IconColor!=null?IconColor:Colors.white70,
-                    )
-                ),
-              ),
+    return Container(
+      padding: EdgeInsets.all(4),
+      child: GestureDetector(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            splashColor: MyTheme.darkgrey,
+            radius: 30.0,
+            child: Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child:Icon(
+                  IconData(0xea7c, fontFamily: 'boxicons'),
+                  size: 22,
+                  color: IconColor!=null?IconColor:Colors.white70,
+                )
             ),
-            onTapDown: (details){
-              List itemList = choices.map((ContextMenuOptions choice) {
-                return PopupMenuItem<ContextMenuOptions>(
-                  value: choice,
-                  child: Text(choice.title),
-                );
-              }).toList();
-              double YToSubstract = 0.0;
-              if(details.globalPosition.dy >screenSize.height - 230){
-                YToSubstract= max(0.0, details.globalPosition.dy - (screenSize.height - choices.length*30 - (staticOffsetFromBottom!=null?staticOffsetFromBottom:160)));
-              }
-              showPopMenu(context,itemList,Buttonoffset:details.globalPosition, ExtraOffset: Offset(-0,-YToSubstract) );
-            },
           ),
-        )
+        ),
+        onTapDown: (details){
+          List itemList = choices.map((ContextMenuOptions choice) {
+            return PopupMenuItem<ContextMenuOptions>(
+              value: choice,
+              child: Text(choice.title),
+            );
+          }).toList();
+          double YToSubstract = 0.0;
+          if(details.globalPosition.dy >screenSize.height - 230){
+            YToSubstract= max(0.0, details.globalPosition.dy - (screenSize.height - choices.length*30 - (staticOffsetFromBottom!=null?staticOffsetFromBottom:160)));
+          }
+          showPopMenu(context,itemList,Buttonoffset:details.globalPosition, ExtraOffset: Offset(-0,-YToSubstract) );
+        },
+      ),
     );
   }
 
@@ -60,12 +57,12 @@ class ThreeDotPopupMenu extends StatelessWidget {
   void showPopMenu(context, List items,{@required Offset Buttonoffset, Offset ExtraOffset} ) async {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject();
     RenderBox box = context.findRenderObject();
-    RelativeRect position =  RelativeRect.fromRect(
+    RelativeRect position =  RelativeRect.fromSize(
       Rect.fromPoints(
-        box.localToGlobal(Offset(Buttonoffset.dx+(ExtraOffset!=null?ExtraOffset.dx:0.0),0.0+(ExtraOffset!=null?ExtraOffset.dy:0.0)), ancestor: overlay),
-        box.localToGlobal(box.size.centerRight(Buttonoffset), ancestor: overlay),
+        Offset(Buttonoffset.dx+(ExtraOffset!=null?ExtraOffset.dx:0.0),Buttonoffset.dy+(ExtraOffset!=null?ExtraOffset.dy:0.0)),
+        Offset(Buttonoffset.dx,Buttonoffset.dy),
       ),
-      Offset.zero & overlay.size,
+      overlay.size,
     );
     ContextMenuOptions Choice = await showMenu<ContextMenuOptions>(context: context, position: position, items: items);
     if(Choice !=null){

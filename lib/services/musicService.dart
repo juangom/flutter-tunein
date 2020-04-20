@@ -567,6 +567,8 @@ class MusicService {
                   //If the settings are changed after the queu is started this condition would account for that
                   if(SettingsService.settings$.value[SettingsIds.SET_ARTIST_THUMB_UPDATE]=="true"){
                     Artist artist = await artistThumbRetreival(elem);
+                    List<int> colors = await themeService.getArtistColors(artist);
+                    elem.colors=colors;
                     _artists$.add(artists);
                     await saveArtists();
                   }else{
