@@ -6,11 +6,13 @@ import 'package:Tunein/components/albumSongList.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
 import 'package:Tunein/globals.dart';
+import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:Tunein/components/ArtistCell.dart';
@@ -175,20 +177,72 @@ class SingleArtistPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text(
-                                      (artist.name == null)
-                                          ? "Unknon Artist"
-                                          : artist.name,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      style: TextStyle(
-                                        fontSize: 17.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white,
+                                  Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8),
+                                        child: Text(
+                                          (artist.name == null)
+                                              ? "Unknon Artist"
+                                              : artist.name,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          style: TextStyle(
+                                            fontSize: 17.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      Material(
+                                        child: PopupMenuButton<ContextMenuOptions>(
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              splashColor: MyTheme.darkgrey,
+                                              radius: 30.0,
+                                              child: Padding(
+                                                  padding: const EdgeInsets.only(right: 10.0),
+                                                  child:Icon(
+                                                    IconData(0xea7c, fontFamily: 'boxicons'),
+                                                    size: 22,
+                                                    color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white70,
+                                                  )
+                                              ),
+                                            ),
+                                          ),
+                                          elevation: 3.2,
+                                          onCanceled: () {
+                                            print('You have not chosen anything');
+                                          },
+                                          tooltip: 'Playing options',
+                                          onSelected: (ContextMenuOptions choice){
+                                            switch(choice.id){
+                                              case 1: {
+                                                musicService.playAllArtistAlbums(artist);
+                                                break;
+                                              }
+                                              case 2:{
+                                                musicService.suffleAllArtistAlbums(artist);
+                                                break;
+                                              }
+                                            }
+                                          },
+                                          itemBuilder: (BuildContext context) {
+                                            return artistCardContextMenulist.map((ContextMenuOptions choice) {
+                                              return PopupMenuItem<ContextMenuOptions>(
+                                                value: choice,
+                                                child: Text(choice.title),
+                                              );
+                                            }).toList();
+                                          },
+                                        ),
+                                        color: Colors.transparent,
+                                      )
+                                    ],
+
                                   ),
                                   Text(
                                     (artist.albums.length == 0)
