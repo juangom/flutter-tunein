@@ -74,6 +74,9 @@ class MusicService {
 
   Future<void> fetchSongs() async {
     var data = await _nano.fetchSongs();
+    data.forEach((elem) async{
+      elem.colors =  await themeService.getThemeColors(elem);
+    });
     _songs$.add(data);
   }
 
@@ -410,7 +413,6 @@ class MusicService {
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
     int _index = _playlist.indexWhere((elem){
-      print("elem id : ${elem.id}  current song id : ${_currentSong.id}");
       return elem.id==_currentSong.id;
     });
     int nextSongIndex = _index + 1;

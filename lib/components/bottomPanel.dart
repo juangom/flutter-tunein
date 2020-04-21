@@ -44,30 +44,15 @@ class BottomPanel extends StatelessWidget {
         final PlayerState _state = snapshot.data.key;
         final String _artists = getArtists(_currentSong);
 
-        return StreamBuilder<List<int>>(
-            stream: themeService.color$,
-            builder: (context, AsyncSnapshot<List<int>> snapshot) {
-              if (!snapshot.hasData) {
-                return Container(
-                  color: MyTheme.bgBottomBar,
-                  height: double.infinity,
-                  width: double.infinity,
-                  alignment: Alignment.bottomCenter,
-                );
-              }
-
-              final List<int> colors = snapshot.data;
-
-              return AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.decelerate,
-                  color: Color(colors[0]),
-                  height: double.infinity,
-                  width: double.infinity,
-                  alignment: Alignment.bottomCenter,
-                  child: getBottomPanelLayout(
-                      _state, _currentSong, _artists, colors));
-            });
+        return AnimatedContainer(
+            duration: Duration(milliseconds: 500),
+            curve: Curves.decelerate,
+            color: Color(_currentSong.colors[0]),
+            height: double.infinity,
+            width: double.infinity,
+            alignment: Alignment.bottomCenter,
+            child: getBottomPanelLayout(
+                _state, _currentSong, _artists, _currentSong.colors));
       },
     );
   }
@@ -181,7 +166,7 @@ class BottomPanel extends StatelessWidget {
                               color: Color(colors[1]).withOpacity(.7),
                             ),
                           ),
-                        ),
+                        )
                       ],
                     )
                   ],
@@ -231,11 +216,11 @@ class BottomPanel extends StatelessWidget {
 }
 
 class PlayPauseButtonWidget extends StatefulWidget {
-  PlayerState _state;
-  List<int> colors;
+  final PlayerState _state;
+  final List<int> colors;
 
 
-  PlayPauseButtonWidget(this._state, this.colors);
+  const PlayPauseButtonWidget(this._state, this.colors);
 
   @override
   _PlayPauseButtonState createState() => _PlayPauseButtonState();

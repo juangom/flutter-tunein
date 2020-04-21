@@ -44,6 +44,7 @@ dependencies:
   dio_flutter_transformer: ^3.0.2
   morpheus: ^1.2.2+1
   animations: ^1.0.0+5
+  connectivity: ^0.4.8+2
 dev_dependencies:
   flutter_test:
     sdk: flutter
