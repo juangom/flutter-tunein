@@ -159,6 +159,7 @@ class _TracksPageState extends State<TracksPage>
                               },
                               song: _songs[newIndex],
                               onTap: (){
+                                print(_songs[newIndex].colors);
                                 musicService.updatePlaylist(_songs);
                                 musicService.playOrPause(_songs[newIndex]);
                               },

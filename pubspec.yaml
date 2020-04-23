@@ -45,6 +45,8 @@ dependencies:
   morpheus: ^1.2.2+1
   animations: ^1.0.0+5
   connectivity: ^0.4.8+2
+  badges: ^1.1.1
+  popup_menu: ^1.0.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

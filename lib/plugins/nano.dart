@@ -256,7 +256,11 @@ class Tune {
     uri = m["uri"];
     albumArt = m["albumArt"];
     numberInAlbum = m["numberInAlbum"];
-    colors = m["colors"].cast<int>();
+    List<int> colorList =[];
+    (m["colors"] as List).forEach((colorElem){
+      colorList.add(int.tryParse(colorElem.toString()));
+    });
+    colors = colorList;
   }
 
   Map toMap(){

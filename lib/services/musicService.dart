@@ -32,6 +32,9 @@ final SettingsService = locator<settingService>();
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
   BehaviorSubject<List<Playlist>> _playlists$;
+  BehaviorSubject<MapEntry<PlayerState,Playlist>> _currentPlayingPlaylist$;
+
+
   BehaviorSubject<List<Album>> _albums$;
   BehaviorSubject<List<Artist>> _artists$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$;
@@ -62,6 +65,9 @@ class MusicService {
 
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>> get playlist$ => _playlist$;
   BehaviorSubject<List<Playlist>> get playlists$ => _playlists$;
+  BehaviorSubject<
+      MapEntry<PlayerState, Playlist>> get currentPlayingPlaylist$ =>
+      _currentPlayingPlaylist$;
 
   StreamSubscription _audioPositionSub;
   StreamSubscription _audioStateChangeSub;
@@ -74,9 +80,10 @@ class MusicService {
 
   Future<void> fetchSongs() async {
     var data = await _nano.fetchSongs();
-    data.forEach((elem) async{
-      elem.colors =  await themeService.getThemeColors(elem);
-    });
+    for(int i = 0; i < data.length; i++) {
+      data[i].colors = await themeService.getThemeColors(data[i]);
+      print(data[i].colors);
+    }
     _songs$.add(data);
   }
 
@@ -228,16 +235,28 @@ class MusicService {
 
   void playMusic(Tune song) async {
     _audioPlayer.play(song.uri);
+    if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
+      return elem.id==song.id;
+    })==-1){
+      updatePlaylistState(PlayerState.stopped, null);
+    }
     updatePlayerState(PlayerState.playing, song);
+
   }
 
   void pauseMusic(Tune song) async {
     _audioPlayer.pause();
+    if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
+      return elem.id==song.id;
+    })==-1){
+      updatePlaylistState(PlayerState.stopped, null);
+    }
     updatePlayerState(PlayerState.paused, song);
   }
 
   void stopMusic() {
     _audioPlayer.stop();
+    updatePlaylistState(PlayerState.stopped, null);
   }
 
   //This was introduced to eliminate useless subscriptions to the playerState stream
@@ -296,6 +315,10 @@ class MusicService {
     List<Tune> _shufflePlaylist = []..addAll(normalPlaylist);
     _shufflePlaylist.shuffle();
     _playlist$.add(MapEntry(normalPlaylist, _shufflePlaylist));
+  }
+
+  void updatePlaylistState(PlayerState state, Playlist playlist){
+    _currentPlayingPlaylist$.add(MapEntry(state,playlist));
   }
 
   void playNextSong() {
@@ -807,6 +830,7 @@ class MusicService {
     _position$ = BehaviorSubject<Duration>();
     _playlist$ = BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>();
     _playlists$ = BehaviorSubject<List<Playlist>>();
+    _currentPlayingPlaylist$ = BehaviorSubject<MapEntry<PlayerState, Playlist>>.seeded(MapEntry(PlayerState.stopped,null));
     _playback$ = BehaviorSubject<List<Playback>>.seeded([]);
     _favorites$ = BehaviorSubject<List<Tune>>.seeded([]);
     _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
@@ -889,6 +913,7 @@ class MusicService {
     _playerState$.close();
     _playlist$.close();
     _playlists$.close();
+    _currentPlayingPlaylist$.close();
     _position$.close();
     _playback$.close();
     _favorites$.close();

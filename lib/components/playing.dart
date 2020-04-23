@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:Tunein/pages/single/singlePlaylistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
@@ -16,6 +17,8 @@ import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'controlls.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/pages/single/playingQueue.dart';
+import 'package:badges/badges.dart';
+import 'package:popup_menu/popup_menu.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   PageController controller;
@@ -151,7 +154,7 @@ class _PlayingPageState extends State<PlayingPage>
           );
         }
         widget.getTuneWhenReady.add(_currentSong);
-
+        MapEntry<PlayerState, Playlist> currentPlaylist = musicService.currentPlayingPlaylist$.value;
         return Scaffold(
             body: StreamBuilder<List<int>>(
                 stream: themeService.color$.distinct(),
@@ -162,13 +165,14 @@ class _PlayingPageState extends State<PlayingPage>
                   final List<int> colors = snapshot.data;
                   return Stack(
                     children: <Widget>[
+
                       AnimatedContainer(
                         padding: MediaQuery.of(context).padding,
                         duration: Duration(milliseconds: 500),
                         curve: Curves.decelerate,
                         color: Color(colors[0]),
                         child: getPlayinglayout(
-                            _currentSong, colors, _screenHeight, _isFavorited, _state),
+                            _currentSong, colors, _screenHeight, _isFavorited, _state, currentPlaylist, context),
                       ),
                       Positioned(
                           right: 3,
@@ -225,7 +229,7 @@ class _PlayingPageState extends State<PlayingPage>
                               ),
                             ),
                           )
-                      )
+                      ),
                     ],
                   );
                 }));
@@ -248,13 +252,107 @@ class _PlayingPageState extends State<PlayingPage>
   }
 
   getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
-      bool _isFavorited, PlayerState state) {
+      bool _isFavorited, PlayerState state, MapEntry<PlayerState, Playlist> currentPlaylist, context) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
+
     if (_currentSong == null || songs == null) {
       return Container(
         height: _screenHeight,
       );
     }
+    Key widgetKey = GlobalKey();
+    PopupMenu menu = PopupMenu(
+        backgroundColor: MyTheme.darkRed,
+        lineColor: Colors.transparent,
+        maxColumn: 2,
+        context: context,
+        items: [
+          MenuItem(
+              title: 'Album',
+              textStyle: TextStyle(
+                fontSize: 10.0,
+                color:  Color(colors[1])
+              ),
+              image: Icon(
+                Icons.album,
+                size: 30,
+                color: Color(colors[1]).withOpacity(.9),
+              )
+          ),
+          MenuItem(
+              title: 'Playlist',
+              textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[1])),
+              image: Icon(
+                Icons.playlist_add_check,
+                size: 30,
+                color: Color(colors[1]).withOpacity(.9),
+              )
+          ),
+        ],
+        onClickMenu: (provider){
+          print("provider got is : ${provider}");
+          switch(provider.menuTitle){
+            case "Album":{
+              gotoFullAlbumPage(context, _currentSong);
+              break;
+            }
+            case "Playlist":{
+              gotoFullPlaylistPage(context, currentPlaylist.value);
+              break;
+            }
+            default:{
+              break;
+            }
+
+          }
+        },
+        onDismiss: (){
+          print("dismissed");
+        });
+    Widget AlbumButton = InkWell(
+      radius: 90.0,
+      child: currentPlaylist.value!=null?Badge(
+        key: widgetKey,
+        child: Icon(
+          Icons.album,
+          size: 30,
+          color: Color(colors[1]).withOpacity(.7),
+        ),
+        badgeContent: Center(
+          child: Text("*",
+            strutStyle: StrutStyle(
+                height: 1.5,
+                forceStrutHeight: true
+            ),
+            style: TextStyle(
+                fontSize: 15.0,
+                fontWeight: FontWeight.w800
+            ),
+
+          ),
+        ),
+        padding: EdgeInsets.all(3),
+        position: BadgePosition.topRight(
+            top: -9,
+            right: -4
+        ),
+        badgeColor: MyTheme.darkRed,
+      ):Icon(
+        Icons.album,
+        size: 30,
+        color: Color(colors[1]).withOpacity(.7),
+      ),
+      onTap: () {
+        if(currentPlaylist.value==null){
+          gotoFullAlbumPage(context, _currentSong);
+        }else{
+          print("gona launch");
+          menu.show(widgetKey: widgetKey);
+        }
+
+      },
+
+    );
 
     String image = songs.value.albumArt;
     String image2 = songs.key.albumArt;
@@ -291,7 +389,9 @@ class _PlayingPageState extends State<PlayingPage>
               child: _currentSong.albumArt == null
                   ? Image.asset("images/cover.png")
                   : Image.file(File(_currentSong.albumArt)),
-            )),
+            )
+        ),
+
         Expanded(
           child: Container(
             decoration: BoxDecoration(
@@ -358,17 +458,7 @@ class _PlayingPageState extends State<PlayingPage>
                       ),
                     ),
                     Padding(
-                      child: InkWell(
-                        radius: 90.0,
-                        child: Icon(
-                          Icons.album,
-                          size: 30,
-                          color: Color(colors[1]).withOpacity(.7),
-                        ),
-                        onTap: () {
-                          gotoFullAlbumPage(context, _currentSong);
-                        },
-                      ),
+                      child: AlbumButton,
                       padding: EdgeInsets.symmetric(horizontal: 20),
                     ),
                   ],
@@ -388,6 +478,16 @@ class _PlayingPageState extends State<PlayingPage>
     //MyUtils.createDelayedPageroute(context, SingleAlbumPage(song),this.widget);
     layoutService.albumPlayerPageController
         .nextPage(duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+  }
+
+  gotoFullPlaylistPage(context, Playlist playlist) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SinglePlaylistPage(
+          playlist: playlist,
+        ),
+      ),
+    );
   }
 }
 
