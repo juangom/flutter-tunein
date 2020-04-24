@@ -127,8 +127,6 @@ class _PlayingPageState extends State<PlayingPage>
   Widget build(BuildContext context) {
     final _screenHeight = MediaQuery.of(context).size.height;
 
-
-
     return StreamBuilder<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>(
       stream: newStream,
       builder: (BuildContext context,
@@ -155,84 +153,298 @@ class _PlayingPageState extends State<PlayingPage>
         }
         widget.getTuneWhenReady.add(_currentSong);
         MapEntry<PlayerState, Playlist> currentPlaylist = musicService.currentPlayingPlaylist$.value;
-        return Scaffold(
-            body: StreamBuilder<List<int>>(
-                stream: themeService.color$.distinct(),
-                builder: (context, AsyncSnapshot<List<int>> snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  final List<int> colors = snapshot.data;
-                  return Stack(
-                    children: <Widget>[
+        final List<int> colors = _currentSong.colors;
+        MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
 
-                      AnimatedContainer(
-                        padding: MediaQuery.of(context).padding,
-                        duration: Duration(milliseconds: 500),
-                        curve: Curves.decelerate,
-                        color: Color(colors[0]),
-                        child: getPlayinglayout(
-                            _currentSong, colors, _screenHeight, _isFavorited, _state, currentPlaylist, context),
+        if (_currentSong == null || songs == null) {
+          return Container(
+            height: _screenHeight,
+          );
+        }
+        //Album/Playlist menu
+
+        Key widgetKey = GlobalKey();
+        PopupMenu menu = PopupMenu(
+            backgroundColor: MyTheme.darkRed,
+            lineColor: Colors.transparent,
+            maxColumn: 2,
+            context: context,
+            items: [
+              MenuItem(
+                  title: 'Album',
+                  textStyle: TextStyle(
+                      fontSize: 10.0,
+                      color:  Color(colors[1])
+                  ),
+                  image: Icon(
+                    Icons.album,
+                    size: 30,
+                    color: Color(colors[1]).withOpacity(.9),
+                  )
+              ),
+              MenuItem(
+                  title: 'Playlist',
+                  textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[1])),
+                  image: Icon(
+                    Icons.playlist_add_check,
+                    size: 30,
+                    color: Color(colors[1]).withOpacity(.9),
+                  )
+              ),
+            ],
+            onClickMenu: (provider){
+              print("provider got is : ${provider}");
+              switch(provider.menuTitle){
+                case "Album":{
+                  gotoFullAlbumPage(context, _currentSong);
+                  break;
+                }
+                case "Playlist":{
+                  gotoFullPlaylistPage(context, currentPlaylist.value);
+                  break;
+                }
+                default:{
+                  break;
+                }
+
+              }
+            },
+            onDismiss: (){
+              print("dismissed");
+            });
+        Widget AlbumButton = InkWell(
+          radius: 90.0,
+          child: currentPlaylist.value!=null?Badge(
+            key: widgetKey,
+            child: Icon(
+              Icons.album,
+              size: 30,
+              color: Color(colors[1]).withOpacity(.7),
+            ),
+            badgeContent: Center(
+              child: Text("*",
+                strutStyle: StrutStyle(
+                    height: 1.5,
+                    forceStrutHeight: true
+                ),
+                style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w800
+                ),
+
+              ),
+            ),
+            padding: EdgeInsets.all(3),
+            position: BadgePosition.topRight(
+                top: -9,
+                right: -4
+            ),
+            badgeColor: MyTheme.darkRed,
+          ):Icon(
+            Icons.album,
+            size: 30,
+            color: Color(colors[1]).withOpacity(.7),
+          ),
+          onTap: () {
+            if(currentPlaylist.value==null){
+              gotoFullAlbumPage(context, _currentSong);
+            }else{
+              print("gona launch");
+              menu.show(widgetKey: widgetKey);
+            }
+
+          },
+
+        );
+
+        //Next and Previous songs
+
+        String image = songs.value.albumArt;
+        String image2 = songs.key.albumArt;
+
+        return Scaffold(
+            body: Stack(
+              children: <Widget>[
+                AnimatedContainer(
+                  padding: MediaQuery.of(context).padding,
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.decelerate,
+                  color: Color(colors[0]),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Container(
+                          height: _screenHeight,
+                          constraints: BoxConstraints(
+                              maxHeight: _screenHeight / 2, minHeight: _screenHeight / 2),
+                          padding: const EdgeInsets.all(10),
+                          child: Dismissible(
+                            key: UniqueKey(),
+                            background: image == null
+                                ? Image.asset("images/cover.png")
+                                : Image.file(File(image)),
+                            secondaryBackground: image2 == null
+                                ? Image.asset("images/cover.png")
+                                : Image.file(File(image2)),
+                            movementDuration: Duration(milliseconds: 500),
+                            resizeDuration: Duration(milliseconds: 2),
+                            dismissThresholds: const {
+                              DismissDirection.endToStart: 0.3,
+                              DismissDirection.startToEnd: 0.3
+                            },
+                            direction: DismissDirection.horizontal,
+                            onDismissed: (DismissDirection direction) {
+                              if (direction == DismissDirection.startToEnd) {
+                                musicService.playPreviousSong();
+                              } else {
+                                musicService.playNextSong();
+                              }
+                            },
+                            child: _currentSong.albumArt == null
+                                ? Image.asset("images/cover.png")
+                                : Image.file(File(_currentSong.albumArt)),
+                          )
                       ),
-                      Positioned(
-                          right: 3,
-                          top: (_screenHeight / 2)-40,
-                          child: Container(
-                            child:
-                            RotatedBox(
-                              quarterTurns: -1,
-                              child: Column(
+
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              new BoxShadow(
+                                  color: Color(colors[0]),
+                                  blurRadius: 50,
+                                  spreadRadius: 50,
+                                  offset: new Offset(0, -20)),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                  Text("Album songs",
-                                      style: TextStyle(
-                                          color: Color(colors[1]).withOpacity(0.4),
-                                          fontSize: 12.5)
+                                  Padding(
+                                    child: InkWell(
+                                      child: Icon(
+                                        _isFavorited ? Icons.favorite : Icons.favorite_border,
+                                        color: new Color(colors[1]).withOpacity(.7),
+                                        size: 30,
+                                      ),
+                                      onTap: () {
+                                        if (_isFavorited) {
+                                          musicService.removeFromFavorites(_currentSong);
+                                        } else {
+                                          musicService.addToFavorites(_currentSong);
+                                        }
+                                      },
+                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: 20),
                                   ),
-                                  Container(
-                                    constraints: BoxConstraints.tightFor(height: 4.0),
-                                    margin: EdgeInsets.only(top: 1),
-                                    width: 80,
-                                    decoration: BoxDecoration(
-                                        color: Color(colors[1]),
-                                        borderRadius:
-                                        BorderRadius.circular(9.5708)),
+                                  Expanded(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Text(
+                                          _currentSong.title,
+                                          maxLines: 1,
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Color(colors[1]).withOpacity(.7),
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 10),
+                                          child: Text(
+                                            MyUtils.getArtists(_currentSong.artist),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Color(colors[1]).withOpacity(.7),
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    child: AlbumButton,
+                                    padding: EdgeInsets.symmetric(horizontal: 20),
                                   ),
                                 ],
                               ),
-                            ),
-                          )
-                      ),
-                      Positioned(
-                          left: 3,
-                          top: (_screenHeight / 2)-40,
-                          child: Container(
-                            child:
-                            RotatedBox(
-                              quarterTurns: 1,
-                              child: Column(
-                                children: <Widget>[
-                                  Text("Playing queue",
-                                      style: TextStyle(
-                                          color: Color(colors[1]).withOpacity(0.4),
-                                          fontSize: 12.5)
-                                  ),
-                                  Container(
-                                    constraints: BoxConstraints.tightFor(height: 4.0),
-                                    margin: EdgeInsets.only(top: 1),
-                                    width: 80,
-                                    decoration: BoxDecoration(
-                                        color: Color(colors[1]),
-                                        borderRadius:
-                                        BorderRadius.circular(9.5708)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
+                              NowPlayingSlider(colors),
+                              MusicBoardControls(colors, state: _state, currentSong: _currentSong),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                  );
-                }));
+                  ),
+                ),
+                Positioned(
+                    right: 3,
+                    top: (_screenHeight / 2)-40,
+                    child: Container(
+                      child:
+                      RotatedBox(
+                        quarterTurns: -1,
+                        child: Column(
+                          children: <Widget>[
+                            Text("Album songs",
+                                style: TextStyle(
+                                    color: Color(colors[1]).withOpacity(0.4),
+                                    fontSize: 12.5)
+                            ),
+                            Container(
+                              constraints: BoxConstraints.tightFor(height: 4.0),
+                              margin: EdgeInsets.only(top: 1),
+                              width: 80,
+                              decoration: BoxDecoration(
+                                  color: Color(colors[1]),
+                                  borderRadius:
+                                  BorderRadius.circular(9.5708)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                ),
+                Positioned(
+                    left: 3,
+                    top: (_screenHeight / 2)-40,
+                    child: Container(
+                      child:
+                      RotatedBox(
+                        quarterTurns: 1,
+                        child: Column(
+                          children: <Widget>[
+                            Text("Playing queue",
+                                style: TextStyle(
+                                    color: Color(colors[1]).withOpacity(0.4),
+                                    fontSize: 12.5)
+                            ),
+                            Container(
+                              constraints: BoxConstraints.tightFor(height: 4.0),
+                              margin: EdgeInsets.only(top: 1),
+                              width: 80,
+                              decoration: BoxDecoration(
+                                  color: Color(colors[1]),
+                                  borderRadius:
+                                  BorderRadius.circular(9.5708)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                ),
+              ],
+            )
+        );
       },
     );
   }
@@ -251,6 +463,8 @@ class _PlayingPageState extends State<PlayingPage>
     }
   }
 
+  //Returns the entire Player page widget
+  //deprecated
   getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
       bool _isFavorited, PlayerState state, MapEntry<PlayerState, Playlist> currentPlaylist, context) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
@@ -260,6 +474,8 @@ class _PlayingPageState extends State<PlayingPage>
         height: _screenHeight,
       );
     }
+    //Album/Playlist menu
+
     Key widgetKey = GlobalKey();
     PopupMenu menu = PopupMenu(
         backgroundColor: MyTheme.darkRed,
@@ -354,8 +570,12 @@ class _PlayingPageState extends State<PlayingPage>
 
     );
 
+    //Next and Previous songs
+
     String image = songs.value.albumArt;
     String image2 = songs.key.albumArt;
+
+    //Actual Widget
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
@@ -472,6 +692,7 @@ class _PlayingPageState extends State<PlayingPage>
       ],
     );
   }
+
 
   gotoFullAlbumPage(context, Tune song) {
     ///opens an other page, Deprecated in favor of a pageView slide

@@ -303,8 +303,10 @@ class MusicService {
     MusicServiceIsolate.sendCrossIsolateMessage(newMessage).then((data){
       print(data);
     });*/
-    _playerState$.add(MapEntry(state, song));
-    themeService.updateTheme(song);
+    if(!(_playerState$.value.key== state && playerState$.value.value.id == song.id)){
+      _playerState$.add(MapEntry(state, song));
+      themeService.updateTheme(song);
+    }
   }
 
   void updatePosition(Duration duration) {

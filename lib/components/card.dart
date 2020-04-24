@@ -32,22 +32,35 @@ class MyCard extends StatelessWidget {
 
   Widget previousInstance;
   PlayerState previousState;
+  MapEntry<PlayerState, Tune> previousStreamEntry;
   @override
   Widget build(BuildContext context) {
     Stream<MapEntry<PlayerState,Tune>> newStream = musicService.playerState$;
-    newStream= newStream.distinct((previous, next){
-      print("${(previous.value.id == next.value.id) && (previous.key!=next.key)}");
-      if((previous.value.id == next.value.id) && (previous.key!=next.key)){
+    newStream= newStream.where((item){
+      if(previousStreamEntry==null){
+        previousStreamEntry= item;
         return true;
       }else{
-        return false;
+       /* print("${(previousStreamEntry.value.id == item.value.id) && (previousStreamEntry.key!=item.key)}");
+        print("id difference is : ${(previousStreamEntry.value.id == item.value.id) }");
+        print("previous.key is : ${previousStreamEntry.key}  &&  next.key is : ${item.key}");*/
+        if((previousStreamEntry.value.id == item.value.id) && (previousStreamEntry.key!=item.key)){
+          //no rebuild
+          previousStreamEntry= item;
+          return false;
+        }else{
+          //rebuild
+          previousStreamEntry= item;
+          return true;
+        }
       }
+
     });
     return StreamBuilder(
       stream: newStream,
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot) {
-        print("gona rebuild card");
+        //print("gona rebuild card");
         if (!snapshot.hasData) {
           return Container();
         }
@@ -166,44 +179,11 @@ class MyCard extends StatelessWidget {
                     ),
                     flex: 12,
                   ),
-                  choices!=null?Expanded(
-                    flex: 2,
-                    child: Material(
-                      child: PopupMenuButton<ContextMenuOptions>(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            splashColor: MyTheme.darkgrey,
-                            radius: 30.0,
-                            child: Padding(
-                                padding: const EdgeInsets.only(right: 10.0),
-                                child:Icon(
-                                  IconData(0xea7c, fontFamily: 'boxicons'),
-                                  size: 22,
-                                  color: Colors.white70,
-                                )
-                            ),
-                          ),
-                        ),
-                        elevation: 3.2,
-                        onCanceled: () {
-                          print('You have not chosen anything');
-                        },
-                        tooltip: 'Playing options',
-                        onSelected: (ContextMenuOptions choice){
-                          onContextSelect(choice);
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return choices.map((ContextMenuOptions choice) {
-                            return PopupMenuItem<ContextMenuOptions>(
-                              value: choice,
-                              child: Text(choice.title),
-                            );
-                          }).toList();
-                        },
-                      ),
-                      color: Colors.transparent,
-                    ),
+                  choices!=null?ThreeDotPopupMenu(
+                    choices: choices,
+                    onContextSelect: onContextSelect,
+                    screenSize: ScreenSize,
+                    staticOffsetFromBottom: StaticContextMenuFromBottom,
                   ):Container()
                 ],
               ),
@@ -319,44 +299,11 @@ class MyCard extends StatelessWidget {
                       ),
                       flex: 12,
                     ),
-                    choices!=null?Expanded(
-                      flex: 2,
-                      child: Material(
-                        child: PopupMenuButton<ContextMenuOptions>(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: MyTheme.darkgrey,
-                              radius: 30.0,
-                              child: Padding(
-                                  padding: const EdgeInsets.only(right: 10.0),
-                                  child:Icon(
-                                    IconData(0xea7c, fontFamily: 'boxicons'),
-                                    size: 22,
-                                    color: Colors.white70,
-                                  )
-                              ),
-                            ),
-                          ),
-                          elevation: 3.2,
-                          onCanceled: () {
-                            print('You have not chosen anything');
-                          },
-                          tooltip: 'Playing options',
-                          onSelected: (ContextMenuOptions choice){
-                            onContextSelect(choice);
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return choices.map((ContextMenuOptions choice) {
-                              return PopupMenuItem<ContextMenuOptions>(
-                                value: choice,
-                                child: Text(choice.title),
-                              );
-                            }).toList();
-                          },
-                        ),
-                        color: Colors.transparent,
-                      ),
+                    choices!=null?ThreeDotPopupMenu(
+                      choices: choices,
+                      onContextSelect: onContextSelect,
+                      screenSize: ScreenSize,
+                      staticOffsetFromBottom: StaticContextMenuFromBottom,
                     ):Container()
                   ],
                 ),
