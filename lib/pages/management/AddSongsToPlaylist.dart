@@ -164,148 +164,170 @@ class _AddSongsToPlaylistState extends State<AddSongsToPlaylist> {
   @override
   Widget build(BuildContext Gcontext) {
     Size screenSize = MediaQuery.of(context).size;
-    return Container(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Padding(
-            padding: MediaQuery.of(context).padding,
-          ),
-          Material(
-            child: Container(
-              height: 70,
-              decoration: BoxDecoration(
-                color: Color(0xff0E0E0E),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(.5),
-                    spreadRadius: 10,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  )
-                ],
-              ),
-              child: Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(new List<Tune>(0));
-                      },
-                      iconSize: 18,
-                      icon: Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        autofocus: false,
-                        cursorColor: MyTheme.darkRed,
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                        textAlign: TextAlign.start,
-                        keyboardType: TextInputType.text,
-                        onChanged: (keyword){
-                          print("Keyword is : ${keyword}");
-                          search(keyword);
+    return WillPopScope(
+      onWillPop: () async{
+        if(NumberOfSongsToBeadded>0){
+          bool saving = await Dialog.DialogService.showConfirmDialog(context,
+            title: "Unsaved Changes",
+            message: "You have picked songs to add to your playlist but not to saved them, would you like to save your songs now ?",
+            titleColor: MyTheme.darkRed,
+            messageColor: MyTheme.grey300,
+            cancelButtonText: "Don't save",
+            confirmButtonText: "SAVE & QUIT"
+          );
+          if(saving!=null && saving ==true){
+            Navigator.of(context).pop(returnedSongs);
+
+          }else{
+            Navigator.of(context).pop(new List<Tune>(0));
+          }
+        }else{
+          return true;
+        }
+      },
+      child: Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Padding(
+              padding: MediaQuery.of(context).padding,
+            ),
+            Material(
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Color(0xff0E0E0E),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.5),
+                      spreadRadius: 10,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    )
+                  ],
+                ),
+                child: Padding(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(new List<Tune>(0));
                         },
-                        controller: _TextController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: MyTheme.darkBlack,
-                          hintText: "TRACK, ALBUM, ARTIST",
-                          hintStyle:
-                          TextStyle(color: Colors.white54, fontSize: 18),
-                          border: InputBorder.none,
+                        iconSize: 26,
+                        icon: Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(returnedSongs);
-                      },
-                      iconSize: 22,
-                      splashColor: MyTheme.grey700,
-                      icon: Icon(
-                        NumberOfSongsToBeadded==0? Icons.close : Icons.check,
-                        color: MyTheme.darkRed,
+                      Expanded(
+                        child: TextField(
+                          autofocus: false,
+                          cursorColor: MyTheme.darkRed,
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                          textAlign: TextAlign.start,
+                          keyboardType: TextInputType.text,
+                          onChanged: (keyword){
+                            print("Keyword is : ${keyword}");
+                            search(keyword);
+                          },
+                          controller: _TextController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: MyTheme.darkBlack,
+                            hintText: "TRACK, ALBUM, ARTIST",
+                            hintStyle:
+                            TextStyle(color: Colors.white54, fontSize: 18),
+                            border: InputBorder.none,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(returnedSongs);
+                        },
+                        iconSize: 26,
+                        splashColor: MyTheme.grey700,
+                        icon: Icon(
+                          NumberOfSongsToBeadded==0? Icons.close : Icons.check,
+                          color: MyTheme.darkRed,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: StreamBuilder(
-              stream: searchResultSongs,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<Tune>> snapshot) {
-                if (!snapshot.hasData) {
-                  return Container();
-                }
+            Expanded(
+              child: StreamBuilder(
+                stream: searchResultSongs,
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Tune>> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Container();
+                  }
 
-                final _songs = snapshot.data;
-                _songs.sort((a, b) {
-                  return a.title
-                      .toLowerCase()
-                      .compareTo(b.title.toLowerCase());
-                });
-               return GenericSongList(
-                 songs: _songs ,
-                 screenSize:screenSize,
-                 contextMenuOptions:(song){
+                  final _songs = snapshot.data;
+                  _songs.sort((a, b) {
+                    return a.title
+                        .toLowerCase()
+                        .compareTo(b.title.toLowerCase());
+                  });
+                  return GenericSongList(
+                    songs: _songs ,
+                    screenSize:screenSize,
+                    contextMenuOptions:(song){
 
-                   int numberOfSOngsInAlbum = musicService.albums$.value.firstWhere((album){
-                     return album.artist== song.artist && album.title==song.album;
-                   }, orElse: (){
-                     return new Album(99999999999999999, "", "", "");
-                   }).songs.length;
+                      int numberOfSOngsInAlbum = musicService.albums$.value.firstWhere((album){
+                        return album.artist== song.artist && album.title==song.album;
+                      }, orElse: (){
+                        return new Album(99999999999999999, "", "", "");
+                      }).songs.length;
 
-                   ///This should be done in an other cleaner way
-                   ///the problem is that we can't create a fully new copy of the contextOptions list
-                   ///since we always have to copy the reference of the ContextMenuOption object.
+                      ///This should be done in an other cleaner way
+                      ///the problem is that we can't create a fully new copy of the contextOptions list
+                      ///since we always have to copy the reference of the ContextMenuOption object.
 
 
-                   List<ContextMenuOptions> singleList =[
-                     ContextMenuOptions(
-                       id: 1,
-                       title: "Add one",
-                       icon: Icons.add,
-                     ),
-                     ContextMenuOptions(
-                       id: 2,
-                       title: "Add entire album",
-                       icon: Icons.add,
-                     ),
-                   ] ;
-                   singleList[1].title= "${singleList[1].title} (+${numberOfSOngsInAlbum})";
-                   return singleList;
-                 },
-                 onSongCardTap: (song,state,isSelectedSong){
+                      List<ContextMenuOptions> singleList =[
+                        ContextMenuOptions(
+                          id: 1,
+                          title: "Add one",
+                          icon: Icons.add,
+                        ),
+                        ContextMenuOptions(
+                          id: 2,
+                          title: "Add entire album",
+                          icon: Icons.add,
+                        ),
+                      ] ;
+                      singleList[1].title= "${singleList[1].title} (+${numberOfSOngsInAlbum})";
+                      return singleList;
+                    },
+                    onSongCardTap: (song,state,isSelectedSong){
 
-                 },
-                 onContextOptionSelect: (choice, song){
-                   switch(choice.id){
-                     case 1: {
-                       addSongToPlaylsit(song);
-                       break;
-                     }
-                     case 2:{
-                      addAlbumToPlaylsit(song);
-                       break;
-                     }
-                   }
-                 },
-               );
-              },
+                    },
+                    onContextOptionSelect: (choice, song){
+                      switch(choice.id){
+                        case 1: {
+                          addSongToPlaylsit(song);
+                          break;
+                        }
+                        case 2:{
+                          addAlbumToPlaylsit(song);
+                          break;
+                        }
+                      }
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

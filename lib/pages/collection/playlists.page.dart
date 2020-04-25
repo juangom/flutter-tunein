@@ -176,6 +176,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
             child: FloatingActionButton(
               child: Icon(
                   Icons.playlist_add,
+                size: 26,
                 color: MyTheme.darkRed,
               ),
               backgroundColor: MyTheme.bgdivider,
@@ -213,13 +214,10 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
       ),
     );
 
-    print(returnedSongsToBeDeleted);
     if(returnedSongsToBeDeleted!=null && returnedSongsToBeDeleted.key.length!=0){
       ///Deleting songs based on the returnedSongsToBeDeleted Ids
 
       playlist.songs.removeWhere((song){
-        print("will test on the Id ${song.id}");
-        print("the result is : ${returnedSongsToBeDeleted.key.contains(song.id)}");
         return returnedSongsToBeDeleted.key.contains(song.id);
       });
 
@@ -250,6 +248,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
   }
 
   Future<bool> openAddSongsToPlaylistPage(Playlist playlist, context)async{
+    List<Tune> tempList = List.from(playlist.songs);
     List<Tune> returnedSongs = await  Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddSongsToPlaylist(
@@ -267,6 +266,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
       print(playlist.songs.length);
       return true;
     }else{
+      playlist.songs = tempList;
       return false;
     }
   }

@@ -35,7 +35,7 @@ class SinglePlaylistPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+  Size screenSize = MediaQuery.of(context).size;
     return StreamBuilder(
       stream: playlistStream,
       builder: (BuildContext context,
@@ -118,7 +118,7 @@ class SinglePlaylistPage extends StatelessWidget {
                                                 child:InkWell(
                                                   child: Icon(
                                                     Icons.add,
-                                                    size: 22,
+                                                    size: 26,
                                                     color: MyTheme.darkRed,
                                                   ),
                                                   onTap: (){
@@ -158,13 +158,17 @@ class SinglePlaylistPage extends StatelessWidget {
                                                   }
                                                   case 2: {
                                                     musicService.updatePlaylist(playlist.songs);
+                                                    musicService.stopMusic();
                                                     musicService.playMusic(playlist.songs[0]);
+                                                    musicService.updatePlaylistState(PlayerState.playing,playlist);
                                                     break;
                                                   }
                                                   case 3:{
                                                     musicService.updatePlaylist(playlist.songs);
                                                     musicService.updatePlayback(Playback.shuffle);
+                                                    musicService.stopMusic();
                                                     musicService.playMusic(playlist.songs[0]);
+                                                    musicService.updatePlaylistState(PlayerState.playing,playlist);
                                                     break;
                                                   }
                                                   case 4:{
@@ -250,6 +254,8 @@ class SinglePlaylistPage extends StatelessWidget {
                   child: _playlist.songs.length!=0?
                   GenericSongList(
                     songs: _playlist.songs,
+                    screenSize: screenSize,
+                    staticOffsetFromBottom: 100.0,
                     bgColor: null,
                     contextMenuOptions: (song){
                       return playlistSongCardContextMenulist;
@@ -373,8 +379,7 @@ class SinglePlaylistPage extends StatelessWidget {
        ///Deleting songs based on the returnedSongsToBeDeleted Ids
 
        playlist.songs.removeWhere((song){
-         print("will test on the Id ${song.id}");
-         print("the result is : ${returnedSongsToBeDeleted.key.contains(song.id)}");
+
          return returnedSongsToBeDeleted.key.contains(song.id);
        });
 
@@ -390,6 +395,9 @@ class SinglePlaylistPage extends StatelessWidget {
   }
 
   Future<bool> openAddSongsToPlaylistPage(Playlist playlist, context)async{
+    //To prevent the reference passing of the playlist from adding songs automatically we added a
+    //temporary song list to reaffect if the song addition is canceled
+    List<Tune> tempList = List.from(playlist.songs);
     List<Tune> returnedSongs = await  Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddSongsToPlaylist(
@@ -408,6 +416,7 @@ class SinglePlaylistPage extends StatelessWidget {
       print(playlist.songs.length);
       return true;
     }else{
+      playlist.songs = tempList;
       return false;
     }
   }

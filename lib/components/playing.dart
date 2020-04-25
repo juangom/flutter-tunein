@@ -263,17 +263,19 @@ class _PlayingPageState extends State<PlayingPage>
         String image2 = songs.key.albumArt;
 
         return Scaffold(
+          backgroundColor: Colors.transparent,
             body: Stack(
               children: <Widget>[
                 AnimatedContainer(
                   padding: MediaQuery.of(context).padding,
-                  duration: Duration(milliseconds: 500),
+                  duration: Duration(milliseconds: 400),
                   curve: Curves.decelerate,
                   color: Color(colors[0]),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       Container(
+                        color: Colors.transparent,
                           height: _screenHeight,
                           constraints: BoxConstraints(
                               maxHeight: _screenHeight / 2, minHeight: _screenHeight / 2),
@@ -307,8 +309,11 @@ class _PlayingPageState extends State<PlayingPage>
                       ),
 
                       Expanded(
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 400),
+                          curve: Curves.easeInOut,
                           decoration: BoxDecoration(
+                            color: Colors.transparent,
                             boxShadow: [
                               new BoxShadow(
                                   color: Color(colors[0]),

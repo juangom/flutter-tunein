@@ -113,7 +113,7 @@ class _SearchPageState extends State<SearchPage> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      iconSize: 18,
+                      iconSize: 26,
                       icon: Icon(
                         Icons.arrow_back_ios,
                         color: Colors.white,
@@ -141,7 +141,7 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     IconButton(
                       onPressed: () {},
-                      iconSize: 18,
+                      iconSize: 26,
                       icon: Icon(
                         Icons.search,
                         color: Colors.white,

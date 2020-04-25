@@ -57,7 +57,7 @@ class DialogService{
     )..show(context);
   }
 
-  static Future<bool> showConfirmDialog(context, {String message, Color titleColor, Color messageColor ,String title}){
+  static Future<bool> showConfirmDialog(context, {String message, Color titleColor, Color messageColor ,String title, String confirmButtonText, String cancelButtonText}){
     return showDialog(
         context: context,
         builder: (_) {
@@ -78,7 +78,7 @@ class DialogService{
             actions: <Widget>[
               FlatButton(
                 child: Text(
-                  "CONFIRM",
+                  confirmButtonText??"CONFIRM",
                   style: TextStyle(
                       color: MyTheme.darkRed
                   ),
@@ -89,7 +89,7 @@ class DialogService{
               ),
               FlatButton(
                   child: Text(
-                    "Cancel",
+                    cancelButtonText??"Cancel",
                     style: TextStyle(
                         color: Colors.white
                     ),
