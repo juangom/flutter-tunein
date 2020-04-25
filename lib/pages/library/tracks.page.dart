@@ -54,10 +54,15 @@ class _TracksPageState extends State<TracksPage>
     WidgetsBinding.instance.addPostFrameCallback((duration){
       double numberOfSongsPerScreen =((screensize.height-160)/62);
       musicService.playerState$.listen((MapEntry<PlayerState, Tune> value){
+        print("entry is  : ${value} songs are ${songs?.length} current sont is ${value.value.title}");
         if(value!=null && songs!=null){
-          int indexOfThePlayingSong =songs.indexOf(value.value);
-          if(indexOfThePlayingSong>0)
-          /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
+          print("gona find the ID of the playing song");
+          int indexOfThePlayingSong =songs.indexWhere((elem){
+            return value.value.id==elem.id;
+          });
+          print("index of the playing song is : ${ indexOfThePlayingSong}");
+          if(indexOfThePlayingSong>0){
+            /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
           print(" the ideal position would be equal to the desired pool and a portion of the next pool so that the final position to scroll to would be determined by creating a virtual pool between the previous"
               "pool and the next one in order to put the desired song in the middle of the screen this will be done by finding out the difference between the position of the song in the pool and "
@@ -67,12 +72,16 @@ class _TracksPageState extends State<TracksPage>
 
 
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
-          if(controller.hasClients)
-          controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
-            milliseconds: (pow(log(indexOfThePlayingSong*2), 2)).floor() + 50
-          ),
-            curve: Curves.fastOutSlowIn
-          );
+
+            print("controller has clients ? : ${controller.hasClients}");
+            if(controller.hasClients){
+              controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
+                  milliseconds: (pow(log(indexOfThePlayingSong*2), 2)).floor() + 50
+              ),
+                  curve: Curves.fastOutSlowIn
+              );
+            }
+          }
         }
       });
     });

@@ -41,7 +41,7 @@ class MyCard extends StatelessWidget {
         previousStreamEntry= item;
         return true;
       }else{
-       /* print("${(previousStreamEntry.value.id == item.value.id) && (previousStreamEntry.key!=item.key)}");
+        /*print("${(previousStreamEntry.value.id == item.value.id) && (previousStreamEntry.key!=item.key)}");
         print("id difference is : ${(previousStreamEntry.value.id == item.value.id) }");
         print("previous.key is : ${previousStreamEntry.key}  &&  next.key is : ${item.key}");*/
         if((previousStreamEntry.value.id == item.value.id) && (previousStreamEntry.key!=item.key)){
@@ -65,7 +65,7 @@ class MyCard extends StatelessWidget {
           return Container();
         }
         final Tune _currentSong = snapshot.data.value;
-        final bool _isSelectedSong = _song == _currentSong;
+        final bool _isSelectedSong = _song.id == _currentSong.id;
         final _textColor = _isSelectedSong ? colors!=null?colors[1]:Colors.white : colors!=null?colors[1].withAlpha(65):Colors.white54;
         final _fontWeight = _isSelectedSong ? FontWeight.w900 : FontWeight.w400;
 
@@ -130,7 +130,7 @@ class MyCard extends StatelessWidget {
                                             color: colors!=null?colors[1].withAlpha(200):Colors.white,
                                           ),
                                         ): Container(
-                                          height: 14,
+                                          height: 15,
                                           child: Marquee(
                                             text: (_song.title == null)
                                                 ? "Unknon Title"
@@ -235,7 +235,7 @@ class MyCard extends StatelessWidget {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
                                         Padding(
-                                          padding: const EdgeInsets.only(bottom: 8),
+                                          padding: EdgeInsets.only(bottom: (_isSelectedSong && _song.title.length>25)?3:8),
                                           child: (!_isSelectedSong || _song.title.length<25)?Text(
                                             (_song.title == null)
                                                 ? "Unknon Title"
@@ -250,7 +250,7 @@ class MyCard extends StatelessWidget {
                                               color: colors!=null?colors[1].withAlpha(200):Colors.white,
                                             ),
                                           ): Container(
-                                            height: 14,
+                                            height: 19,
                                             child: Marquee(
                                               text: (_song.title == null)
                                                   ? "Unknon Title"
