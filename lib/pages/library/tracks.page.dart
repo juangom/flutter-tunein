@@ -54,13 +54,10 @@ class _TracksPageState extends State<TracksPage>
     WidgetsBinding.instance.addPostFrameCallback((duration){
       double numberOfSongsPerScreen =((screensize.height-160)/62);
       musicService.playerState$.listen((MapEntry<PlayerState, Tune> value){
-        print("entry is  : ${value} songs are ${songs?.length} current sont is ${value.value.title}");
         if(value!=null && songs!=null){
-          print("gona find the ID of the playing song");
           int indexOfThePlayingSong =songs.indexWhere((elem){
             return value.value.id==elem.id;
           });
-          print("index of the playing song is : ${ indexOfThePlayingSong}");
           if(indexOfThePlayingSong>0){
             /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
@@ -73,7 +70,6 @@ class _TracksPageState extends State<TracksPage>
 
           print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
 
-            print("controller has clients ? : ${controller.hasClients}");
             if(controller.hasClients){
               controller.animateTo(((indexOfThePlayingSong+1)*62)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen),duration: Duration(
                   milliseconds: (pow(log(indexOfThePlayingSong*2), 2)).floor() + 50
