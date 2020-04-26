@@ -57,7 +57,7 @@ class ArtistGridCell extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
                 width: double.infinity,
-                color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey,
+                color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey.withAlpha(70),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -70,7 +70,7 @@ class ArtistGridCell extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 13.5,
-                            color: (songColors!=null?new Color(songColors[1]):Colors.black87).withOpacity(.7),
+                            color: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7),
                             fontWeight: FontWeight.w700
                         ),
                       ),
@@ -94,7 +94,7 @@ class ArtistGridCell extends StatelessWidget {
                                   ),
                                   style: TextStyle(
                                       fontSize: 12.5,
-                                      color: (songColors!=null?new Color(songColors[1]):Colors.black54).withOpacity(.7)
+                                      color: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7)
                                   ),
                                 ),
                                 padding: EdgeInsets.only(bottom: 2),
@@ -108,7 +108,7 @@ class ArtistGridCell extends StatelessWidget {
                                 ),
                                 style: TextStyle(
                                   fontSize: 12.5,
-                                  color: (songColors!=null?new Color(songColors[1]):Colors.black54).withOpacity(.7),
+                                  color: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7),
                                 ),
                               )
                             ],
@@ -117,7 +117,7 @@ class ArtistGridCell extends StatelessWidget {
                         Expanded(
                           flex: 3,
                           child:  choices!=null?ThreeDotPopupMenu(
-                            IconColor: (songColors!=null?new Color(songColors[1]):Colors.black54).withOpacity(.7)  ,
+                            IconColor: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7)  ,
                           choices: choices,
                           onContextSelect: onContextSelect,
                           screenSize: Screensize,

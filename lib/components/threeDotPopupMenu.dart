@@ -44,7 +44,7 @@ class ThreeDotPopupMenu extends StatelessWidget {
             );
           }).toList();
           double YToSubstract = 0.0;
-          if(details.globalPosition.dy >screenSize.height - 230){
+          if(details.globalPosition.dy >screenSize.height - 210 - 10*choices.length){
             YToSubstract= max(0.0, details.globalPosition.dy - (screenSize.height - choices.length*30 - (staticOffsetFromBottom!=null?staticOffsetFromBottom:160)));
           }
           showPopMenu(context,itemList,Buttonoffset:details.globalPosition, ExtraOffset: Offset(-0,-YToSubstract) );
@@ -57,6 +57,7 @@ class ThreeDotPopupMenu extends StatelessWidget {
   void showPopMenu(context, List items,{@required Offset Buttonoffset, Offset ExtraOffset} ) async {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject();
     RenderBox box = context.findRenderObject();
+    Buttonoffset = box.localToGlobal(box.size.topRight(Offset.zero));
     RelativeRect position =  RelativeRect.fromSize(
       Rect.fromPoints(
         Offset(Buttonoffset.dx+(ExtraOffset!=null?ExtraOffset.dx:0.0),Buttonoffset.dy+(ExtraOffset!=null?ExtraOffset.dy:0.0)),

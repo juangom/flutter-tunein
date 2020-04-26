@@ -140,6 +140,7 @@ class _TracksPageState extends State<TracksPage>
                             child: MyCard(
                               ScreenSize: screensize,
                               choices: songCardContextMenulist,
+                              StaticContextMenuFromBottom: 190,
                               onContextSelect: (choice){
                                 switch(choice.id){
                                   case 1: {

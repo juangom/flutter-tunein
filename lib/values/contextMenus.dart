@@ -15,12 +15,12 @@ final songCardContextMenulist=[
   ),
   ContextMenuOptions(
     id: 2,
-    title: "Stat with and shuffle queue",
+    title: "Start with and shuffle queue",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
     id: 3,
-    title: "Stat with and shuffle album",
+    title: "Start with and shuffle album",
     icon: Icons.shuffle,
   ),
 ];
@@ -78,12 +78,12 @@ final playlistSongCardContextMenulist=[
   ),
   ContextMenuOptions(
     id: 2,
-    title: "Stat with and shuffle playlist",
+    title: "Start with and shuffle playlist",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
     id: 3,
-    title: "Stat with and shuffle album",
+    title: "Start with and shuffle album",
     icon: Icons.shuffle,
   ),
 ];

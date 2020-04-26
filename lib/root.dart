@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'package:Tunein/pages/collection/collection.page.dart';
 import 'package:Tunein/pages/library/library.page.dart';
 import 'package:Tunein/pages/settings/settings.page.dart';
@@ -34,9 +35,17 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     MusicServiceIsolate.callerCreateIsolate().then((value){
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
         print("the returned value is ${retunedValue}");
+        loadFiles();
+        /*MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
+          print("isolate with plugins initiated");
+
+        });*/
       });
-      loadFiles();
+
+
     });
+
+
 
     musicService.showUI();
 
@@ -81,6 +90,25 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       musicService.retrieveFavorites();
       await musicService.getArtistDataAndSaveIt();
       _startupStatus.add(StartupState.Success);
+
+      //This was a test of the flutter_isolate plugin that gives option to use plugins inside of dart isolate
+      //This is not working as of now since the plugin is missing breaking updates
+      /*ReceivePort tempPort = ReceivePort();
+      MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<List>(
+          sender: tempPort.sendPort,
+          command: "getAllTracksMetadata",
+          message: List.from(musicService.songs$.value.map((elem)=>elem.uri))
+      ));
+      return tempPort.forEach((metaDataList){
+        if(metaDataList!="OK"){
+          print(metaDataList);
+          tempPort.close();
+          return true;
+        }else{
+
+        }
+      });*/
+      //MusicServiceIsolate.sendCrossPluginIsolatesMessage()
     }
 
   }

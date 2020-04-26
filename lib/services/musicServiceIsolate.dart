@@ -12,6 +12,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
 
+MethodChannel platform = MethodChannel('android_app_retain');
 
 class musicServiceIsolate {
   static BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
@@ -33,6 +34,8 @@ class musicServiceIsolate {
   void dispose() {
     newIsolate?.kill(priority: Isolate.immediate);
     newIsolate = null;
+    newPluginEnabledIsolate?.kill();
+    newPluginEnabledIsolate=null;
   }
 
 // Temporary attributes
@@ -42,9 +45,10 @@ class musicServiceIsolate {
 // Isolate  methods and attributes
 
   SendPort newIsolateSendPort;
-
+  SendPort newPluginEnabledIsolateSendPort;
 
   Isolate newIsolate;
+  FlutterIsolate newPluginEnabledIsolate;
 
 // default port to receive on
 
@@ -63,6 +67,21 @@ class musicServiceIsolate {
 
 
     newIsolateSendPort = await receivePort.first;
+    return true;
+  }
+
+  Future<bool> callerCreatePluginEnabledIsolate() async {
+
+    ReceivePort receivePort = ReceivePort();
+
+
+    newPluginEnabledIsolate = await FlutterIsolate.spawn(
+      pluginEnabledIsolateCallbackFunction,
+      receivePort.sendPort,
+    );
+
+
+    newPluginEnabledIsolateSendPort = await receivePort.first;
     return true;
   }
 
@@ -97,7 +116,24 @@ class musicServiceIsolate {
     return port.first;
   }
 
+  ///This only takes strings as the plugin isolates only take primitive types
+  Future<dynamic> sendCrossPluginIsolatesMessage(
+      CrossIsolatesMessage messageToBeSent) async {
 
+    ReceivePort port = ReceivePort();
+
+
+    messageToBeSent = new CrossIsolatesMessage(
+        sender: messageToBeSent.sender==null?port.sendPort:messageToBeSent.sender,
+        message: messageToBeSent.message,
+        command: messageToBeSent.command);
+
+    newPluginEnabledIsolateSendPort.send([messageToBeSent.command,messageToBeSent.message,messageToBeSent.sender]);
+
+    return port.first;
+  }
+
+  ///The callback function used in the regular isolate
   static void callbackFunction(SendPort callerSendPort) {
 
     ReceivePort newIsolateReceivePort = ReceivePort();
@@ -168,6 +204,34 @@ class musicServiceIsolate {
     });
   }
 
+  ///This callback function is used in the plugin enabled isolate
+  static void pluginEnabledIsolateCallbackFunction(SendPort callerSendPort) {
+
+    ReceivePort newIsolateReceivePort = ReceivePort();
+
+
+    callerSendPort.send(newIsolateReceivePort.sendPort);
+
+
+    newIsolateReceivePort.listen((dynamic message) {
+      List<dynamic> incomingMessage = message as List<dynamic>;
+      switch(incomingMessage[0] as String){
+        case "test":{
+          (incomingMessage[2] as SendPort).send(incomingMessage[1] as String);
+          break;
+        }
+        case "getAllTracksMetadata":{
+          if(incomingMessage[1]!=null){
+            fetchMetadataOfAllTracks(incomingMessage[1],(data){
+              (incomingMessage[2] as SendPort).send(data);
+            });
+          }
+          break;
+        }
+      }
+    });
+  }
+
   //FetchingMetadata of all tracks methods
 
   static fetchMetadataOfAllTracks(List tracks, Function(List) callback) async{
@@ -194,27 +258,14 @@ class musicServiceIsolate {
 
   static Future getFileMetaData(track) async {
 
-    ReceivePort tempPort = new ReceivePort();
-    FlutterIsolate isolate;
     var value;
     try {
       if (mapMetaData[track] == null) {
-        isolateTempPort.sendPort.send("");
-        tempPort.forEach((data){
-          print("data coming from flutter isolate with plugin : ${data}");
-          if(data!=null){
-            value=data;
-            tempPort.close();
-            isolate?.kill();
-            return value;
-          }
-        });
 
 
-        isolate = await FlutterIsolate.spawn<MapEntry<ReceivePort,String>>(
-            callback ,
-          MapEntry(tempPort,track)
-        );
+        var metaValue = await platform
+            .invokeMethod("getMetaData", <String, dynamic>{'filepath': track});
+        return metaValue;
       } else {
         value = mapMetaData[track];
         return value;
@@ -229,18 +280,16 @@ class musicServiceIsolate {
   static ReceivePort isolateTempPort = ReceivePort();
   static void callback(MapEntry<ReceivePort,String>data) async {
 
-    /*isolateTempPort.listen((dataSenT) async{
+    isolateTempPort.listen((dataSenT) async{
       if(dataSenT!=null){
-        *//*MethodChannel platform = MethodChannel('android_app_retain');
+        MethodChannel platform = MethodChannel('android_app_retain');
         print(data.value);
         var metaValue = await platform
             .invokeMethod("getMetaData", <String, dynamic>{'filepath': data.value});
-        data.key.sendPort.send(metaValue);*//*
-        data.key.sendPort.send("ezeze");
-      }
-    });*/
+        data.key.sendPort.send(metaValue);
 
-    print("callback initiated");
+      }
+    });
 
   }
 
