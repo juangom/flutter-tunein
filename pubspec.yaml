@@ -61,6 +61,12 @@ flutter:
       fonts:
         - asset: fonts/boxicons.ttf
           weight: 400
+    - family: Fontawesome
+      fonts:
+        - asset: fonts/fa.ttf
+          weight: 400
+
+
 
   
   uses-material-design: true

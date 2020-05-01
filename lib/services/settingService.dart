@@ -23,7 +23,8 @@ enum SettingsIds{
   SET_LANG,
   SET_ARTIST_THUMB_UPDATE,
   SET_DISCOG_API_KEY,
-  SET_DISCOG_THUMB_QUALITY
+  SET_DISCOG_THUMB_QUALITY,
+  SET_TRACK_LIST_DECK_ITEMS,
 }
 
 
@@ -88,6 +89,7 @@ class settingService{
       await _prefs.setString(getEnumValue(setting).toString(),value);
       settingsMap[setting]= value;
       _settings$.add(settingsMap);
+      return true;
     }catch (e){
       print("Error in saving setting ${e}");
       return false;
@@ -112,6 +114,9 @@ class settingService{
         break;
       case SettingsIds.SET_DISCOG_THUMB_QUALITY:
         return "Low";
+        break;
+      case SettingsIds.SET_TRACK_LIST_DECK_ITEMS:
+        return "";
         break;
     }
   }

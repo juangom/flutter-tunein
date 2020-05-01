@@ -6,7 +6,8 @@ class PageHeader extends StatelessWidget {
   final String title;
   final String subTitle;
   final MapEntry<IconData,Color> icon;
-  PageHeader(this.title, this.subTitle, this.icon);
+  final bool hideText;
+  PageHeader(this.title, this.subTitle, this.icon, {this.hideText=false});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,11 +18,11 @@ class PageHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(right: 20),
+              padding: const EdgeInsets.only(right: 5),
               child: Container(
                 // color: Colors.red,
                 alignment: Alignment.center,
-                width: 60,
+                width: 50,
                 child: Icon(
                   this.icon.key,
                   color: this.icon.value,
@@ -29,7 +30,7 @@ class PageHeader extends StatelessWidget {
                 ),
               ),
             ),
-            Flexible(
+            !this.hideText?Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -57,7 +58,7 @@ class PageHeader extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+            ):Container(),
           ],
         ),
       ),
