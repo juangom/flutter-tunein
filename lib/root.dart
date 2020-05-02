@@ -5,6 +5,7 @@ import 'package:Tunein/pages/library/library.page.dart';
 import 'package:Tunein/pages/settings/settings.page.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/settingService.dart';
@@ -23,6 +24,7 @@ class Root extends StatefulWidget {
 
 class RootState extends State<Root> with TickerProviderStateMixin {
   final musicService = locator<MusicService>();
+  final metricService = locator<MusicMetricsService>();
   final layoutService = locator<LayoutService>();
   final SettingService = locator<settingService>();
   final MusicServiceIsolate = locator<musicServiceIsolate>();
@@ -62,6 +64,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   Future loadFiles() async {
     _startupStatus.add(StartupState.Busy);
     await SettingService.fetchSettings();
+    //fetching all userMetrics doesn't need to be awaited
+    metricService.fetchAllMetrics();
     final data = await musicService.retrieveFiles();
     if (data.length == 0) {
       print("gona fetch songs");
@@ -109,6 +113,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
         }
       });*/
       //MusicServiceIsolate.sendCrossPluginIsolatesMessage()
+
+
     }
 
   }

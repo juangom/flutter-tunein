@@ -116,7 +116,7 @@ class settingService{
         return "Low";
         break;
       case SettingsIds.SET_TRACK_LIST_DECK_ITEMS:
-        return "";
+        return null;
         break;
     }
   }

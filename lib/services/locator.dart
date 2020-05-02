@@ -3,6 +3,7 @@ import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/languageService.dart';
 import 'package:Tunein/services/layout.dart';
+import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/platformService.dart';
@@ -16,6 +17,7 @@ GetIt locator = new GetIt();
 
 void setupLocator() {
   locator.registerSingleton(PlatformService());
+  locator.registerSingleton(MusicMetricsService());
   locator.registerSingleton(ThemeService());
   locator.registerSingleton(settingService());
   locator.registerSingleton(musicServiceIsolate());

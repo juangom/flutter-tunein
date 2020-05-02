@@ -8,6 +8,7 @@ import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
+import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/queueService.dart';
 import 'package:Tunein/services/settingService.dart';
@@ -28,6 +29,7 @@ final RequestSettings = locator<Requests>();
 final utilsRequests = locator<UtilsRequests>();
 final queueService = locator<QueueService>();
 final SettingsService = locator<settingService>();
+final metricService = locator<MusicMetricsService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -234,7 +236,20 @@ class MusicService {
   }
 
   void playMusic(Tune song) async {
+    //playing the song
     _audioPlayer.play(song.uri);
+
+    //before playing the new song we need to save the metrics of the previous song
+    MapEntry<PlayerState, Tune> playerstate= playerState$.value;
+    if(playerstate!=null){
+      if(playerstate.value!=null && playerstate.value.id!=null){
+        metricService.incrementPlayTimeOnSingleSong(playerstate.value, position$.value);
+      }
+    }
+    //adding the toBePlayedSong to the latestPlayed songs
+    metricService.addSongToLatestPlayedSongs(song);
+
+
     if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
       return elem.id==song.id;
     })==-1){
