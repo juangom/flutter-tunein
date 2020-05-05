@@ -447,6 +447,94 @@ class MusicService {
     }
   }
 
+
+  ///Artist More choices functions
+  ///
+
+  void playMostPlayedOfArtist(Artist artist, {shuffle=false}){
+    Map<String,dynamic> mostPlayedSongs = metricService.getCurrentMemoryMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME);
+    List<MapEntry<Tune,String>> playlistSongs =[];
+    List<Tune> finalList=[];
+    artist.albums.forEach((album){
+      album.songs.forEach((song){
+       String songMetric = mostPlayedSongs[song.id];
+       if(songMetric!=null){
+         playlistSongs.add(MapEntry(song,songMetric));
+       }
+      });
+    });
+
+    print('we have a length of ${playlistSongs.length} to work with');
+    playlistSongs.sort((a,b){
+      return int.parse(a.value.toString()).compareTo(int.parse(b.value.toString()));
+    });
+
+    if(playlistSongs.length>11){
+      playlistSongs.removeRange(11, playlistSongs.length);
+    }
+
+    playlistSongs.forEach((elem){
+      finalList.add(elem.key);
+    });
+
+    if(finalList.length>0){
+
+      if(shuffle){
+        updatePlaylist(finalList);
+        updatePlayback(Playback.shuffle);
+        List<Tune> newqueue = _playlist$.value.value;
+        playMusic(newqueue[0]);
+      }else{
+        updatePlaylist(finalList);
+        stopMusic();
+        playMusic(finalList[0]);
+      }
+
+    }
+
+  }
+
+  void playMostPlayedOfAlbum(Album album, {shuffle=false}){
+    Map<String,dynamic> mostPlayedSongs = metricService.getCurrentMemoryMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME);
+    List<MapEntry<Tune,String>> playlistSongs =[];
+    List<Tune> finalList=[];
+    album.songs.forEach((song){
+      String songMetric = mostPlayedSongs[song.id];
+      if(songMetric!=null){
+        playlistSongs.add(MapEntry(song,songMetric));
+      }
+    });
+    print('we have a length of ${playlistSongs.length} to work with');
+    playlistSongs.sort((a,b){
+      return int.parse(a.value.toString()).compareTo(int.parse(b.value.toString()));
+    });
+
+    if(playlistSongs.length>11){
+      playlistSongs.removeRange(11, playlistSongs.length);
+    }
+
+    playlistSongs.forEach((elem){
+      finalList.add(elem.key);
+    });
+
+    if(finalList.length>0){
+
+      if(shuffle){
+        updatePlaylist(finalList);
+        updatePlayback(Playback.shuffle);
+        List<Tune> newqueue = _playlist$.value.value;
+        playMusic(newqueue[0]);
+      }else{
+        updatePlaylist(finalList);
+        stopMusic();
+        playMusic(finalList[0]);
+      }
+
+    }
+
+  }
+
+
   MapEntry<Tune, Tune> getNextPrevSong(Tune _currentSong) {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
 

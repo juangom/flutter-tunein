@@ -1,3 +1,9 @@
+///DEPRECATED WARNING
+/// /////////////////////////////////////////////////////////
+///THIS HAS BEEN DEPRECATED AND MAY BE REMOVED IN THE FUTURE
+/// /////////////////////////////////////////////////////////
+
+
 import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/ArtistCell.dart';
 import 'package:Tunein/components/card.dart';
@@ -86,7 +92,9 @@ class _ArtistAlbumListState extends State<ArtistAlbumList> {
               crossAxisSpacing: 3,
               childAspectRatio: (itemWidth / (itemWidth + 50)),
             ),
+            physics: ScrollPhysics(),
             itemBuilder: (BuildContext context, int index) {
+              int newIndex = (index%3)+2;
               return GestureDetector(
                 onTap: () {
                   goToSingleArtistPage(widget.artist.albums[index]);
@@ -95,7 +103,9 @@ class _ArtistAlbumListState extends State<ArtistAlbumList> {
                   //the non inclusion of it means you get double bars underneath the text
                   //this is not a must but you need to find a way to give a theme to your widget
                   //Material widget is the easiest and the one i am using in this app
-                  child: AlbumGridCell(widget.artist.albums[index],135,80),
+                  child: AlbumGridCell(widget.artist.albums[index],135,80,
+                    animationDelay: (50*newIndex) - (index<6?((6-index)*160):0),
+                  ),
                   color: Colors.transparent,
                 ),
               );

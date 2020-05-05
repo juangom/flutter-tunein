@@ -1,3 +1,9 @@
+///DEPRECATED WARNING
+/// /////////////////////////////////////////////////////////
+///THIS HAS BEEN DEPRECATED AND MAY BE REMOVED IN THE FUTURE
+/// /////////////////////////////////////////////////////////
+
+
 import 'package:Tunein/components/card.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
@@ -13,8 +19,8 @@ import 'package:flutter/rendering.dart';
 class AlbumSongList extends StatefulWidget {
 
   final Album album;
-
-  AlbumSongList(this.album);
+  ScrollController controller;
+  AlbumSongList(this.album, {ScrollController this.controller});
 
   @override
   _AlbumSongListState createState() => _AlbumSongListState();
@@ -23,11 +29,12 @@ class AlbumSongList extends StatefulWidget {
 class _AlbumSongListState extends State<AlbumSongList> {
   final musicService = locator<MusicService>();
   ScrollController controller;
-
+  ScrollController parentController;
   @override
   void initState() {
     // TODO: implement initState
     controller = ScrollController();
+    parentController = widget.controller;
     super.initState();
   }
 
@@ -128,5 +135,25 @@ class _AlbumSongListState extends State<AlbumSongList> {
 
 
 
+  }
+}
+
+
+class CustomScrollPhysics extends FixedExtentScrollPhysics {
+  const CustomScrollPhysics({ScrollPhysics parent})
+      : super(parent: parent);
+
+  @override
+  double get minFlingVelocity => double.infinity;
+
+  @override
+  double get maxFlingVelocity => double.infinity;
+
+  @override
+  double get minFlingDistance => double.infinity;
+
+  @override
+  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
+    return CustomScrollPhysics(parent: buildParent(ancestor));
   }
 }

@@ -10,6 +10,7 @@ class ThemeService {
 
   Map<String, List<int>> _savedColors;
   Map<String, List<int>> _artistSavedColors;
+  List<int> defaultColors =  [0xff111111, 0xffffffff, 0xffffffff];
   ThemeService() {
     _initStreams();
     _savedColors = Map<String, List<int>>();
@@ -52,7 +53,7 @@ class ThemeService {
     String path = song.albumArt;
 
     if (path == null) {
-      color.addAll([0xff111111, 0xffffffff, 0xffffffff]);
+      color.addAll(defaultColors);
       return color;
     }
 
@@ -88,7 +89,7 @@ class ThemeService {
     String path = artist.coverArt;
 
     if (path == null) {
-      color.addAll([0xff111111, 0xffffffff, 0xffffffff]);
+      color.addAll(defaultColors);
       return color;
     }
 

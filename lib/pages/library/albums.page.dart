@@ -54,11 +54,13 @@ class _AlbumsPageState extends State<AlbumsPage> {
                   childAspectRatio: (itemWidth / (itemWidth + 50)),
                 ),
                 itemBuilder: (BuildContext context, int index) {
+                  int newIndex = (index%3)+2;
                   return GestureDetector(
                     onTap: () {
                       goToAlbumSongsList(_albums[index]);
                     },
-                    child: AlbumGridCell(_albums[index],135,80),
+                    child: AlbumGridCell(_albums[index],135,80,
+                    animationDelay: (60*newIndex) - (index<6?((6-index)*150):0)),
                   );
                 },
               ),
