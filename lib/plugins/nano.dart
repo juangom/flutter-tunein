@@ -221,7 +221,7 @@ class Nano {
           _metaData[i][0],
           _metaData[i][1],
           _metaData[i][3],
-          int.parse(_metaData[i][5]),
+          int.parse((_metaData[i][5]).toString()),
           _musicFiles[i],
           albumArt,
           [],

@@ -9,6 +9,7 @@ import 'package:Tunein/components/cards/optionsCard.dart';
 import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
+import 'package:Tunein/components/selectableTile.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/models/playerstate.dart';
@@ -22,6 +23,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:Tunein/components/ArtistCell.dart';
+import 'package:Tunein/services/dialogService.dart';
 
 class SingleArtistPage extends StatelessWidget {
 
@@ -234,6 +236,55 @@ class SingleArtistPage extends StatelessWidget {
                                     onPlayPressed: (){
                                       musicService.playMostPlayedOfArtist(artist);
                                     },
+                                    onSavePressed: () async{
+                                      Playlist newPlaylsit = Playlist(
+                                          "Most played of ${artist.name}",
+                                          musicService.getMostPlayedOfArtist(artist),
+                                          PlayerState.stopped,
+                                          null
+                                      );
+                                      /// This is a temporary way fo handling until we incorporate the name changing in playlists
+                                      /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
+                                      /// instead of the listofSongsToBeDeleted TODO
+                                      List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
+
+                                      if(songsToBeDeleted!=null){
+                                        if(songsToBeDeleted.length!=0){
+                                          List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
+                                          newPlaylsit.songs.removeWhere((elem){
+                                            return idList.contains(elem.id);
+                                          });
+                                        }
+                                        musicService.addPlaylist(newPlaylsit).then(
+                                                (data){
+                                              DialogService.showFlushbar(context,
+                                                  leftIcon: Icon(Icons.check_circle,
+                                                      color: Color(bgColor[0]).withAlpha(255),
+                                                    size: 27,
+                                                  ),
+                                                  showDuration: Duration(milliseconds: 1500),
+                                                  color: Color(bgColor[2]),
+                                                  messageText: Text("Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved",
+                                                    style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Color(bgColor[0])
+                                                    ),
+                                                  ),
+                                                  titleText: Text("Playlist Saved",
+                                                    style: TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight: FontWeight.w900,
+                                                        color: Color(bgColor[0])
+                                                    ),
+                                                  )
+                                              );
+                                            }
+                                        );
+                                      }
+
+
+                                    },
                                   );
                                 },
                               ),
@@ -316,6 +367,81 @@ class SingleArtistPage extends StatelessWidget {
     });
 
     return FinalDuration;
+  }
+
+
+  Future<List<Tune>> openEditPlaylistBeforeSaving(context,Playlist playlist) async{
+    String keyword="";
+    List<Tune> songsToBeDeleted=[];
+    List<Artist> selectedArtists=List<Artist>();
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              "Editing Playlist${playlist!=null?" : "+playlist.name:""}",
+              style: TextStyle(
+                  color: Colors.white70
+              ),
+            ),
+            content: Container(
+              height: MediaQuery.of(context).size.height/2.5,
+              width: MediaQuery.of(context).size.width/1.2,
+              child: GridView.builder(
+                padding: EdgeInsets.all(3),
+                itemBuilder: (context, index){
+                  Tune songs = playlist.songs[index];
+                  return SelectableTile(
+                    imageUri: songs.albumArt,
+                    title: songs.title,
+                    isSelected: true,
+                    selectedBackgroundColor: MyTheme.darkRed,
+                    onTap: (willItBeSelected){
+                      print("Selected ${songs.title}");
+                      if(willItBeSelected){
+                        songsToBeDeleted.add(songs);
+                      }else{
+                        songsToBeDeleted.removeAt(songsToBeDeleted.indexWhere((elem)=>elem.title==songs.title));
+                      }
+                    },
+                    placeHolderAssetUri: "images/track.png",
+                  );
+                },
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 2.5,
+                  crossAxisSpacing: 2.5,
+                  childAspectRatio: 3,
+                ),
+                semanticChildCount: playlist.songs.length,
+                cacheExtent: 120,
+                itemCount: playlist.songs.length,
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Save Playlist",
+                  style: TextStyle(
+                      color: MyTheme.darkRed
+                  ),
+                ),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop(songsToBeDeleted);
+                },
+              ),
+              FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop())
+            ],
+          );
+        });
   }
 
   void goToSingleArtistPage(context, Album album){

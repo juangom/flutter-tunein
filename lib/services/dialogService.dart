@@ -41,10 +41,13 @@ class DialogService{
     );
   }
 
-  static showFlushbar(context, {String message, String title, Color color}){
+  static showFlushbar(context, {String message, String title, Color color, Widget titleText, Widget messageText, Duration showDuration, Icon leftIcon}){
     Flushbar(
+      icon: leftIcon,
       title:  title,
+      titleText: titleText,
       message:  message,
+      messageText: messageText,
       borderRadius: 2,
       backgroundColor: color,
       flushbarPosition: FlushbarPosition.TOP,
@@ -53,7 +56,7 @@ class DialogService{
       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
       flushbarStyle: FlushbarStyle.FLOATING,
       reverseAnimationCurve: Curves.linearToEaseOut,
-      duration:  Duration(milliseconds: 1000),
+      duration:  showDuration??Duration(milliseconds: 1000),
     )..show(context);
   }
 
