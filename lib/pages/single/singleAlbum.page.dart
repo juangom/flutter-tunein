@@ -724,6 +724,7 @@ class SingleAlbumPage extends StatelessWidget {
               ),
               Flexible(
                 child: Container(
+                  color: MyTheme.darkBlack,
                   child: CustomScrollView(
                     scrollDirection: Axis.vertical,
                     slivers: <Widget>[

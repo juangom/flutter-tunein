@@ -755,6 +755,7 @@ class _AlbumSongsState extends State<AlbumSongs>
             );
           }
           return Scaffold(
+            backgroundColor: Colors.transparent,
             body: SingleAlbumPage(_currentSong),
           );
         },
