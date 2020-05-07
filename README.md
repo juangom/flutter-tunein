@@ -27,18 +27,21 @@
 - [x] Playlists
 - [x] Search songs
 - [x] Adding support for artist thumbnail update via online service (Discog Only, for the moment)
-- [ ] Finishing up the Settings page
-- [ ] Adding a better landing page
-- [ ] upgrading performance
+- [x] Finishing up the Settings page
+- [x] upgrading performance
 - [ ] Adding UPnP, DLNA v4.0 (DMS, DMP, DMC, maybe DMR), maybe Apple Airplay
 - [ ] FTP song registry
+- [ ] Adding a better landing page
+- [ ] adding proper UI scaling
 - [ ] Spotify integration
+
+
 ## 📸 ScreenShots
 |               Track list                  |           bottom panel playing            |            Main panel playing             |              Artist List                 |
 | ----------------------------------------- | ----------------------------------------- | ----------------------------------------- | -----------------------------------------|
 | <img src="screenshots/1.png" width="250"> | <img src="screenshots/2.png" width="250"> | <img src="screenshots/3.png" width="250"> | <img src="screenshots/9.png" width="250">|
-|                                           |                                           |                                           |                                          |
 |              Album song list              |                ALbums List                |             Lockscreen controls           |     Notification Big Layout Controls     |
+| ----------------------------------------- | ----------------------------------------- | ----------------------------------------- | -----------------------------------------|
 | <img src="screenshots/5.png" width="250"> | <img src="screenshots/6.png" width="250"> | <img src="screenshots/7.png" width="250"> | <img src="screenshots/8.png" width="250">|
 
 ## Support me
