@@ -47,6 +47,9 @@ dependencies:
   connectivity: ^0.4.8+2
   badges: ^1.1.1
   popup_menu: ^1.0.5
+  upnp:
+    git:
+      url: https://github.com/SpinlockLabs/upnp.dart
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -9,6 +9,8 @@ import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/settingService.dart';
@@ -22,6 +24,7 @@ import 'package:Tunein/values/contextMenus.dart';
 import 'package:popup_menu/popup_menu.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/components/selectableTile.dart';
+import 'package:upnp/upnp.dart' as upnp;
 class TracksPage extends StatefulWidget {
 
   _TracksPageState createState() => _TracksPageState();
@@ -31,6 +34,7 @@ class _TracksPageState extends State<TracksPage>
     with AutomaticKeepAliveClientMixin<TracksPage> {
   final musicService = locator<MusicService>();
   final SettingService = locator<settingService>();
+  final castService = locator<CastService>();
   ScrollController controller;
   ScrollPosition listPosition;
   List<Tune> songs;
@@ -38,6 +42,7 @@ class _TracksPageState extends State<TracksPage>
   BehaviorSubject<List<Tune>> newSongListWithFilters= BehaviorSubject<List<Tune>>();
   Map<String,TrackListDeckItemState> deckItemState;
   Map<String,Key> deckItemKeys;
+  Map<String, BehaviorSubject> deckItemStateStream;
   @override
   void initState(){
     controller = ScrollController();
@@ -49,14 +54,21 @@ class _TracksPageState extends State<TracksPage>
       deckItemState={
         "shuffle":TrackListDeckItemState(),
         "sort": TrackListDeckItemState(),
-        "filter": TrackListDeckItemState()
+        "filter": TrackListDeckItemState(),
+        "cast": TrackListDeckItemState()
       };
       saveTrackListDeckSettingsToDisk();
     }
     deckItemKeys={
       "shuffle":GlobalKey(),
       "sort": GlobalKey(),
-      "filter": GlobalKey()
+      "filter": GlobalKey(),
+      "cast": GlobalKey()
+    };
+
+
+    deckItemStateStream={
+      "cast": BehaviorSubject<Map<String,dynamic>>()
     };
 
 
@@ -571,6 +583,154 @@ class _TracksPageState extends State<TracksPage>
                           sortMenu.show(widgetKey: deckItemKeys["filter"]);
                           return returnvalue.first;
                         },
+                      ),
+                      TrackListDeckItem(
+                        globalWidgetKey: deckItemKeys["cast"],
+                        initialState: deckItemState["cast"],
+                        stateStream: deckItemStateStream["cast"],
+                        title: "Cast",
+                        subtitle:"Casting control",
+                        icon: Icon(Icons.cast),
+                        onBuild: (){
+                          Widget badgeToBe;
+                          Color badgeColor;
+                          Icon iconToBe = Icon(Icons.cast);
+                          Color iconColor= Colors.white;
+                          if(deckItemState["cast"].isActive && (castService.castingState==CastState.CASTING)){
+                            iconColor= MyTheme.darkRed;
+                            iconToBe = Icon(Icons.cast_connected);
+                          }
+                          //The following condition will be triggered when the casting state
+                          //changes elsewhere so we must update this widget and toggle the casting
+                          castService.castingState.distinct().listen((data){
+                            print("the stream is distinct ${data}");
+                            Widget badgeToBe;
+                            Color badgeColor;
+                            Icon iconToBe = Icon(Icons.cast);
+                            Color iconColor= Colors.white;
+
+                            if(data==CastState.CASTING){
+                              deckItemState["cast"].isActive=true;
+                              iconColor= MyTheme.darkRed;
+                              iconToBe = Icon(Icons.cast_connected);
+                            }else{
+                              deckItemState["cast"].isActive=false;
+                            }
+                            if(deckItemStateStream["cast"]!=null){
+                              deckItemStateStream["cast"].add({
+                                "withBadge":(deckItemState["cast"].isActive && (data==CastState.CASTING)),
+                                "badgeContent": badgeToBe,
+                                "badgeColor":badgeColor,
+                                "iconColor":iconColor,
+                                "icon":iconToBe
+                              });
+                            }
+                          });
+
+                          return {
+                            "withBadge":(deckItemState["cast"].isActive && (castService.castingState==CastState.CASTING)),
+                            "badgeContent": badgeToBe,
+                            "badgeColor":badgeColor,
+                            "iconColor":iconColor,
+                            "icon":iconToBe
+                          };
+
+                        },
+                        onTap: (){
+                          BehaviorSubject<Map> returnvalue= BehaviorSubject<Map>();
+                          returnFirstValue(){
+                            Widget badgeToBe;
+                            Color badgeColor;
+                            Icon iconToBe = Icon(Icons.cast);
+                            Color iconColor= Colors.white;
+                            if(deckItemState["cast"].isActive){
+                              iconColor= MyTheme.darkRed;
+                              iconToBe = Icon(Icons.cast_connected);
+                            }
+                            returnvalue.add({
+                              "withBadge":deckItemState["cast"].isActive,
+                              "badgeContent": badgeToBe,
+                              "badgeColor":badgeColor,
+                              "iconColor":iconColor,
+                              "icon":iconToBe
+                            }) ;
+                          }
+                          //You always toggle the casting since that already takes consideration of the
+                          // current value of the cast and doesn't need any arguments or badges
+                          togglCasting().then((data){
+                            returnFirstValue();
+                          });
+                          return returnvalue.first;
+                        },
+
+                        onLongPress: (){
+                          BehaviorSubject<Map> returnvalue= BehaviorSubject<Map>();
+                          returnFirstValue(){
+                            Widget badgeToBe;
+                            Color badgeColor;
+                            Icon iconToBe = Icon(Icons.cast);
+                            Color iconColor= Colors.white;
+                            if(deckItemState["cast"].isActive){
+                              iconColor= MyTheme.darkRed;
+                              iconToBe = Icon(Icons.cast_connected);
+                            }
+                            returnvalue.add({
+                              "withBadge":deckItemState["cast"].isActive,
+                              "badgeContent": badgeToBe,
+                              "badgeColor":badgeColor,
+                              "iconColor":iconColor,
+                              "icon":iconToBe
+                            }) ;
+                          }
+                          PopupMenu sortMenu = PopupMenu(
+                              backgroundColor: MyTheme.darkRed,
+                              lineColor: Colors.transparent,
+                              maxColumn: 1,
+                              context: context,
+                              items: [
+                                MenuItem(
+                                    title: 'Refresh',
+                                    textStyle: TextStyle(
+                                        fontSize: 10.0,
+                                        color: MyTheme.grey300.withOpacity(.9)
+                                    ),
+                                    image: Icon(
+                                      Icons.keyboard,
+                                      size: 30,
+                                      color: MyTheme.grey300.withOpacity(.9)
+                                    )
+                                ),
+                              ],
+                              onClickMenu: (provider){
+                                print("provider got is : ${provider}");
+                                switch(provider.menuTitle){
+                                  case "Refresh":{
+                                     openDevicePickingDialog(null).then(
+                                        (data){
+                                          upnp.Device deviceChosen = data;
+                                          if(deviceChosen!=null){
+                                            castService.setDeviceToBeUsed(deviceChosen);
+                                            castService.setCastingState(CastState.CASTING);
+                                            deckItemState["cast"].isActive=true;
+                                            saveTrackListDeckSettingsToDisk();
+                                            returnFirstValue();
+                                          }
+                                        }
+                                    );
+                                    break;
+                                  }
+                                  default:{
+                                    break;
+                                  }
+
+                                }
+                              },
+                              onDismiss: (){
+                                print("dismissed");
+                              });
+                          sortMenu.show(widgetKey: deckItemKeys["cast"]);
+                          return returnvalue.first;
+                        },
                       )
                     ],
                   ),
@@ -793,6 +953,57 @@ class _TracksPageState extends State<TracksPage>
     return ;
   }
 
+  Future<void> togglCasting() async{
+    if(deckItemState["cast"].isActive && castService.currentDeviceToBeUsed.value!=null && castService.castingState.value==CastState.CASTING){
+      bool result = await DialogService.showConfirmDialog(context,
+        title: "Stop the current Cast",
+        message: "This will abandon the control of the cast and stop it completely",
+        confirmButtonText: "Stop Cast",
+        cancelButtonText: "Kepp cast active",
+        titleColor: MyTheme.grey300
+      );
+      if(result!=null && result==true){
+        castService.stopCasting();
+        musicService.initializePlayStreams();
+        deckItemState["cast"].isActive=false;
+      }
+    }else{
+      upnp.Device registeredDevice = castService.currentDeviceToBeUsed.value;
+      if(registeredDevice!=null){
+        //This means that a device is already registered and has been found, So we need to try and connect
+        // to that device and see if it is already up or not
+        List<upnp.Device> deviceFound = await castService.searchForDevices();
+        if(deviceFound.indexWhere((elem)=>elem.uuid==registeredDevice.uuid)!=-1){
+          musicService.stopMusic();
+          castService.setCastingState(CastState.CASTING);
+          deckItemState["cast"].isActive=true;
+          musicService.reInitializePlayStreams();
+
+        }else{
+          //if the device is not there anymore a dialog will popup letting the user pick their device from the list of compatible devices
+            upnp.Device selectedDevice = await openDevicePickingDialog(deviceFound);
+            if(selectedDevice!=null){
+              castService.setDeviceToBeUsed(selectedDevice);
+              musicService.stopMusic();
+              castService.setCastingState(CastState.CASTING);
+              deckItemState["cast"].isActive=true;
+              musicService.reInitializePlayStreams();
+            }
+        }
+      }else{
+        //If there is no device registered so we need to search for devices and show a dialog for the user to pick from
+        upnp.Device selectedDevice = await openDevicePickingDialog(null);
+        if(selectedDevice!=null){
+          castService.setDeviceToBeUsed(selectedDevice);
+          musicService.stopMusic();
+          castService.setCastingState(CastState.CASTING);
+          deckItemState["cast"].isActive=true;
+          musicService.reInitializePlayStreams();
+        }
+      }
+    }
+    saveTrackListDeckSettingsToDisk();
+  }
 
   List<Tune> applyDeckItemChanges(List<Tune> songs){
     List<Tune> songsValue = songs??List.from(currentSongs.value);
@@ -881,10 +1092,151 @@ class _TracksPageState extends State<TracksPage>
       }
     }
 
+
+    if(deckItemState["cast"].isActive){
+      //Automatic casting is what is going to implemented there is no need to checking itemNature
+      //The base idea here is :
+      // Ensure that casting is not activated after reboot app
+
+      if(castService.castingState.value==CastState.CASTING){
+        castService.setCastingState(CastState.NOT_CASTING);
+      }
+      deckItemState["cast"].isActive=false;
+
+
+    }else{
+      //manually set the not casting state
+      if(!(castService.castingState.value==CastState.NOT_CASTING)){
+        castService.setCastingState(CastState.NOT_CASTING);
+      }
+    }
+
     return songsValue;
   }
 
 
+
+
+  Future<upnp.Device> openDevicePickingDialog(List<upnp.Device> devices){
+    print(MediaQuery.of(context).size);
+    Widget ShallowWidget = Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      color: MyTheme.darkgrey.withOpacity(.01),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            CircularProgressIndicator(
+              strokeWidth: 4,
+              valueColor: AlwaysStoppedAnimation<Color>(MyTheme.darkRed),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 8),
+              child: Text("No devices registered",
+                style: TextStyle(
+                    color: MyTheme.grey300,
+                    fontSize: 18
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 8),
+              child: Text("Searching for devices",
+                style: TextStyle(
+                  color: MyTheme.grey300,
+                  fontSize: 17
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+    Widget devicesNotSent = StreamBuilder(
+      stream: castService.searchForDevices().asStream(),
+      builder: (context, AsyncSnapshot<List<upnp.Device>> snapshot){
+        devices=snapshot.data;
+        return AnimatedSwitcher(
+          reverseDuration: Duration(milliseconds: 300),
+          duration: Duration(milliseconds: 300),
+          switchInCurve: Curves.easeInToLinear,
+          child: !snapshot.hasData?ShallowWidget:ListView.builder(
+            padding: EdgeInsets.all(3),
+            itemBuilder: (context, index){
+              upnp.Device device = devices[index];
+              return SelectableTile(
+                imageUri:null,
+                title: device.friendlyName,
+                isSelected: false,
+                selectedBackgroundColor: MyTheme.darkRed,
+                onTap: (willItBeSelected){
+                  Navigator.of(context, rootNavigator: true).pop(device);
+                },
+                placeHolderAssetUri: "images/blackbgUpnp.png",
+              );
+            },
+            semanticChildCount: devices.length,
+            cacheExtent: 60,
+            itemCount: devices.length,
+          ),
+        );
+      },
+    );
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              "Choosing Cast Devices",
+              style: TextStyle(
+                  color: Colors.white70
+              ),
+            ),
+            content: Container(
+              height: MediaQuery.of(context).size.height/2.5,
+              width: MediaQuery.of(context).size.width/1.2,
+              child: devices==null?devicesNotSent:ListView.builder(
+                padding: EdgeInsets.all(3),
+                itemBuilder: (context, index){
+                  upnp.Device device = devices[index];
+                  return SelectableTile(
+                    imageUri:null,
+                    title: device.friendlyName,
+                    isSelected: false,
+                    selectedBackgroundColor: MyTheme.darkRed,
+                    onTap: (willItBeSelected){
+                      Navigator.of(context, rootNavigator: true).pop(device);
+                    },
+                    placeHolderAssetUri: "images/blackbgUpnp.png",
+                  );
+                },
+                semanticChildCount: devices.length,
+                cacheExtent: 60,
+                itemCount: devices.length,
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop())
+            ],
+          );
+        });
+
+    /* Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => EditPlaylist(playlist: playlist),
+          fullscreenDialog: true
+      ),
+    );*/
+  }
 
 
   Future<String> openFilteringKeywordDialog(){

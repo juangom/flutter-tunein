@@ -38,6 +38,9 @@ class musicServiceIsolate {
     newPluginEnabledIsolate=null;
   }
 
+
+  static Map<String, MapEntry<String,String>> filesToServe=Map();
+
 // Temporary attributes
 
   static Map mapMetaData = Map();
@@ -141,11 +144,62 @@ class musicServiceIsolate {
 
     callerSendPort.send(newIsolateReceivePort.sendPort);
 
+    _sendNotFound(HttpResponse response) {
+      response.write('Not found');
+      response.statusCode = HttpStatus.notFound;
+      response.close();
+    }
+
+    _handleGet(HttpRequest request) {
+      // PENDING: Do more security checks here?
+      final String fileID = request.uri.queryParameters["fileID"];
+      String fileUri = fileID!=null?filesToServe[fileID.split(".")[0]].key:null;
+      List<String> contentType = filesToServe[fileID.split(".")[0]].value.split("/");
+      if(fileUri!=null){
+        final File file = new File(fileUri);
+        file.exists().then((bool found) {
+          if (found) {
+            request.response.headers.contentType = ContentType(contentType[0]??"audio",contentType[1]??"mpeg");
+            //file.openRead().pipe(request.response).catchError((e) {print(e);});
+            request.response.contentLength = file.statSync().size;
+            request.response.addStream(file.openRead());
+          } else {
+            _sendNotFound(request.response);
+          }
+        });
+      }else{
+        _sendNotFound(request.response);
+      }
+
+    }
+
+    HttpServer.bind('0.0.0.0', 8089, shared: true).then((HttpServer server) {
+      server.listen((request) {
+        print("got a request");
+        switch (request.method) {
+          case 'GET':
+            _handleGet(request);
+            break;
+
+          default:
+            request.response.statusCode = HttpStatus.METHOD_NOT_ALLOWED;
+            request.response.close();
+        }
+      });
+    });
+
 
     newIsolateReceivePort.listen((dynamic message) {
       CrossIsolatesMessage incomingMessage = message as CrossIsolatesMessage;
 
       switch(incomingMessage.command){
+        case "registerAFileToBeServed":{
+          //The message structure is like follow : MapEntry(id, MapEntry(uri, contentType))
+          MapEntry<String,MapEntry<String,String>> newMessage = incomingMessage.message;
+          filesToServe[newMessage.key]= MapEntry(newMessage.value.key,newMessage.value.value);
+          incomingMessage.sender.send(true);
+          break;
+        }
         case "UPlayerstate":{
           _playerState$.add(incomingMessage.message);
           break;

@@ -82,6 +82,16 @@ class settingService{
     return _settings$.value[setting];
   }
 
+
+  BehaviorSubject<String> subscribeToMemorySetting(SettingsIds settingsIds){
+     BehaviorSubject<String> newStream = new BehaviorSubject<String>();
+     _settings$.listen((data){
+       newStream.add(data[settingsIds]);
+     });
+
+     return newStream;
+  }
+
   updateSingleSetting(SettingsIds setting, String value) async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     try{

@@ -6,6 +6,7 @@ import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
@@ -30,6 +31,7 @@ final utilsRequests = locator<UtilsRequests>();
 final queueService = locator<QueueService>();
 final SettingsService = locator<settingService>();
 final metricService = locator<MusicMetricsService>();
+final castService = locator<CastService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -73,6 +75,9 @@ class MusicService {
 
   StreamSubscription _audioPositionSub;
   StreamSubscription _audioStateChangeSub;
+  StreamSubscription _upnpPositionSubscription;
+  StreamSubscription _upnpPlayerStateSubscription;
+
 
   MusicService() {
     _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null);
@@ -235,11 +240,89 @@ class MusicService {
     _artists$.add(newAlbumList);
   }
 
-  void playMusic(Tune song) async {
-    //playing the song
-    _audioPlayer.play(song.uri);
 
-    //before playing the new song we need to save the metrics of the previous song
+  ///This will initialize the playing stream like position and playerState
+  ///
+  /// This is used after a cast is stopped by the user
+  void initializePlayStreams(){
+    if(_upnpPositionSubscription!=null){
+      _upnpPositionSubscription.cancel();
+      _upnpPositionSubscription=null;
+      //Initialize the local duration too
+      _position$.add(Duration(milliseconds: 0));
+    }
+
+    if(_upnpPlayerStateSubscription!=null){
+      _upnpPlayerStateSubscription.cancel();
+      _upnpPlayerStateSubscription=null;
+      //Initialize the local duration too
+      _position$.add(Duration(milliseconds: 0));
+      playerState$.add(MapEntry(PlayerState.stopped,playerState$.value.value));
+    }
+  }
+
+  ///This will be called when a playing is already going and needs to stop playing
+  ///And reset the duration adn player state
+  void reInitializePlayStreams(){
+    _position$.add(Duration(milliseconds: 0));
+    playerState$.add(MapEntry(PlayerState.stopped,playerState$.value.value));
+  }
+
+
+
+  void playMusic(Tune song) async {
+
+    if(castService.castingState.value==CastState.CASTING){
+      //If this is true the play should play on the cast device
+      //get the current casting item
+      CastItem currentCastingItem = castService.castItem.value;
+      if(currentCastingItem!=null){
+        if(currentCastingItem.id == song.id){
+          castService.play();
+        }else{
+          castService.castAndPlay(song);
+        }
+      }else{
+        castService.castAndPlay(song);
+      }
+      castService.feedCurrentPosition();
+      if(_upnpPositionSubscription==null){
+        //This will tie the current position on the casting device to the local position so
+        //that the ui updates correctly
+        _upnpPositionSubscription = castService.currentPosition.listen((data){
+          _position$.add(data);
+        });
+      }
+
+      if(_upnpPlayerStateSubscription ==null){
+        _upnpPlayerStateSubscription= castService.castingPlayerState.listen((data){
+          MapEntry<PlayerState,Tune> playerstate =playerState$.value;
+          if(playerstate!=null){
+            if(playerstate.value.id!=null){
+              if(playerstate.key!=data){
+                if(data==PlayerState.stopped){
+                  playerState$.add(MapEntry(PlayerState.paused,playerstate.value));
+                }else{
+                  playerState$.add(MapEntry(data,playerstate.value));
+                }
+
+              }
+            }
+          }
+        });
+      }
+    }else{
+      //The stream subscription for the position should be initialized here and canceled if it is running since we will
+      //refresh it everytime we play to the casting device
+      initializePlayStreams();
+      //playing the song if it is a local play
+      _audioPlayer.play(song.uri);
+    }
+
+
+    //before switching the playState to the new song we need to save the metrics of the previous song
+    //Metrics are counted when casting to other devices for convenience (for now)
+    //May change TODO Add a setting options for this
     MapEntry<PlayerState, Tune> playerstate= playerState$.value;
     if(playerstate!=null){
       if(playerstate.value!=null && playerstate.value.id!=null){
@@ -260,7 +343,16 @@ class MusicService {
   }
 
   void pauseMusic(Tune song) async {
-    _audioPlayer.pause();
+    if(castService.castingState.value==CastState.CASTING){
+      //If this is true the pause command should be issued to the casting device
+      castService.pauseCasting();
+
+    }else{
+      //pause the song if it is a local play
+      _audioPlayer.pause();
+    }
+
+
     if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
       return elem.id==song.id;
     })==-1){
@@ -270,8 +362,19 @@ class MusicService {
   }
 
   void stopMusic() {
-    _audioPlayer.stop();
-    updatePlaylistState(PlayerState.stopped, null);
+    if(castService.castingState.value==CastState.CASTING){
+      //If this is true the stop media command should be issued to the casting device
+      //Even in stopping music, we issue a stop media command because the stop command would
+      //disengage the casting and would require reconnecting and issuing newer commands
+      //THIS IS STILL NOT COMPLETELY TESTED
+      castService.stopCurrentMedia();
+      updatePlaylistState(PlayerState.paused, null);
+    }else{
+      //pause the song if it is a local play
+      _audioPlayer.stop();
+      updatePlaylistState(PlayerState.stopped, null);
+    }
+
   }
 
   //This was introduced to eliminate useless subscriptions to the playerState stream
@@ -605,7 +708,15 @@ class MusicService {
   }
 
   void audioSeek(double seconds) {
-    _audioPlayer.seek(seconds);
+    if(castService.castingState.value==CastState.CASTING){
+      //If this is true the seeking command should be issued to the casting device
+      castService.seek(Duration(seconds: seconds.floor()));
+
+    }else{
+      //seek the song if it is a local play
+      _audioPlayer.seek(seconds);
+    }
+
   }
 
   void addToFavorites(Tune song) async {
@@ -974,20 +1085,28 @@ class MusicService {
         _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
       final bool _isAudioSeeking = _isAudioSeeking$.value;
       if (!_isAudioSeeking) {
-        updatePosition(duration);
+        if(!(castService.castingState.value==CastState.NOT_CASTING)){
+          updatePosition(duration);
+        }
       }
     });
 
     //This will synchronize the playing states of
     _audioStateChangeSub =
         _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
-      if (state == AudioPlayerState.COMPLETED) {
-        _onSongComplete();
-      }
-      if (state == AudioPlayerState.PAUSED) {
-        //MediaNotification.setTo(false);
-        updatePlayerState(PlayerState.paused, _playerState$.value.value);
-      }
+     if(castService.castingState.value==CastState.NOT_CASTING){
+       if (state == AudioPlayerState.COMPLETED) {
+         _onSongComplete();
+       }
+       if (state == AudioPlayerState.PAUSED) {
+         //MediaNotification.setTo(false);
+         updatePlayerState(PlayerState.paused, _playerState$.value.value);
+       }
+     }else{
+       //if it is casting do nothing for now as everything is being handeled elsewhere
+       //TODO This can be the place to handle the position and duration initialisation
+
+     }
 
     });
 

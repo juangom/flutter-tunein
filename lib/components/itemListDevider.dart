@@ -10,9 +10,10 @@ class ItemListDevider extends StatelessWidget {
   final TextStyle textStyle;
   final double height;
   final String DeviderTitle;
+  final Color backgroundColor;
 
 
-  const ItemListDevider({this.textStyle, this.height, this.DeviderTitle});
+  const ItemListDevider({this.textStyle, this.height, this.DeviderTitle, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class ItemListDevider extends StatelessWidget {
         ),
         padding: EdgeInsets.all(8).add(EdgeInsets.only(top: 2,left: 4)),
       ),
-      color: MyTheme.bgBottomBar,
+      color: backgroundColor??MyTheme.bgBottomBar,
       constraints: BoxConstraints.expand(height: height??35),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:Tunein/globals.dart';
@@ -20,11 +21,13 @@ class TrackListDeckItem extends StatefulWidget {
   final Color badgeColor;
   final Widget badgeContent;
   final TrackListDeckItemState initialState;
+  final Stream stateStream;
   final dynamic Function() onTap;
   final dynamic Function() onBuild;
   final dynamic Function() onLongPress;
   TrackListDeckItem({this.icon, this.title, this.subtitle, this.iconColor, this.badgeContent,
-    this.titleColor, this.subtitleColor, this.withBadge, this.badgeColor, this.initialState, this.onLongPress, this.onTap, this.onBuild, this.globalWidgetKey});
+    this.titleColor, this.subtitleColor, this.withBadge, this.badgeColor, this.initialState, this.onLongPress, this.onTap, this.onBuild,
+    this.globalWidgetKey, this.stateStream});
 
   @override
   _TrackListDeckItemState createState() => _TrackListDeckItemState();
@@ -41,6 +44,8 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
    bool withBadge=false;
    Widget currentBadge;
    TrackListDeckItemState initialState;
+   Stream stateStream;
+   StreamSubscription stateStreamSubscription;
    dynamic Function() onTap;
    dynamic Function() onLongPress;
   @override
@@ -58,6 +63,7 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
     badgeColor= widget.badgeColor;
     initialState=widget.initialState;
     currentBadge= widget.badgeContent;
+    stateStream=widget.stateStream;
     if(initialState.extraData!=null){
       withBadge??initialState.extraData["withBadge"]!=null?withBadge=initialState.extraData["withBadge"]:null;
       title??(initialState.extraData["title"]!=null?title=initialState.extraData["title"]:null);
@@ -84,6 +90,12 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
 
           });
         }
+      });
+    }
+
+    if(stateStream!=null){
+      stateStreamSubscription = stateStream.listen((data){
+        setStreamState(data);
       });
     }
     super.initState();
@@ -201,6 +213,11 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
     );
   }
 
+  void dispose(){
+    if(stateStreamSubscription!=null){
+      stateStreamSubscription.cancel();
+    }
+  }
 
 
   setBadgeContent(Widget content){
@@ -208,6 +225,24 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
       //Set badge content
       setState(() {
         currentBadge=content;
+      });
+    }
+  }
+
+
+  setStreamState(Map<String, dynamic> ret){
+    if(ret!=null){
+      ret["withBadge"]!=null?withBadge=ret["withBadge"]:null;
+      ret["badgeContent"]!=null?currentBadge=ret["badgeContent"]:null;
+      ret["icon"]!=null?icon=ret["icon"]:null;
+      ret["title"]!=null?title=ret["title"]:null;
+      ret["subtitle"]!=null?subtitle=ret["subtitle"]:null;
+      ret["iconColor"]!=null?iconColor=ret["iconColor"]:null;
+      ret["titleColor"]!=null?titleColor=ret["titleColor"]:null;
+      ret["subtitleColor"]!=null?subtitleColor=ret["subtitleColor"]:null;
+      ret["badgeColor"]!=null?badgeColor=ret["badgeColor"]:null;
+      setState(() {
+
       });
     }
   }

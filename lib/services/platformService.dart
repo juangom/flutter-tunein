@@ -12,6 +12,12 @@ class PlatformService{
   }
 
 
+  Future<String> getCurrentIP() async {
+    String ipAddress = await (Connectivity().getWifiIP());
+    return ipAddress;
+  }
+
+
 
 
 }
