@@ -136,7 +136,10 @@ class CastService {
           uri: newItemToCast.uri,
           Objectclass: "object.item.audioItem",
           creator: songToCast.artist,
-          title: newItemToCast.name
+          title: newItemToCast.name,
+          coverArt: songToCast.albumArt!=null?newArtURI:null,
+          ID: songToCast.id,
+          parentID: "Parent${songToCast.id}"
       ).then((data){
         play();
         _castItem.add(newItemToCast);

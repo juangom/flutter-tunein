@@ -205,7 +205,8 @@ class upnp{
   ///
   ///
   /// [uri] is the uri for the file, it should be public and accessible over http ( this is not a final version )
-  Future<Map<String, dynamic>> setCurrentURI({Service service, String uri, String title, String creator, String Objectclass}) async{
+  Future<Map<String, dynamic>> setCurrentURI({Service service, String uri, String title, String creator, String Objectclass,
+    String coverArt, String parentID, String ID}) async{
     print(service.actionNames);
     print(service.id);
     print(service.controlUrl);
@@ -217,7 +218,16 @@ class upnp{
     return await service.invokeAction("SetAVTransportURI", {
       "InstanceID":"0",
       "CurrentURI":uri??"",
-      "CurrentURIMetaData":'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sec="http://www.sec.co.kr/"><item id="f-0" parentID="0" restricted="0"><dc:title>${title??"Untitled"}</dc:title><dc:creator>${creator??"NoCreator"}</dc:creator><upnp:class>${Objectclass??"object.item.videoItem"}</upnp:class><res protocolInfo="*:*:audio:*" sec:URIType="public">${uri??""}</res></item></DIDL-Lite>'
+      "CurrentURIMetaData":'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sec="http://www.sec.co.kr/">'
+          '<item id="${ID??"F565"}" parentID="${parentID??"ParentF556"}" restricted="false">'
+          '<dc:title>${title??"Untitled"}</dc:title>'
+          '<dc:creator>${creator??"NoCreator"}</dc:creator>'
+          '<upnp:class>${Objectclass??"object.item.videoItem"}</upnp:class>'
+          '<dc:description>A desription</dc:description>'
+          '<upnp:albumArtURI dlna:profileID="JPEG_TN">${coverArt??""}</upnp:albumArtURI>'
+          '<res protocolInfo="*:*:audio:*" sec:URIType="public">${uri??""}</res>'
+          '</item>'
+          '</DIDL-Lite>'
     });
   }
 

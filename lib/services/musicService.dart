@@ -1085,7 +1085,7 @@ class MusicService {
         _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
       final bool _isAudioSeeking = _isAudioSeeking$.value;
       if (!_isAudioSeeking) {
-        if(!(castService.castingState.value==CastState.NOT_CASTING)){
+        if(!(castService.castingState.value==CastState.CASTING)){
           updatePosition(duration);
         }
       }
