@@ -43,6 +43,7 @@ class _TracksPageState extends State<TracksPage>
   Map<String,TrackListDeckItemState> deckItemState;
   Map<String,Key> deckItemKeys;
   Map<String, BehaviorSubject> deckItemStateStream;
+  Map<String, PopupMenu> deckItemMenu;
   @override
   void initState(){
     controller = ScrollController();
@@ -69,6 +70,13 @@ class _TracksPageState extends State<TracksPage>
 
     deckItemStateStream={
       "cast": BehaviorSubject<Map<String,dynamic>>()
+    };
+
+    deckItemMenu={
+      "shuffle":null,
+      "sort": null,
+      "filter": null,
+      "cast":null
     };
 
 
@@ -336,7 +344,9 @@ class _TracksPageState extends State<TracksPage>
                               onDismiss: (){
                                 print("dismissed");
                               });
+                          dismissAllShownMenus();
                           sortMenu.show(widgetKey: deckItemKeys["sort"]);
+                          deckItemMenu["sort"]= sortMenu;
                           sortMenu.dismissCallback = (){
                             Widget badgeToBe;
                             Color badgeColor;
@@ -580,7 +590,9 @@ class _TracksPageState extends State<TracksPage>
                               onDismiss: (){
                                 print("dismissed");
                               });
+                          dismissAllShownMenus();
                           sortMenu.show(widgetKey: deckItemKeys["filter"]);
+                          deckItemMenu["sort"]= sortMenu;
                           return returnvalue.first;
                         },
                       ),
@@ -607,28 +619,31 @@ class _TracksPageState extends State<TracksPage>
                             Widget badgeToBe;
                             Color badgeColor;
                             Icon iconToBe = Icon(Icons.cast);
+                            String title = "Cast";
                             Color iconColor= Colors.white;
 
                             if(data==CastState.CASTING){
                               deckItemState["cast"].isActive=true;
                               iconColor= MyTheme.darkRed;
                               iconToBe = Icon(Icons.cast_connected);
+                              title="Casting..";
                             }else{
                               deckItemState["cast"].isActive=false;
                             }
                             if(deckItemStateStream["cast"]!=null){
                               deckItemStateStream["cast"].add({
-                                "withBadge":(deckItemState["cast"].isActive && (data==CastState.CASTING)),
+                                "withBadge":false,
                                 "badgeContent": badgeToBe,
                                 "badgeColor":badgeColor,
                                 "iconColor":iconColor,
-                                "icon":iconToBe
+                                "icon":iconToBe,
+                                "title":title
                               });
                             }
                           });
 
                           return {
-                            "withBadge":(deckItemState["cast"].isActive && (castService.castingState==CastState.CASTING)),
+                            "withBadge":false,
                             "badgeContent": badgeToBe,
                             "badgeColor":badgeColor,
                             "iconColor":iconColor,
@@ -637,26 +652,39 @@ class _TracksPageState extends State<TracksPage>
 
                         },
                         onTap: (){
+                          deckItemStateStream["cast"].add({
+                            "withBadge":true,
+                            "badgeContent": FlashingBadgeIcon(
+                              child: IconData(0xf7c0, fontFamily: 'fontawesome'),
+                              colors: [MyTheme.grey300, MyTheme.darkRed],
+                              flash: true,
+                              IconSize: 17,
+                            ),
+                            "badgeColor":Colors.transparent,
+                          });
                           BehaviorSubject<Map> returnvalue= BehaviorSubject<Map>();
                           returnFirstValue(){
                             Widget badgeToBe;
                             Color badgeColor;
                             Icon iconToBe = Icon(Icons.cast);
                             Color iconColor= Colors.white;
+                            String title = "Cast";
                             if(deckItemState["cast"].isActive){
                               iconColor= MyTheme.darkRed;
                               iconToBe = Icon(Icons.cast_connected);
+                              title="Casting..";
                             }
                             returnvalue.add({
-                              "withBadge":deckItemState["cast"].isActive,
+                              "withBadge":false,
                               "badgeContent": badgeToBe,
                               "badgeColor":badgeColor,
                               "iconColor":iconColor,
-                              "icon":iconToBe
-                            }) ;
+                              "icon":iconToBe,
+                              "title":title
+                            });
                           }
                           //You always toggle the casting since that already takes consideration of the
-                          // current value of the cast and doesn't need any arguments or badges
+                          // current value of the cast and doesn't need any arguments
                           togglCasting().then((data){
                             returnFirstValue();
                           });
@@ -670,16 +698,19 @@ class _TracksPageState extends State<TracksPage>
                             Color badgeColor;
                             Icon iconToBe = Icon(Icons.cast);
                             Color iconColor= Colors.white;
+                            String title = "Cast";
                             if(deckItemState["cast"].isActive){
                               iconColor= MyTheme.darkRed;
                               iconToBe = Icon(Icons.cast_connected);
+                              title="Casting..";
                             }
                             returnvalue.add({
-                              "withBadge":deckItemState["cast"].isActive,
+                              "withBadge":false,
                               "badgeContent": badgeToBe,
                               "badgeColor":badgeColor,
                               "iconColor":iconColor,
-                              "icon":iconToBe
+                              "icon":iconToBe,
+                              "title":title
                             }) ;
                           }
                           PopupMenu sortMenu = PopupMenu(
@@ -689,15 +720,15 @@ class _TracksPageState extends State<TracksPage>
                               context: context,
                               items: [
                                 MenuItem(
-                                    title: 'Refresh',
+                                    title: 'Search',
                                     textStyle: TextStyle(
                                         fontSize: 10.0,
-                                        color: MyTheme.grey300.withOpacity(.9)
+                                        color: MyTheme.darkBlack
                                     ),
                                     image: Icon(
-                                      Icons.keyboard,
+                                      Icons.refresh,
                                       size: 30,
-                                      color: MyTheme.grey300.withOpacity(.9)
+                                      color: MyTheme.darkBlack
                                     )
                                 ),
                               ],
@@ -728,7 +759,9 @@ class _TracksPageState extends State<TracksPage>
                               onDismiss: (){
                                 print("dismissed");
                               });
+                          dismissAllShownMenus();
                           sortMenu.show(widgetKey: deckItemKeys["cast"]);
+                          deckItemMenu["sort"]= sortMenu;
                           return returnvalue.first;
                         },
                       )
@@ -826,6 +859,17 @@ class _TracksPageState extends State<TracksPage>
   @override
   bool get wantKeepAlive => true;
 
+
+
+  dismissAllShownMenus(){
+    print("called");
+    deckItemMenu.keys.forEach((elem){
+      print("key : ${elem} is shown ? : ${deckItemMenu[elem]!=null && deckItemMenu[elem].isShow}");
+      if(deckItemMenu[elem]!=null && deckItemMenu[elem].isShow){
+        deckItemMenu[elem].dismiss();
+      }
+    });
+  }
 
   void shuffleSongListAlphabetically(){
     List<Tune> songsValue = List.from(currentSongs.value);
@@ -1118,7 +1162,6 @@ class _TracksPageState extends State<TracksPage>
 
 
   Future<upnp.Device> openDevicePickingDialog(List<upnp.Device> devices){
-    print(MediaQuery.of(context).size);
     Widget ShallowWidget = Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -1157,29 +1200,54 @@ class _TracksPageState extends State<TracksPage>
       stream: castService.searchForDevices().asStream(),
       builder: (context, AsyncSnapshot<List<upnp.Device>> snapshot){
         devices=snapshot.data;
+        Widget animtableChild;
+        if(!snapshot.hasData){
+          animtableChild=ShallowWidget;
+        }else{
+          if(devices.length!=0){
+            animtableChild = ListView.builder(
+              padding: EdgeInsets.all(3),
+              itemBuilder: (context, index){
+                upnp.Device device = devices[index];
+                return SelectableTile(
+                  imageUri:null,
+                  title: device.friendlyName,
+                  isSelected: false,
+                  selectedBackgroundColor: MyTheme.darkRed,
+                  onTap: (willItBeSelected){
+                    Navigator.of(context, rootNavigator: true).pop(device);
+                  },
+                  placeHolderAssetUri: "images/blackbgUpnp.png",
+                );
+              },
+              semanticChildCount: devices.length,
+              cacheExtent: 60,
+              itemCount: devices.length,
+            );
+          }else{
+            animtableChild= Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(top: 8),
+                    child: Text("No Devices Found",
+                      style: TextStyle(
+                          color: MyTheme.grey300,
+                          fontSize: 17
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
+        }
         return AnimatedSwitcher(
           reverseDuration: Duration(milliseconds: 300),
           duration: Duration(milliseconds: 300),
           switchInCurve: Curves.easeInToLinear,
-          child: !snapshot.hasData?ShallowWidget:ListView.builder(
-            padding: EdgeInsets.all(3),
-            itemBuilder: (context, index){
-              upnp.Device device = devices[index];
-              return SelectableTile(
-                imageUri:null,
-                title: device.friendlyName,
-                isSelected: false,
-                selectedBackgroundColor: MyTheme.darkRed,
-                onTap: (willItBeSelected){
-                  Navigator.of(context, rootNavigator: true).pop(device);
-                },
-                placeHolderAssetUri: "images/blackbgUpnp.png",
-              );
-            },
-            semanticChildCount: devices.length,
-            cacheExtent: 60,
-            itemCount: devices.length,
-          ),
+          child:animtableChild,
         );
       },
     );
