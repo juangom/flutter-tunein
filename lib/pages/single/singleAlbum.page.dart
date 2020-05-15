@@ -833,49 +833,7 @@ class SingleAlbumPage extends StatelessWidget {
                           childCount: album.songs.length+1
                         ),
                       )
-                      /*AlbumSongList(album)*/
                     ],
-                    /*child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    height: ((MediaQuery.of(context).size.height - 200 - 62) + ((album.songs.length)*61)),
-                    child: Column(
-                      children: <Widget>[
-                        ItemListDevider(DeviderTitle: "More choices"),
-                        Container(
-                          color:MyTheme.bgBottomBar,
-                          height: 120,
-                          child: ListView.builder(
-                            itemExtent: 180,
-                            itemCount: 1,
-                            cacheExtent:MediaQuery.of(context).size.width ,
-                            addAutomaticKeepAlives: true,
-                            shrinkWrap: false,
-
-                            scrollDirection: Axis.horizontal,
-
-                            itemBuilder: (context, index){
-                              return MoreOptionsCard(
-                                imageUri: album.albumArt,
-                                colors: album.songs[0].colors,
-                                bottomTitle: "Most Played",
-                                onPlayPressed: (){
-                                  musicService.playMostPlayedOfAlbum(album);
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        ItemListDevider(DeviderTitle: "Tracks",),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: AlbumSongList(album),
-                        )
-
-                      ],
-                    ),
-                  ),
-                ),*/
                   ),
                 ),
 

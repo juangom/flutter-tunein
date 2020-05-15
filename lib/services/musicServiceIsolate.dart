@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
+import 'package:Tunein/plugins/upnp.dart' as UPnPPlugin;
+import 'package:upnp/upnp.dart';
 
 MethodChannel platform = MethodChannel('android_app_retain');
 
@@ -200,8 +202,12 @@ class musicServiceIsolate {
           incomingMessage.sender.send(true);
           break;
         }
-        case "UPlayerstate":{
-          _playerState$.add(incomingMessage.message);
+        case "searchForCastDevices":{
+          if(incomingMessage.message!=null){
+            searchForCastingDevices((data){
+              incomingMessage.sender.send(data);
+            });
+          }
           break;
         }
         case "readExternalDirectory":{
@@ -450,6 +456,22 @@ class musicServiceIsolate {
     return data;
   }
 
+
+  // Searching for casting devices
+
+
+  static searchForCastingDevices(Function(List<Device>) callback) async{
+    try{
+      UPnPPlugin.upnp instance = UPnPPlugin.upnp();
+      List<Device> devices = await instance.getDevices();
+      print("found ${devices.length} devices");
+      callback(devices);
+    }catch(e){
+      print(e);
+      print(e.stack);
+    }
+
+  }
 
   void _initStreams() {
     _playerState$.listen((data){

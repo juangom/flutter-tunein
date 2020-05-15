@@ -115,8 +115,24 @@ class CastService {
     }
   }
 
-  Future<List<Device>> searchForDevices(){
-    return UpnPPlugin.getDevices();
+  Future<List<Device>> searchForDevices() async{
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+        sender: tempPort.sendPort,
+        command: "searchForCastDevices",
+        message: ""
+    ));
+
+    List<Device> deviceList =[];
+    await  tempPort.forEach((data){
+      print(data);
+      if(data!="OK"){
+        tempPort.close();
+        deviceList =data;
+      }
+    });
+
+    return deviceList;
   }
 
   Future castAndPlay(Tune songToCast)async {
