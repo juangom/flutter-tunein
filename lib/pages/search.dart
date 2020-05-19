@@ -1,5 +1,6 @@
 import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/genericSongList.dart';
+import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/models/playerstate.dart';
@@ -79,6 +80,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     return Container(
       color: MyTheme.darkBlack,
       child: Column(
@@ -168,32 +170,24 @@ class _SearchPageState extends State<SearchPage> {
                       .toLowerCase()
                       .compareTo(b.title.toLowerCase());
                 });
-                return Column(
-                  children: <Widget>[
-                    _albums.length!=0?Row(
-                      children: <Widget>[
-                        Container(
-                          padding:EdgeInsets.only(top:10, left: 10),
+                return CustomScrollView(
+                  slivers: <Widget>[
+                    _albums.length!=0?SliverPersistentHeader(
+                      delegate: DynamicSliverHeaderDelegate(
                           child: Material(
-                              child: Text(
-                                "ALBUMS",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                textAlign: TextAlign.left,
-                              ),
-                              elevation: 0,
-                              color:Colors.transparent
+                            child: ItemListDevider(DeviderTitle: "Albums",
+                              backgroundColor: Colors.transparent,
+                            ),
+                            color: Colors.transparent,
                           ),
-                        )
-                      ] ,
-                    ):Container(),
-                    _albums.length!=0?Expanded(
-                      flex:4,
+                          minHeight: 35,
+                          maxHeight: 35
+                      ),
+                      pinned: false,
+                    ):SliverToBoxAdapter(),
+                    _albums.length!=0?SliverToBoxAdapter(
                       child: Container(
-                        height:80,
+                        height:190,
                         child: ListView.builder(
                           itemBuilder: (context, index){
                             return Material(
@@ -221,86 +215,78 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         padding: EdgeInsets.all(10),
                       ),
-                    ):Container(),
-                    _songs.length!=0?Row(
-                      children: <Widget>[
-                        Container(
-                          padding:EdgeInsets.only(bottom:10, left: 10),
+                    ):SliverToBoxAdapter(),
+                    _songs.length!=0?SliverPersistentHeader(
+                      delegate: DynamicSliverHeaderDelegate(
                           child: Material(
-                              child: Text(
-                                "TRACKS",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                textAlign: TextAlign.left,
-                              ),
-                              elevation: 0,
-                              color:Colors.transparent
+                            child: ItemListDevider(DeviderTitle: "Tracks",
+                              backgroundColor: Colors.transparent,
+                            ),
+                            color: MyTheme.darkBlack,
                           ),
-                        )
-                      ] ,
-                    ):Container(),
-                    _songs.length!=0?Expanded(
-                      flex:7,
-                      child: GenericSongList(
-                        songs: _songs ,
-                        contextMenuOptions:(song) =>songCardContextMenulist,
-                        onSongCardTap: (song,_state,_isSelectedSong){
-                          print(song.uri);
-                          print(_state);
-                          print(_isSelectedSong);
-                          switch (_state) {
-                            case PlayerState.playing:
-                              if (_isSelectedSong) {
-                                musicService.pauseMusic(song);
-                              } else {
-                                musicService.stopMusic();
-                                musicService.playOne(
-                                  song,
-                                );
-                              }
-                              break;
-                            case PlayerState.paused:
-                              if (_isSelectedSong) {
-                                musicService
-                                    .playMusic(song);
-                              } else {
-                                musicService.stopMusic();
-                                musicService.playOne(
-                                  song,
-                                );
-                              }
-                              break;
-                            case PlayerState.stopped:
-                              musicService.playOne(song);
-                              break;
-                            default:
-                              break;
-                          }
-                        },
-                        onContextOptionSelect: (choice, song){
-                          switch(choice.id){
-                            case 1: {
-                              musicService.playOne(song);
-                              break;
-                            }
-                            case 2:{
-                              musicService.startWithAndShuffleQueue(song, _songs);
-                              break;
-                            }
-                            case 3:{
-                              musicService.startWithAndShuffleAlbum(song);
-                              break;
-                            }
-                            case 4:{
-                              musicService.playAlbum(song);
-                            }
-                          }
-                        },
+                          minHeight: 35,
+                          maxHeight: 35
                       ),
-                    ):Container()
+                      pinned: true,
+                    ):SliverToBoxAdapter(),
+
+                    _songs.length!=0?GenericSongList.Sliver(
+                      screenSize: screenSize,
+                      songs: _songs ,
+                      contextMenuOptions:(song) =>songCardContextMenulist,
+                      onSongCardTap: (song,_state,_isSelectedSong){
+                        print(song.uri);
+                        print(_state);
+                        print(_isSelectedSong);
+                        switch (_state) {
+                          case PlayerState.playing:
+                            if (_isSelectedSong) {
+                              musicService.pauseMusic(song);
+                            } else {
+                              musicService.stopMusic();
+                              musicService.playOne(
+                                song,
+                              );
+                            }
+                            break;
+                          case PlayerState.paused:
+                            if (_isSelectedSong) {
+                              musicService
+                                  .playMusic(song);
+                            } else {
+                              musicService.stopMusic();
+                              musicService.playOne(
+                                song,
+                              );
+                            }
+                            break;
+                          case PlayerState.stopped:
+                            musicService.playOne(song);
+                            break;
+                          default:
+                            break;
+                        }
+                      },
+                      onContextOptionSelect: (choice, song){
+                        switch(choice.id){
+                          case 1: {
+                            musicService.playOne(song);
+                            break;
+                          }
+                          case 2:{
+                            musicService.startWithAndShuffleQueue(song, _songs);
+                            break;
+                          }
+                          case 3:{
+                            musicService.startWithAndShuffleAlbum(song);
+                            break;
+                          }
+                          case 4:{
+                            musicService.playAlbum(song);
+                          }
+                        }
+                      },
+                    ):SliverToBoxAdapter()
                   ]
                 );
               },
