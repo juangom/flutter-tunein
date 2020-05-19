@@ -736,7 +736,7 @@ class _TracksPageState extends State<TracksPage>
                                 print("provider got is : ${provider}");
                                 switch(provider.menuTitle){
                                   case "Refresh":{
-                                     openDevicePickingDialog(null).then(
+                                    DialogService.openDevicePickingDialog(context, null).then(
                                         (data){
                                           upnp.Device deviceChosen = data;
                                           if(deviceChosen!=null){
@@ -1025,7 +1025,7 @@ class _TracksPageState extends State<TracksPage>
 
         }else{
           //if the device is not there anymore a dialog will popup letting the user pick their device from the list of compatible devices
-            upnp.Device selectedDevice = await openDevicePickingDialog(deviceFound);
+            upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,deviceFound);
             if(selectedDevice!=null){
               castService.setDeviceToBeUsed(selectedDevice);
               musicService.stopMusic();
@@ -1036,7 +1036,7 @@ class _TracksPageState extends State<TracksPage>
         }
       }else{
         //If there is no device registered so we need to search for devices and show a dialog for the user to pick from
-        upnp.Device selectedDevice = await openDevicePickingDialog(null);
+        upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,null);
         if(selectedDevice!=null){
           castService.setDeviceToBeUsed(selectedDevice);
           musicService.stopMusic();
@@ -1054,6 +1054,8 @@ class _TracksPageState extends State<TracksPage>
     if(deckItemState==null){
       return songsValue;
     }
+
+
     if(deckItemState["shuffle"].isActive){
       switch(deckItemState["shuffle"].activeNature){
         case "auto":{
@@ -1070,6 +1072,7 @@ class _TracksPageState extends State<TracksPage>
         }
       }
     }
+
 
     if(deckItemState["sort"].isActive){
       switch(deckItemState["sort"].activeNature){
@@ -1158,155 +1161,6 @@ class _TracksPageState extends State<TracksPage>
     return songsValue;
   }
 
-
-
-
-  Future<upnp.Device> openDevicePickingDialog(List<upnp.Device> devices){
-    Widget ShallowWidget = Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      color: MyTheme.darkgrey.withOpacity(.01),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            CircularProgressIndicator(
-              strokeWidth: 4,
-              valueColor: AlwaysStoppedAnimation<Color>(MyTheme.darkRed),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 8),
-              child: Text("No devices registered",
-                style: TextStyle(
-                    color: MyTheme.grey300,
-                    fontSize: 18
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 8),
-              child: Text("Searching for devices",
-                style: TextStyle(
-                  color: MyTheme.grey300,
-                  fontSize: 17
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-    Widget devicesNotSent = StreamBuilder(
-      stream: castService.searchForDevices().asStream(),
-      builder: (context, AsyncSnapshot<List<upnp.Device>> snapshot){
-        devices=snapshot.data;
-        Widget animtableChild;
-        if(!snapshot.hasData){
-          animtableChild=ShallowWidget;
-        }else{
-          if(devices.length!=0){
-            animtableChild = ListView.builder(
-              padding: EdgeInsets.all(3),
-              itemBuilder: (context, index){
-                upnp.Device device = devices[index];
-                return SelectableTile(
-                  imageUri:null,
-                  title: device.friendlyName,
-                  isSelected: false,
-                  selectedBackgroundColor: MyTheme.darkRed,
-                  onTap: (willItBeSelected){
-                    Navigator.of(context, rootNavigator: true).pop(device);
-                  },
-                  placeHolderAssetUri: "images/blackbgUpnp.png",
-                );
-              },
-              semanticChildCount: devices.length,
-              cacheExtent: 60,
-              itemCount: devices.length,
-            );
-          }else{
-            animtableChild= Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(top: 8),
-                    child: Text("No Devices Found",
-                      style: TextStyle(
-                          color: MyTheme.grey300,
-                          fontSize: 17
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            );
-          }
-        }
-        return AnimatedSwitcher(
-          reverseDuration: Duration(milliseconds: 300),
-          duration: Duration(milliseconds: 300),
-          switchInCurve: Curves.easeInToLinear,
-          child:animtableChild,
-        );
-      },
-    );
-    return showDialog(
-        context: context,
-        builder: (_) {
-          return AlertDialog(
-            backgroundColor: MyTheme.darkBlack,
-            title: Text(
-              "Choosing Cast Devices",
-              style: TextStyle(
-                  color: Colors.white70
-              ),
-            ),
-            content: Container(
-              height: MediaQuery.of(context).size.height/2.5,
-              width: MediaQuery.of(context).size.width/1.2,
-              child: devices==null?devicesNotSent:ListView.builder(
-                padding: EdgeInsets.all(3),
-                itemBuilder: (context, index){
-                  upnp.Device device = devices[index];
-                  return SelectableTile(
-                    imageUri:null,
-                    title: device.friendlyName,
-                    isSelected: false,
-                    selectedBackgroundColor: MyTheme.darkRed,
-                    onTap: (willItBeSelected){
-                      Navigator.of(context, rootNavigator: true).pop(device);
-                    },
-                    placeHolderAssetUri: "images/blackbgUpnp.png",
-                  );
-                },
-                semanticChildCount: devices.length,
-                cacheExtent: 60,
-                itemCount: devices.length,
-              ),
-            ),
-            actions: <Widget>[
-              FlatButton(
-                  child: Text(
-                    "Cancel",
-                    style: TextStyle(
-                        color: MyTheme.darkRed
-                    ),
-                  ),
-                  onPressed: () => Navigator.of(context, rootNavigator: true).pop())
-            ],
-          );
-        });
-
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => EditPlaylist(playlist: playlist),
-          fullscreenDialog: true
-      ),
-    );*/
-  }
-
-
   Future<String> openFilteringKeywordDialog(){
     String keyword="";
     return showDialog(
@@ -1357,17 +1211,9 @@ class _TracksPageState extends State<TracksPage>
             ],
           );
         });
-
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => EditPlaylist(playlist: playlist),
-          fullscreenDialog: true
-      ),
-    );*/
   }
   Future<List<Album>> openFilteringAlbumDialog(List<Album> albums){
     albums=albums??musicService.albums$.value;
-    String keyword="";
     List<Album> selectedAlbums=List<Album>();
     return showDialog(
         context: context,
@@ -1437,17 +1283,9 @@ class _TracksPageState extends State<TracksPage>
             ],
           );
         });
-
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => EditPlaylist(playlist: playlist),
-          fullscreenDialog: true
-      ),
-    );*/
   }
   Future<List<Artist>> openFilteringArtistDialog(List<Artist> artists){
     artists=artists??musicService.artists$.value;
-    String keyword="";
     List<Artist> selectedArtists=List<Artist>();
     return showDialog(
         context: context,
@@ -1517,13 +1355,6 @@ class _TracksPageState extends State<TracksPage>
             ],
           );
         });
-
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => EditPlaylist(playlist: playlist),
-          fullscreenDialog: true
-      ),
-    );*/
   }
 
 }

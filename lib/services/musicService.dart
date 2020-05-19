@@ -257,7 +257,7 @@ class MusicService {
       _upnpPlayerStateSubscription=null;
       //Initialize the local duration too
       _position$.add(Duration(milliseconds: 0));
-      playerState$.add(MapEntry(PlayerState.stopped,playerState$.value.value));
+      playerState$.add(MapEntry(PlayerState.paused,playerState$.value.value));
     }
   }
 
@@ -265,7 +265,7 @@ class MusicService {
   ///And reset the duration adn player state
   void reInitializePlayStreams(){
     _position$.add(Duration(milliseconds: 0));
-    playerState$.add(MapEntry(PlayerState.stopped,playerState$.value.value));
+    playerState$.add(MapEntry(PlayerState.paused,playerState$.value.value));
   }
 
 

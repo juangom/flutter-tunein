@@ -219,14 +219,16 @@ class upnp{
       "InstanceID":"0",
       "CurrentURI":uri??"",
       "CurrentURIMetaData":'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sec="http://www.sec.co.kr/">'
-          '<item id="${ID??"F565"}" parentID="${parentID??"ParentF556"}" restricted="false">'
-          '<dc:title>${title??"Untitled"}</dc:title>'
-          '<dc:creator>${creator??"NoCreator"}</dc:creator>'
-          '<upnp:class>${Objectclass??"object.item.videoItem"}</upnp:class>'
-          '<dc:description>A desription</dc:description>'
-          '<upnp:albumArtURI dlna:profileID="JPEG_TN">${coverArt??""}</upnp:albumArtURI>'
-          '<res protocolInfo="*:*:audio:*" sec:URIType="public">${uri??""}</res>'
-          '</item>'
+          '  <item id="f-0" parentID="0" restricted="0">'
+          '    <dc:title>${title??"Untitled"}</dc:title>'
+          '    <dc:creator>${creator??"NoCreator"}</dc:creator>'
+          '    <upnp:class>${Objectclass??"object.item.videoItem"}</upnp:class>'
+          '    <dc:description>A desription</dc:description>'
+          '    <upnp:artist>${creator??"NoCreator"}</upnp:artist>'
+          '    <upnp:album>${creator??"NoCreator"}</upnp:album>'
+          '    <upnp:albumArtURI xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" dlna:profileID="JPEG_TN">${coverArt??""}</upnp:albumArtURI>'
+          '    <res protocolInfo="*:*:audio:*" sec:URIType="public">${uri??""}</res>'
+          '  </item>'
           '</DIDL-Lite>'
     });
   }

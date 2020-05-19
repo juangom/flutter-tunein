@@ -89,7 +89,7 @@ class CastService {
                         break;
                       }
                       case "STOPPED":{
-                        _castingPlayerState.value!=PlayerState.stopped?_castingPlayerState.add(PlayerState.stopped):null;
+                        _castingPlayerState.value!=PlayerState.paused?_castingPlayerState.add(PlayerState.paused):null;
                         break;
                       }
                       default:

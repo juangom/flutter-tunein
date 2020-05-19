@@ -286,12 +286,15 @@ class TrackListDeckItemState{
 class FlashingBadgeIcon extends StatefulWidget {
   bool flash;
   List<Color> colors;
+  Color nonFlashingColor;
   IconData child;
   Duration durationBetweenColorChanges;
   double IconSize;
   void Function(int) onflash;
   Timer flashTimer;
-  FlashingBadgeIcon({this.flash=true, this.child, this.colors, this.durationBetweenColorChanges=const Duration(milliseconds: 1000), this.IconSize});
+  FlashingBadgeIcon({this.flash=true, this.child, this.colors, this.durationBetweenColorChanges=const Duration(milliseconds: 1000), this.IconSize,
+    this.nonFlashingColor
+  });
   @override
   _FlashingBadgeIconState createState() => _FlashingBadgeIconState();
 }
@@ -302,7 +305,7 @@ class _FlashingBadgeIconState extends State<FlashingBadgeIcon> {
   List<Color> colors;
   IconData child;
   double IconSize;
-
+  Color nonFlashingColor;
   Duration durationBetweenColorChanges;
   void Function(int) onflash;
   @override
@@ -314,31 +317,35 @@ class _FlashingBadgeIconState extends State<FlashingBadgeIcon> {
     IconSize=widget.IconSize;
     durationBetweenColorChanges=widget.durationBetweenColorChanges;
     onflash=widget.onflash;
-
+    nonFlashingColor=widget.nonFlashingColor;
     if(widget.flashTimer==null){
      widget.flashTimer = Timer.periodic(durationBetweenColorChanges, (timer){
        if(mounted){
-         setState(() {
-           if(currentIndex<colors.length-1){
-             currentIndex++;
-           }else{
-             currentIndex=0;
-           }
-         });
+         if(flash){
+           setState(() {
+             if(currentIndex<colors.length-1){
+               currentIndex++;
+             }else{
+               currentIndex=0;
+             }
+           });
+         }
          onflash!=null?onflash(currentIndex):null;
        }else{
-         //If the widget is not mounted anymore, cancel the timer
-         widget.flashTimer.cancel();
-         widget.flashTimer=null;
+
        }
      });
+    }else{
+      //If the widget is not mounted anymore, cancel the timer
+      widget.flashTimer.cancel();
+      widget.flashTimer=null;
     }
   }
   @override
   Widget build(BuildContext context) {
     return Icon(child,
       size: IconSize,
-      color: colors[currentIndex],
+      color: flash?colors[currentIndex]:(nonFlashingColor??colors[currentIndex]),
     );
   }
 
