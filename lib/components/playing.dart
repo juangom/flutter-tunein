@@ -165,7 +165,7 @@ class _PlayingPageState extends State<PlayingPage>
 
         Key widgetKey = GlobalKey();
         PopupMenu menu = PopupMenu(
-            backgroundColor: MyTheme.darkRed,
+            backgroundColor: Color(colors[1]),
             lineColor: Colors.transparent,
             maxColumn: 2,
             context: context,
@@ -174,21 +174,21 @@ class _PlayingPageState extends State<PlayingPage>
                   title: 'Album',
                   textStyle: TextStyle(
                       fontSize: 10.0,
-                      color:  Color(colors[1])
+                      color:  Color(colors[0])
                   ),
                   image: Icon(
                     Icons.album,
                     size: 30,
-                    color: Color(colors[1]).withOpacity(.9),
+                    color: Color(colors[0]).withOpacity(.9),
                   )
               ),
               MenuItem(
                   title: 'Playlist',
-                  textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[1])),
+                  textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[0])),
                   image: Icon(
                     Icons.playlist_add_check,
                     size: 30,
-                    color: Color(colors[1]).withOpacity(.9),
+                    color: Color(colors[0]).withOpacity(.9),
                   )
               ),
             ],
@@ -222,24 +222,17 @@ class _PlayingPageState extends State<PlayingPage>
               color: Color(colors[1]).withOpacity(.7),
             ),
             badgeContent: Center(
-              child: Text("*",
-                strutStyle: StrutStyle(
-                    height: 1.5,
-                    forceStrutHeight: true
-                ),
-                style: TextStyle(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w800
-                ),
-
+              child: Icon(Icons.playlist_play,
+                size: 19,
+                color: MyTheme.darkRed,
               ),
             ),
-            padding: EdgeInsets.all(3),
+            padding: EdgeInsets.all(1),
             position: BadgePosition.topRight(
                 top: -9,
-                right: -4
+                right: -6
             ),
-            badgeColor: MyTheme.darkRed,
+            badgeColor: Color(colors[0]),
           ):Icon(
             Icons.album,
             size: 30,
@@ -483,7 +476,7 @@ class _PlayingPageState extends State<PlayingPage>
 
     Key widgetKey = GlobalKey();
     PopupMenu menu = PopupMenu(
-        backgroundColor: MyTheme.darkRed,
+        backgroundColor: Color(colors[1]),
         lineColor: Colors.transparent,
         maxColumn: 2,
         context: context,
@@ -492,21 +485,21 @@ class _PlayingPageState extends State<PlayingPage>
               title: 'Album',
               textStyle: TextStyle(
                 fontSize: 10.0,
-                color:  Color(colors[1])
+                color:  Color(colors[0])
               ),
               image: Icon(
                 Icons.album,
                 size: 30,
-                color: Color(colors[1]).withOpacity(.9),
+                color: Color(colors[0]).withOpacity(.9),
               )
           ),
           MenuItem(
               title: 'Playlist',
-              textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[1])),
+              textStyle: TextStyle(fontSize: 10.0, color:  Color(colors[0])),
               image: Icon(
                 Icons.playlist_add_check,
                 size: 30,
-                color: Color(colors[1]).withOpacity(.9),
+                color: Color(colors[0]).withOpacity(.9),
               )
           ),
         ],
@@ -540,24 +533,17 @@ class _PlayingPageState extends State<PlayingPage>
           color: Color(colors[1]).withOpacity(.7),
         ),
         badgeContent: Center(
-          child: Text("*",
-            strutStyle: StrutStyle(
-                height: 1.5,
-                forceStrutHeight: true
-            ),
-            style: TextStyle(
-                fontSize: 15.0,
-                fontWeight: FontWeight.w800
-            ),
-
+          child: Icon(Icons.playlist_play,
+            size: 17,
+            color: MyTheme.darkRed,
           ),
         ),
-        padding: EdgeInsets.all(3),
+        padding: EdgeInsets.all(1),
         position: BadgePosition.topRight(
             top: -9,
-            right: -4
+            right: -6
         ),
-        badgeColor: MyTheme.darkRed,
+        badgeColor: Color(colors[0]),
       ):Icon(
         Icons.album,
         size: 30,
