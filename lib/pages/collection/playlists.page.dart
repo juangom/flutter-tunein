@@ -127,7 +127,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                       case 2: {
                                         musicService.updatePlaylist(_currentPlaylist.songs);
                                         musicService.stopMusic();
-                                        musicService.playMusic(_currentPlaylist.songs[0]);
+                                        musicService.playMusic(_currentPlaylist.songs[0], isPartOfAPlaylist: true, playlist: _currentPlaylist);
                                         musicService.updatePlaylistState(PlayerState.playing,_currentPlaylist);
                                         break;
                                       }
@@ -135,7 +135,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                         musicService.updatePlaylist(_currentPlaylist.songs);
                                         musicService.updatePlayback(Playback.shuffle);
                                         musicService.stopMusic();
-                                        musicService.playMusic(_currentPlaylist.songs[0]);
+                                        musicService.playMusic(_currentPlaylist.songs[0], isPartOfAPlaylist: true, playlist: _currentPlaylist);
                                         musicService.updatePlaylistState(PlayerState.playing,_currentPlaylist);
                                         break;
                                       }

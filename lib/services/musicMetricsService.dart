@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum MetricIds{
   MET_GLOBAL_PLAY_TIME,
   MET_GLOBAL_SONG_PLAY_TIME,
-  MET_GLOBAL_LAST_PLAYED_SONGS
+  MET_GLOBAL_LAST_PLAYED_SONGS,
+  MET_GLOBAL_LAST_PLAYED_PLAYLIST,
+  MET_GLOBAL_PLAYLIST_PLAY_TIME
 }
 
 
@@ -17,12 +20,39 @@ class MusicMetricsService {
 
   BehaviorSubject<Map<MetricIds,dynamic>> _metrics;
 
+
+  BehaviorSubject<Map<MetricIds, dynamic>> get metrics => _metrics;
+
   MusicMetricsService(){
     _initStreams();
   }
 
   _initStreams(){
     _metrics = BehaviorSubject<Map<MetricIds,dynamic>>.seeded(Map());
+  }
+
+
+  setLastPlayedPlaylist(Playlist playlist){
+    //A null Last played playlist means that the last song that was played was not part of a playlist
+    updateSingleSetting(MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST,
+        playlist!=null?Playlist.toMap(playlist):null);
+  }
+
+
+  incrementPlaylistPlaytimeOnSinglePlaylist(Playlist playlist, Duration durationToAdd)async {
+    if(durationToAdd!=null){
+      return;
+    }
+    Map<String,dynamic> PlayedTimeOnAllPlaylists = getCurrentMemoryMetric(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME);
+    if(PlayedTimeOnAllPlaylists[playlist.id]!=null){
+      int numericValueOfSong = int.parse(PlayedTimeOnAllPlaylists[playlist.id]);
+      numericValueOfSong+=durationToAdd.inSeconds;
+      PlayedTimeOnAllPlaylists[playlist.id]=numericValueOfSong.toString();
+      updateSingleSetting(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
+    }else{
+      PlayedTimeOnAllPlaylists[playlist.id]= durationToAdd.inSeconds.toString();
+      updateSingleSetting(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
+    }
   }
 
   void addSongToLatestPlayedSongs(Tune song){
@@ -70,7 +100,7 @@ class MusicMetricsService {
 
 
   //Basic Functions
-  fetchAllMetrics() async{
+  Future fetchAllMetrics() async{
     Map<MetricIds, dynamic> metricsMap = new Map();
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     try{
@@ -155,8 +185,14 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return Map<String,String>();
         break;
+      case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
+        return Map<String,String>();
+        break;
       case MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS:
         return List<Tune>();
+        break;
+      case MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST:
+        return null;
         break;
       default:
         return null;
@@ -173,8 +209,14 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return String;
         break;
+      case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
+        return String;
+        break;
       case MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS:
         return List;
+        break;
+      case MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST:
+        return String;
         break;
       default:
         return String;
@@ -184,6 +226,9 @@ class MusicMetricsService {
 
 
   convertFromStorage(MetricIds metricId, dynamic value){
+    if(value==null){
+      return null;
+    }
     switch(metricId){
       case MetricIds.MET_GLOBAL_PLAY_TIME:
         return value.toString();
@@ -191,8 +236,14 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return json.decode(value);
         break;
+      case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
+        return json.decode(value);
+        break;
       case MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS:
         return decodeSongListFromJson(value);
+        break;
+      case MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST:
+        return Playlist.fromMap(json.decode(value));
         break;
       default:
         return value.toString();
@@ -202,6 +253,9 @@ class MusicMetricsService {
 
 
   convertToStorage(MetricIds metricId, dynamic value){
+    if(value==null){
+      return null;
+    }
     switch(metricId){
       case MetricIds.MET_GLOBAL_PLAY_TIME:
         return value.toString();
@@ -209,8 +263,14 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return json.encode(value);
         break;
+      case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
+        return json.encode(value);
+        break;
       case MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS:
         return encodeSongListToJson(value);
+        break;
+      case MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST:
+        return json.encode(value);
         break;
       default:
         return value.toString();

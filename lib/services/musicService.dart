@@ -270,7 +270,7 @@ class MusicService {
 
 
 
-  void playMusic(Tune song) async {
+  void playMusic(Tune song, {bool isPartOfAPlaylist=false, Playlist playlist}) async {
 
     if(castService.castingState.value==CastState.CASTING){
       //If this is true the play should play on the cast device
@@ -320,15 +320,35 @@ class MusicService {
     }
 
 
+
+
+    //********************************************************************************************************//
+    //********************// ON PLAY METRICS // **************************************************************//
+    //********************************************************************************************************//
+
+    //If this song is part of a playlist and it is going to play that, we need to set it as the last Played Playlist
+
+    if(isPartOfAPlaylist){
+      metricService.setLastPlayedPlaylist(playlist);
+    }
+
     //before switching the playState to the new song we need to save the metrics of the previous song
     //Metrics are counted when casting to other devices for convenience (for now)
-    //May change TODO Add a setting options for this
+    //May change TODO Add a setting options for Metrics to be counted when casting or Not
     MapEntry<PlayerState, Tune> playerstate= playerState$.value;
     if(playerstate!=null){
       if(playerstate.value!=null && playerstate.value.id!=null){
         metricService.incrementPlayTimeOnSingleSong(playerstate.value, position$.value);
+        //Setting the playlist Time
+        if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
+          return elem.id==playerstate.value.id;
+        })!=-1){
+          metricService.incrementPlaylistPlaytimeOnSinglePlaylist(_currentPlayingPlaylist$.value.value, position$.value);
+        }
       }
     }
+
+
     //adding the toBePlayedSong to the latestPlayed songs
     metricService.addSongToLatestPlayedSongs(song);
 
@@ -337,6 +357,9 @@ class MusicService {
       return elem.id==song.id;
     })==-1){
       updatePlaylistState(PlayerState.stopped, null);
+      metricService.setLastPlayedPlaylist(null);
+    }else{
+      //If the song is part of a playlist and a current playlist is being played
     }
     updatePlayerState(PlayerState.playing, song);
 
@@ -363,16 +386,13 @@ class MusicService {
 
   void stopMusic() {
     if(castService.castingState.value==CastState.CASTING){
-      //If this is true the stop media command should be issued to the casting device
-      //Even in stopping music, we issue a stop media command because the stop command would
-      //disengage the casting and would require reconnecting and issuing newer commands
-      //THIS IS STILL NOT COMPLETELY TESTED
+      //stop the current media running on the cast device
       castService.stopCurrentMedia();
-      updatePlaylistState(PlayerState.paused, null);
+      updatePlayerState(PlayerState.paused, playerState$.value.value);
     }else{
       //pause the song if it is a local play
       _audioPlayer.stop();
-      updatePlaylistState(PlayerState.stopped, null);
+      updatePlayerState(PlayerState.paused, playerState$.value.value);
     }
 
   }

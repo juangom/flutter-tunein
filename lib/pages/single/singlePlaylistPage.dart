@@ -159,7 +159,7 @@ class SinglePlaylistPage extends StatelessWidget {
                                                   case 2: {
                                                     musicService.updatePlaylist(playlist.songs);
                                                     musicService.stopMusic();
-                                                    musicService.playMusic(playlist.songs[0]);
+                                                    musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
                                                     musicService.updatePlaylistState(PlayerState.playing,playlist);
                                                     break;
                                                   }
@@ -167,7 +167,7 @@ class SinglePlaylistPage extends StatelessWidget {
                                                     musicService.updatePlaylist(playlist.songs);
                                                     musicService.updatePlayback(Playback.shuffle);
                                                     musicService.stopMusic();
-                                                    musicService.playMusic(playlist.songs[0]);
+                                                    musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
                                                     musicService.updatePlaylistState(PlayerState.playing,playlist);
                                                     break;
                                                   }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/collection/collection.page.dart';
 import 'package:Tunein/pages/library/library.page.dart';
 import 'package:Tunein/pages/settings/settings.page.dart';
+import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
@@ -34,6 +36,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       StreamController<StartupState>();
   @override
   void initState() {
+    musicService.showUI();
     MusicServiceIsolate.callerCreateIsolate().then((value){
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
         print("the returned value is ${retunedValue}");
@@ -46,10 +49,6 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
 
     });
-
-
-
-    musicService.showUI();
 
     super.initState();
   }
@@ -95,6 +94,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       await musicService.getArtistDataAndSaveIt();
       _startupStatus.add(StartupState.Success);
 
+      loadLastTimeSongsAndPlaylists();
+
       //This was a test of the flutter_isolate plugin that gives option to use plugins inside of dart isolate
       //This is not working as of now since the plugin is missing breaking updates
       /*ReceivePort tempPort = ReceivePort();
@@ -118,6 +119,41 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     }
 
   }
+
+  loadLastTimeSongsAndPlaylists(){
+    //This will set the last song that was played as currently playing after an app reboot
+    StreamSubscription metricsLoaded;
+    metricsLoaded = metricService.metrics.listen((data){
+      if(data!=null){
+        List<Tune> lastPlayedSongs = data[MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS];
+        Playlist lastPlayedPlaylist = data[MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST];
+
+        //Playlist update first
+        if(lastPlayedPlaylist!=null){
+          musicService.updatePlaylist(lastPlayedPlaylist.songs);
+        }else{
+          if(lastPlayedSongs.length!=0){
+            musicService.updatePlaylist(musicService.songs$.value);
+          }
+        }
+
+        if(lastPlayedSongs.length!=0){
+          musicService.updatePlayerState(PlayerState.paused, lastPlayedSongs[lastPlayedSongs.length-1]);
+          print("lastPlayed songs not zero will set paused");
+        }
+
+        if(lastPlayedPlaylist!=null){
+          musicService.updatePlaylistState(PlayerState.paused, lastPlayedPlaylist);
+          print("playlist songs not zero will set paused");
+        }
+
+        //setting the position to Zero
+        musicService.updatePosition(Duration(milliseconds: 0));
+        metricsLoaded.cancel();
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
