@@ -123,7 +123,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   loadLastTimeSongsAndPlaylists(){
     //This will set the last song that was played as currently playing after an app reboot
     StreamSubscription metricsLoaded;
-    metricsLoaded = metricService.metrics.listen((data){
+    metricsLoaded = metricService.metrics.listen((data) async{
       if(data!=null){
         List<Tune> lastPlayedSongs = data[MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS];
         Playlist lastPlayedPlaylist = data[MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST];
@@ -149,6 +149,20 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
         //setting the position to Zero
         musicService.updatePosition(Duration(milliseconds: 0));
+        ByteData dibd = await rootBundle.load("images/cover.png");
+        List<int> defaultImageBytes = dibd.buffer.asUint8List();
+        MediaNotification.show(
+            title: '${musicService.playerState$.value.value.title}',
+            author: '${musicService.playerState$.value.value.artist}',
+            play: false,
+            image: musicService.playerState$.value.value.albumArt,
+            BitmapImage:
+            musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
+            titleColor: Color(musicService.playerState$.value.value.colors[1]),
+            subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
+            iconColor: Color(musicService.playerState$.value.value.colors[1]),
+            bgColor: Color(musicService.playerState$.value.value.colors[0]));
+
         metricsLoaded.cancel();
       }
     });
