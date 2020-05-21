@@ -1,3 +1,5 @@
+import 'package:Tunein/globals.dart';
+import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
@@ -94,12 +96,37 @@ class MusicBoardControls extends StatelessWidget {
                     onPressed: () => musicService.playNextSong(),
                   ),
                   IconButton(
-                    icon: Icon(
-                      Icons.repeat,
-                      color: new Color(colors[1]).withOpacity(.5),
-                      size: 15,
-                    ),
-                    onPressed: () {},
+                      padding: EdgeInsets.all(5),
+                      icon: StreamBuilder(
+                        stream: musicService.playback$,
+                        builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                          Color iconColor= new Color(colors[1]).withOpacity(.5);
+                          IconData iconToBe = Icons.repeat;
+                          if(snapshot.hasData){
+                            bool isSongRepeat = snapshot.data.contains(Playback.repeatSong);
+                            bool isQueueRepeat = snapshot.data.contains(Playback.repeatQueue);
+                            if(isQueueRepeat || isSongRepeat){
+                              iconColor= MyTheme.darkRed;
+                              if(isSongRepeat){
+                                iconToBe= Icons.repeat_one;
+                              }
+                              if(isQueueRepeat){
+                                //This is redundant for future changes
+                                iconToBe= Icons.repeat;
+                              }
+                            }
+                          }
+                          return Icon(
+                            iconToBe,
+                            color: iconColor,
+                            size: 15,
+                          );
+                        },
+                      ),
+
+                      onPressed: () {
+                        musicService.cycleBetweenPlaybackStates();
+                      }
                   ),
                   /*IconButton(
                       icon:Icon(
@@ -173,12 +200,37 @@ class MusicBoardControls extends StatelessWidget {
                 onPressed: () => musicService.playNextSong(),
               ),
               IconButton(
-                icon:Icon(
-                  Icons.repeat,
-                  color: new Color(colors[1]).withOpacity(.5),
-                  size: 20,
-                ),
-                onPressed: () {},
+                  padding: EdgeInsets.all(5),
+                  icon: StreamBuilder(
+                    stream: musicService.playback$,
+                    builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                      Color iconColor= new Color(colors[1]).withOpacity(.5);
+                      IconData iconToBe = Icons.repeat;
+                      if(snapshot.hasData){
+                        bool isSongRepeat = snapshot.data.contains(Playback.repeatSong);
+                        bool isQueueRepeat = snapshot.data.contains(Playback.repeatQueue);
+                        if(isQueueRepeat || isSongRepeat){
+                          iconColor= MyTheme.darkRed;
+                          if(isSongRepeat){
+                            iconToBe= Icons.repeat_one;
+                          }
+                          if(isQueueRepeat){
+                            //This is redundant for future changes
+                            iconToBe= Icons.repeat;
+                          }
+                        }
+                      }
+                      return Icon(
+                        iconToBe,
+                        color: iconColor,
+                        size: 15,
+                      );
+                    },
+                  ),
+
+                  onPressed: () {
+                    musicService.cycleBetweenPlaybackStates();
+                  }
               ),
               /*IconButton(
                     icon: Icon(

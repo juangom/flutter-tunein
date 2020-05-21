@@ -711,6 +711,30 @@ class MusicService {
     playMusic(_playlist[_index]);
   }
 
+
+
+  void cycleBetweenPlaybackStates(){
+    List<Playback> _playbackList= _playback$.value;
+    if(_playbackList.contains(Playback.repeatQueue)){
+      _playbackList.remove(Playback.repeatQueue);
+      _playbackList.add(Playback.repeatSong);
+      updatePlaybackList(_playbackList);
+      return;
+    }
+
+    if(_playback$.value.contains(Playback.repeatSong)){
+      _playbackList.remove(Playback.repeatSong);
+      updatePlaybackList(_playbackList);
+      return;
+    }
+
+    if((!_playback$.value.contains(Playback.repeatSong)) && (!_playback$.value.contains(Playback.repeatQueue))){
+      _playbackList.add(Playback.repeatQueue);
+      updatePlaybackList(_playbackList);
+      return;
+    }
+  }
+
   void _playSameSong() {
     final Tune _currentSong = _playerState$.value.value;
     stopMusic();
@@ -723,6 +747,24 @@ class MusicService {
     if (_playback.contains(Playback.repeatSong)) {
       _playSameSong();
       return;
+    }
+    if(_playback.contains(Playback.repeatQueue)){
+      //PlayNextSong will check for the queue ending and would repeat it automatically
+      playNextSong();
+      return;
+    }
+    if(!_playback.contains(Playback.repeatQueue) && !_playback.contains(Playback.repeatSong)){
+      final Tune _currentSong = _playerState$.value.value;
+      final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
+      final List<Tune> _playlist =
+      _isShuffle ? _playlist$.value.value : _playlist$.value.key;
+      int _index = _playlist.indexOf(_currentSong);
+      if (_index == _playlist.length - 1) {
+        stopMusic();
+        updatePlayerState(playerState$.value.key, _playlist[0]);
+        updatePosition(Duration(milliseconds: 0));
+        return;
+      }
     }
     playNextSong();
   }
@@ -759,8 +801,14 @@ class MusicService {
     _isAudioSeeking$.add(!_value);
   }
 
-  void updatePlayback(Playback playback) {
+  void updatePlayback(Playback playback, {bool removeIfExistent=false}) {
     List<Playback> _value = playback$.value;
+    if(_value.contains(playback)){
+      if(removeIfExistent){
+        removePlayback(playback);
+      }
+      return;
+    }
     if (playback == Playback.shuffle) {
       final List<Tune> _normalPlaylist = _playlist$.value.key;
       updatePlaylist(_normalPlaylist);
@@ -774,6 +822,11 @@ class MusicService {
     _value.remove(playback);
     _playback$.add(_value);
   }
+
+  updatePlaybackList(List<Playback> playbacks){
+    _playback$.add(playbacks);
+  }
+
 
   Future<void> saveFavorites() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();

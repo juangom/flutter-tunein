@@ -1,5 +1,6 @@
 import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
+import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
@@ -175,12 +176,35 @@ class MusicBoardControls extends StatelessWidget {
             children: <Widget>[
               IconButton(
                 padding: EdgeInsets.all(5),
-                  icon: Icon(
-                    Icons.repeat,
-                    color: new Color(colors[1]).withOpacity(.5),
-                    size: 20,
+                  icon: StreamBuilder(
+                    stream: musicService.playback$,
+                    builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                      Color iconColor= new Color(colors[1]).withOpacity(.5);
+                      IconData iconToBe = Icons.repeat;
+                      if(snapshot.hasData){
+                        bool isSongRepeat = snapshot.data.contains(Playback.repeatSong);
+                        bool isQueueRepeat = snapshot.data.contains(Playback.repeatQueue);
+                        if(isQueueRepeat || isSongRepeat){
+                          iconColor= MyTheme.darkRed;
+                          if(isSongRepeat){
+                            iconToBe= Icons.repeat_one;
+                          }
+                          if(isQueueRepeat){
+                            //This is redundant for future changes
+                            iconToBe= Icons.repeat;
+                          }
+                        }
+                      }
+                      return Icon(
+                        iconToBe,
+                        color: iconColor,
+                        size: 25,
+                      );
+                    },
                   ),
-                  onPressed: () {}
+                  onPressed: () {
+                    musicService.cycleBetweenPlaybackStates();
+                  }
               ),
               IconButton(
                 icon: Icon(
@@ -280,13 +304,22 @@ class MusicBoardControls extends StatelessWidget {
                 onPressed: () => musicService.playNextSong(),
               ),
               IconButton(
-                  icon: Icon(
-                    Icons.shuffle,
-                    color: new Color(colors[1]).withOpacity(.5),
-                    size: 20,
+                  icon: StreamBuilder(
+                    stream: musicService.playback$,
+                    builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                      Color iconColor= new Color(colors[1]).withOpacity(.5);
+                      if(snapshot.hasData && snapshot.data.contains(Playback.shuffle)){
+                        iconColor= MyTheme.darkRed;
+                      }
+                      return Icon(
+                        Icons.shuffle,
+                        color: iconColor,
+                        size: 25,
+                      );
+                    },
                   ),
                   onPressed: () {
-
+                    musicService.updatePlayback(Playback.shuffle,removeIfExistent: true);
                   }
               ),
             ],
@@ -297,12 +330,36 @@ class MusicBoardControls extends StatelessWidget {
             children: <Widget>[
               IconButton(
                 padding: EdgeInsets.all(5),
-                  icon: Icon(
-                    Icons.repeat,
-                    color: new Color(colors[1]).withOpacity(.5),
-                    size: 20,
+                  icon: StreamBuilder(
+                    stream: musicService.playback$,
+                    builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                      Color iconColor= new Color(colors[1]).withOpacity(.5);
+                      IconData iconToBe = Icons.repeat;
+                      if(snapshot.hasData){
+                        bool isSongRepeat = snapshot.data.contains(Playback.repeatSong);
+                        bool isQueueRepeat = snapshot.data.contains(Playback.repeatQueue);
+                        if(isQueueRepeat || isSongRepeat){
+                          iconColor= MyTheme.darkRed;
+                          if(isSongRepeat){
+                            iconToBe= Icons.repeat_one;
+                          }
+                          if(isQueueRepeat){
+                            //This is redundant for future changes
+                            iconToBe= Icons.repeat;
+                          }
+                        }
+                      }
+                      return Icon(
+                        iconToBe,
+                        color: iconColor,
+                        size: 25,
+                      );
+                    },
                   ),
-                  onPressed: () {}
+
+                  onPressed: () {
+                    musicService.cycleBetweenPlaybackStates();
+                  }
               ),
               IconButton(
                 icon: Icon(
@@ -403,13 +460,22 @@ class MusicBoardControls extends StatelessWidget {
                 onPressed: () => musicService.playNextSong(),
               ),
               IconButton(
-                  icon: Icon(
-                    Icons.shuffle,
-                    color: new Color(colors[1]).withOpacity(.5),
-                    size: 20,
+                  icon: StreamBuilder(
+                    stream: musicService.playback$,
+                    builder: (context, AsyncSnapshot<List<Playback>> snapshot){
+                      Color iconColor= new Color(colors[1]).withOpacity(.5);
+                      if(snapshot.hasData && snapshot.data.contains(Playback.shuffle)){
+                        iconColor= MyTheme.darkRed;
+                      }
+                      return Icon(
+                        Icons.shuffle,
+                        color: iconColor,
+                        size: 25,
+                      );
+                    },
                   ),
                   onPressed: () {
-                    musicService.fetchAlbums();
+                    musicService.updatePlayback(Playback.shuffle,removeIfExistent: true);
                   }
               ),
             ],
