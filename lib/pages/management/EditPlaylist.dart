@@ -266,7 +266,6 @@ class _EditPlaylistState extends State<EditPlaylist> {
       setState(() {
 
       });
-      print(widget.playlist.songs.length);
     }
   }
 

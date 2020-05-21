@@ -235,9 +235,6 @@ class _SearchPageState extends State<SearchPage> {
                       songs: _songs ,
                       contextMenuOptions:(song) =>songCardContextMenulist,
                       onSongCardTap: (song,_state,_isSelectedSong){
-                        print(song.uri);
-                        print(_state);
-                        print(_isSelectedSong);
                         switch (_state) {
                           case PlayerState.playing:
                             if (_isSelectedSong) {

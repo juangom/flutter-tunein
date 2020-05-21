@@ -1,4 +1,4 @@
-package com.example.music;
+package com.modatwenty.tunein;
 
 import android.os.Bundle;
 import android.graphics.Bitmap;

@@ -123,7 +123,6 @@ class MusicMetricsService {
         }
 
       });
-      print(metricsMap);
       _metrics.add(metricsMap);
     }catch (e){
       print(e);
@@ -139,7 +138,6 @@ class MusicMetricsService {
       Map<MetricIds, dynamic> metricsMap = _metrics.value;
       metricsMap[metricId]= convertFromStorage(metricId,_prefs.getString(getEnumValue(metricId).toString()));
       _metrics.add(metricsMap);
-      print(metricsMap);
     }catch (e){
       print("Error in fetching metric ${e}");
       return false;

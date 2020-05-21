@@ -374,7 +374,6 @@ class SinglePlaylistPage extends StatelessWidget {
       ),
     );
 
-     print(returnedSongsToBeDeleted);
      if(returnedSongsToBeDeleted!=null && returnedSongsToBeDeleted.key.length!=0){
        ///Deleting songs based on the returnedSongsToBeDeleted Ids
 
@@ -390,7 +389,6 @@ class SinglePlaylistPage extends StatelessWidget {
        savePlaylistToDisk(playlist);
 
        playlistStream.add(playlist);
-       print(playlist.songs.length);
      }
   }
 
@@ -413,7 +411,6 @@ class SinglePlaylistPage extends StatelessWidget {
       savePlaylistToDisk(playlist);
 
       playlistStream.add(playlist);
-      print(playlist.songs.length);
       return true;
     }else{
       playlist.songs = tempList;

@@ -502,13 +502,6 @@ class _TracksPageState extends State<TracksPage>
                             if(deckItemState["filter"].isActive){
                               iconColor= MyTheme.darkRed;
                             }
-                            print("gona return ");
-                            print({
-                              "withBadge":deckItemState["filter"].isActive,
-                              "badgeContent": badgeToBe,
-                              "badgeColor":badgeColor,
-                              "iconColor":iconColor
-                            });
                             returnvalue.add({
                               "withBadge":deckItemState["filter"].isActive,
                               "badgeContent": badgeToBe,

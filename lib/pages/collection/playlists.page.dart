@@ -227,7 +227,6 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
 
       savePlaylistToDisk(playlist);
 
-      print(playlist.songs.length);
     }
   }
 
@@ -263,7 +262,6 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
 
       savePlaylistToDisk(playlist);
 
-      print(playlist.songs.length);
       return true;
     }else{
       playlist.songs = tempList;
@@ -310,7 +308,6 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                   Playlist playlist = new Playlist(this.newPlaylistName, [], PlayerState.stopped, null);
                   musicService.addPlaylist(playlist).then(
                       (data){
-                        print(data);
                         Navigator.of(context, rootNavigator: true).pop(playlist);
                       }
                   );

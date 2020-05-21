@@ -89,7 +89,6 @@ class MusicService {
     var data = await _nano.fetchSongs();
     for(int i = 0; i < data.length; i++) {
       data[i].colors = await themeService.getThemeColors(data[i]);
-      print(data[i].colors);
     }
     _songs$.add(data);
   }
@@ -529,7 +528,6 @@ class MusicService {
     album = _albums$.value.where((elem) {
       return ((song.album == elem.title) && (song.artist == elem.artist));
     }).toList()[0];
-    print(album.songs.length);
     updatePlaylist(album.songs);
     stopMusic();
     playMusic(song);
@@ -608,7 +606,6 @@ class MusicService {
       });
     });
 
-    print('we have a length of ${playlistSongs.length} to work with');
     playlistSongs.sort((a,b){
       return int.parse(a.value.toString()).compareTo(int.parse(b.value.toString()));
     });
@@ -654,7 +651,6 @@ class MusicService {
         playlistSongs.add(MapEntry(song,songMetric));
       }
     });
-    print('we have a length of ${playlistSongs.length} to work with');
     playlistSongs.sort((a,b){
       return int.parse(a.value.toString()).compareTo(int.parse(b.value.toString()));
     });
@@ -743,7 +739,6 @@ class MusicService {
 
   void _onSongComplete() {
     final List<Playback> _playback = _playback$.value;
-    print(_playback);
     if (_playback.contains(Playback.repeatSong)) {
       _playSameSong();
       return;
