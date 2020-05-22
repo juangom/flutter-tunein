@@ -89,7 +89,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
           if(currentDelayedAnimate==null){
             currentDelayedAnimate = Timer(Duration(milliseconds: 80),() async{
               if(value!=null && songs!=null){
-                int indexOfThePlayingSong =songs.indexOf(value.value);
+                int indexOfThePlayingSong =songs.indexWhere((elem)=>elem.id==value.value.id);
                 if(indexOfThePlayingSong>0)
                   /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
           print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");

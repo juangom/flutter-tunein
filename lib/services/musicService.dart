@@ -468,7 +468,7 @@ class MusicService {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
-    int _index = _playlist.indexOf(_currentSong);
+    int _index = _playlist.indexWhere((elem)=>elem.id ==_currentSong.id);
     if (_index == _playlist.length - 1) {
       _index = 0;
     } else {
@@ -482,7 +482,7 @@ class MusicService {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
-    return _playlist.indexOf(song);
+    return _playlist.indexWhere((elem)=>elem.id==song.id);
   }
 
   /// specific song card actions
@@ -697,7 +697,7 @@ class MusicService {
     final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
-    int _index = _playlist.indexOf(_currentSong);
+    int _index = _playlist.indexWhere((elem)=>elem.id ==_currentSong.id);
     if (_index == 0) {
       _index = _playlist.length - 1;
     } else {
@@ -753,7 +753,7 @@ class MusicService {
       final bool _isShuffle = _playback$.value.contains(Playback.shuffle);
       final List<Tune> _playlist =
       _isShuffle ? _playlist$.value.value : _playlist$.value.key;
-      int _index = _playlist.indexOf(_currentSong);
+      int _index = _playlist.indexWhere((elem)=>elem.id ==_currentSong.id);
       if (_index == _playlist.length - 1) {
         stopMusic();
         updatePlayerState(playerState$.value.key, _playlist[0]);
@@ -927,30 +927,36 @@ class MusicService {
       List<dynamic> dataImages = (data["images"]);
       Map imagetOUserMap = dataImages.firstWhere((item){
         return item["type"]=="primary";
-      });
-      String imagetOUser="";
-      String ThumbQualitySetting = SettingsService.getCurrentMemorySetting(SettingsIds.SET_DISCOG_THUMB_QUALITY);
+      },
+        orElse: (){
+          print("can't find thumb");
+        }
+      );
+      if(imagetOUserMap!=null){
+        String imagetOUser="";
+        String ThumbQualitySetting = SettingsService.getCurrentMemorySetting(SettingsIds.SET_DISCOG_THUMB_QUALITY);
 
-      switch(ThumbQualitySetting){
-        case "Low":{
-          imagetOUser= imagetOUserMap["uri150"];
-          break;
+        switch(ThumbQualitySetting){
+          case "Low":{
+            imagetOUser= imagetOUserMap["uri150"];
+            break;
+          }
+          case "Medium":{
+            imagetOUser= imagetOUserMap["uri150"];
+            break;
+          }
+          case "High":{
+            imagetOUser= imagetOUserMap["uri"];
+            break;
+          }
         }
-        case "Medium":{
-          imagetOUser= imagetOUserMap["uri150"];
-          break;
-        }
-        case "High":{
-          imagetOUser= imagetOUserMap["uri"];
-          break;
-        }
+
+        List<int> imageBytes = await utilsRequests.getNetworkImage(imagetOUser);
+        var digest = sha1.convert(imageBytes).toString();
+        await _nano.writeImage(digest, imageBytes);
+        var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
+        artist.coverArt =  albumArt;
       }
-
-      List<int> imageBytes = await utilsRequests.getNetworkImage(imagetOUser);
-      var digest = sha1.convert(imageBytes).toString();
-      await _nano.writeImage(digest, imageBytes);
-      var albumArt = _nano.getImage(await _nano.getLocalPath(),digest);
-      artist.coverArt =  albumArt;
     }
     return artist;
   }

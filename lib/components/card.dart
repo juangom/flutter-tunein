@@ -138,7 +138,7 @@ class MyCard extends StatelessWidget {
                                             style: TextStyle(
                                               fontSize: 13.5,
                                               fontWeight: _fontWeight,
-                                              color: colors!=null?colors[1]:Colors.white,
+                                              color: colors!=null?colors[1].withAlpha(200):Colors.white,
                                             ),
                                             scrollAxis: Axis.horizontal,
                                             crossAxisAlignment: CrossAxisAlignment.start,

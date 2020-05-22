@@ -34,7 +34,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "2c5ba59264d0f3cf451551c3c5b9b86d3a881595"
+      resolved-ref: "8318c01cae4719f734c2b6ba650cab444e07d0ed"
       url: "https://github.com/moda20/audioplayer"
     source: git
     version: "0.5.2"
@@ -72,21 +72,21 @@ packages:
       name: connectivity
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.8+2"
+    version: "0.4.8+6"
   connectivity_macos:
     dependency: transitive
     description:
       name: connectivity_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.0+2"
+    version: "0.1.0+3"
   connectivity_platform_interface:
     dependency: transitive
     description:
       name: connectivity_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.6"
   convert:
     dependency: transitive
     description:
@@ -121,7 +121,7 @@ packages:
       name: fading_edge_scrollview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   flushbar:
     dependency: "direct main"
     description:
@@ -147,16 +147,16 @@ packages:
       name: flutter_i18n
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.0"
+    version: "0.13.2"
   flutter_isolate:
     dependency: "direct main"
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "9291717133b1aecf2afe6e249eb63eed9eba33a2"
+      resolved-ref: bb721b38fd5b58687c4ef794709ede050e2a746c
       url: "https://github.com/rmawatson/flutter_isolate.git"
     source: git
-    version: "1.0.0+11"
+    version: "1.0.0+13"
   flutter_localizations:
     dependency: transitive
     description: flutter
@@ -266,21 +266,21 @@ packages:
       name: path_provider
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.6.7"
+    version: "1.6.9"
   path_provider_macos:
     dependency: transitive
     description:
       name: path_provider_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.4+1"
+    version: "0.0.4+3"
   path_provider_platform_interface:
     dependency: transitive
     description:
       name: path_provider_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   pedantic:
     dependency: transitive
     description:
@@ -345,28 +345,28 @@ packages:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.7"
+    version: "0.5.7+3"
   shared_preferences_macos:
     dependency: transitive
     description:
       name: shared_preferences_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.1+7"
+    version: "0.0.1+9"
   shared_preferences_platform_interface:
     dependency: transitive
     description:
       name: shared_preferences_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.4"
   shared_preferences_web:
     dependency: transitive
     description:
       name: shared_preferences_web
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.2+4"
+    version: "0.1.2+7"
   simple_permissions:
     dependency: "direct main"
     description:
@@ -480,7 +480,7 @@ packages:
       name: yaml
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.0"
+    version: "2.2.1"
 sdks:
   dart: ">=2.6.0 <3.0.0"
   flutter: ">=1.12.13+hotfix.5 <2.0.0"
