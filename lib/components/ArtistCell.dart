@@ -68,6 +68,10 @@ class ArtistGridCell extends StatelessWidget {
                       child: Text(
                         artist.name!=null?artist.name:"Unknown Name",
                         overflow: TextOverflow.ellipsis,
+                        strutStyle: StrutStyle(
+                          height: 1.1,
+                          forceStrutHeight: true
+                        ),
                         style: TextStyle(
                             fontSize: 13.5,
                             color: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7),
