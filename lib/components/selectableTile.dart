@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 class SelectableTile extends StatefulWidget {
   final String imageUri;
   final String title;
+  String subtitle;
+  Color initialSubtitleColor;
+  Color selectedSubtitleColor;
   dynamic Function(dynamic) onTap;
   bool isSelected;
   final String placeHolderAssetUri;
@@ -17,8 +20,14 @@ class SelectableTile extends StatefulWidget {
   Color initialBackgroundColor;
   Color selectedTextColor;
   Color selectedBackgroundColor;
+  String type="normal";
   SelectableTile({@required this.imageUri, @required this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
     this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor});
+
+  SelectableTile.mediumWithSubtitle({@required this.imageUri, @required this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
+    this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor, this.subtitle, this.initialSubtitleColor, this.selectedSubtitleColor}){
+    this.type="mediumsub";
+  }
 
   @override
   _SelectableTileState createState() => _SelectableTileState();
@@ -34,6 +43,9 @@ class _SelectableTileState extends State<SelectableTile> {
   Color selectedTextColor;
   Color selectedBackgroundColor;
   String placeHolderAssetUri;
+  String subtitle;
+  Color initialSubtitleColor;
+  Color selectedSubtitleColor;
   @override
   void initState() {
     // TODO: implement initState
@@ -47,9 +59,114 @@ class _SelectableTileState extends State<SelectableTile> {
     initialTextColor=widget.initialTextColor;
     selectedTextColor=widget.selectedTextColor;
     selectedBackgroundColor=widget.selectedBackgroundColor;
+    subtitle=widget.subtitle;
+    initialSubtitleColor=widget.initialSubtitleColor;
+    selectedSubtitleColor=widget.selectedSubtitleColor;
   }
   @override
   Widget build(BuildContext context) {
+
+    switch(widget.type){
+      case "normal":{
+        return buildNormal();
+      }
+      case "mediumsub":{
+        return buildMediumSithSub();
+      }
+
+      default:{
+        return buildNormal();
+      }
+    }
+  }
+
+  Widget buildMediumSithSub(){
+    return Material(
+      color: isSelected?selectedBackgroundColor??MyTheme.darkBlack:initialBackgroundColor??MyTheme.darkBlack,
+      elevation: 16,
+      child: InkWell(
+        onTap: (){
+          onTap!=null?onTap(!isSelected):null;
+          setState(() {
+            isSelected=!isSelected;
+          });
+        },
+        child: Container(
+          padding: EdgeInsets.all(4),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(right: 5),
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: FadeInImage(
+                    placeholder: AssetImage(placeHolderAssetUri??'images/track.png'),
+                    fadeInDuration: Duration(milliseconds: 200),
+                    fadeOutDuration: Duration(milliseconds: 100),
+                    image: imageUri != null
+                        ? FileImage(
+                      new File(imageUri),
+                    )
+                        : AssetImage(placeHolderAssetUri??'images/track.png'),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          (title == null)
+                              ? ""
+                              : title,
+                          overflow: TextOverflow.fade,
+                          maxLines: 1,
+                          textWidthBasis: TextWidthBasis.parent,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected?selectedTextColor??MyTheme.grey300:initialTextColor??MyTheme.grey300,
+                          ),
+                        )
+
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          ( subtitle== null)
+                              ? ""
+                              : subtitle,
+                          overflow: TextOverflow.fade,
+                          maxLines: 1,
+                          textWidthBasis: TextWidthBasis.parent,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected?selectedSubtitleColor??MyTheme.grey300:initialSubtitleColor??MyTheme.grey300,
+                          ),
+                        )
+
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildNormal(){
     return Material(
       color: isSelected?selectedBackgroundColor??MyTheme.darkBlack:initialBackgroundColor??MyTheme.darkBlack,
       elevation: 16,

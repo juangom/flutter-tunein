@@ -678,8 +678,15 @@ class _TracksPageState extends State<TracksPage>
                           }
                           //You always toggle the casting since that already takes consideration of the
                           // current value of the cast and doesn't need any arguments
-                          togglCasting().then((data){
-                            returnFirstValue();
+                          castService.isDeviceClear(awaitClearance: false).then((data){
+                            if(!data){
+                              print("device not clear");
+                            }
+                            if(data){
+                              togglCasting().then((castingData){
+                                returnFirstValue();
+                              });
+                            }
                           });
                           return returnvalue.first;
                         },
@@ -991,6 +998,8 @@ class _TracksPageState extends State<TracksPage>
   }
 
   Future<void> togglCasting() async{
+
+
     if(deckItemState["cast"].isActive && castService.currentDeviceToBeUsed.value!=null && castService.castingState.value==CastState.CASTING){
       bool result = await DialogService.showConfirmDialog(context,
         title: "Stop the current Cast",
@@ -1040,6 +1049,7 @@ class _TracksPageState extends State<TracksPage>
       }
     }
     saveTrackListDeckSettingsToDisk();
+    return;
   }
 
   List<Tune> applyDeckItemChanges(List<Tune> songs){

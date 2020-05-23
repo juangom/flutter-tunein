@@ -155,21 +155,27 @@ class musicServiceIsolate {
     _handleGet(HttpRequest request) {
       // PENDING: Do more security checks here?
       final String fileID = request.uri.queryParameters["fileID"];
-      String fileUri = fileID!=null?filesToServe[fileID.split(".")[0]].key:null;
-      List<String> contentType = filesToServe[fileID.split(".")[0]].value.split("/");
-      if(fileUri!=null){
-        final File file = new File(fileUri);
-        file.exists().then((bool found) {
-          if (found) {
-            request.response.headers.contentType = ContentType(contentType[0]??"audio",contentType[1]??"mpeg");
-            //file.openRead().pipe(request.response).catchError((e) {print(e);});
-            request.response.contentLength = file.statSync().size;
-            request.response.addStream(file.openRead());
-          } else {
-            _sendNotFound(request.response);
-          }
-        });
-      }else{
+      try{
+        String fileUri = fileID!=null?filesToServe[fileID.split(".")[0]].key:null;
+        List<String> contentType = filesToServe[fileID.split(".")[0]].value.split("/");
+        if(fileUri!=null){
+          final File file = new File(fileUri);
+          file.exists().then((bool found) {
+            if (found) {
+              request.response.headers.contentType = ContentType(contentType[0]??"audio",contentType[1]??"mpeg");
+              //file.openRead().pipe(request.response).catchError((e) {print(e);});
+              request.response.contentLength = file.statSync().size;
+              request.response.addStream(file.openRead());
+            } else {
+              _sendNotFound(request.response);
+            }
+          });
+        }else{
+          _sendNotFound(request.response);
+        }
+      }catch(e){
+        print(e);
+        print(e.stack);
         _sendNotFound(request.response);
       }
 

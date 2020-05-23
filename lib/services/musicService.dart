@@ -289,7 +289,7 @@ class MusicService {
         //This will tie the current position on the casting device to the local position so
         //that the ui updates correctly
         _upnpPositionSubscription = castService.currentPosition.listen((data){
-          _position$.add(data);
+          updatePosition(data);
         });
       }
 

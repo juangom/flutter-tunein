@@ -131,9 +131,14 @@ class MusicBoardControls extends StatelessWidget {
                       (data){
                     upnp.Device deviceChosen = data;
                     if(deviceChosen!=null){
-                      castService.setDeviceToBeUsed(deviceChosen);
-                      castService.setCastingState(CastState.CASTING);
-                      flashCastIconStream.add(false);
+                      castService.isDeviceClear(awaitClearance: true).then((data)async{
+                        if(data){
+                          await castService.stopCasting();
+                          castService.setDeviceToBeUsed(deviceChosen);
+                          castService.setCastingState(CastState.CASTING);
+                          flashCastIconStream.add(false);
+                        }
+                      });
                     }
                   }
               );
@@ -149,8 +154,13 @@ class MusicBoardControls extends StatelessWidget {
                   titleColor: MyTheme.grey300
               );
               if(result!=null && result==true){
-                castService.stopCasting();
-                musicService.initializePlayStreams();
+                castService.isDeviceClear(awaitClearance: true).then((data){
+                  if(data){
+                    castService.stopCasting();
+                    musicService.initializePlayStreams();
+                  }
+                });
+
               }
               break;
             }

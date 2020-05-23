@@ -16,6 +16,10 @@ enum CastState{
   NOT_CASTING,
 }
 
+enum DeviceSearchingState{
+  SEARCHING,
+  NOT_SEARCHING
+}
 
 
 
@@ -24,6 +28,7 @@ enum CastState{
 class CastService {
 
   BehaviorSubject<CastState> _castingState;
+  BehaviorSubject<DeviceSearchingState> _deviceSearchingState;
   BehaviorSubject<PlayerState> _castingPlayerState;
   BehaviorSubject<CastItem> _castItem;
   BehaviorSubject<Duration> _currentPosition;
@@ -49,6 +54,10 @@ class CastService {
 
   BehaviorSubject<PlayerState> get castingPlayerState => _castingPlayerState;
 
+
+  BehaviorSubject<DeviceSearchingState> get deviceSearchingState =>
+      _deviceSearchingState;
+
   CastService(){
     _initStreams();
   }
@@ -63,7 +72,7 @@ class CastService {
                 (positionData){
                   String position = positionData["RelTime"];
                   Duration positionInDuration = FormatPositionToDuration(position);
-                  if(_currentPosition.value==null || positionInDuration.inSeconds!=_currentPosition.value.inMilliseconds){
+                  if(positionInDuration!=null && (_currentPosition.value==null || positionInDuration.inSeconds!=_currentPosition.value.inSeconds)){
                     _currentPosition.add(positionInDuration);
                   }
                 }
@@ -115,24 +124,56 @@ class CastService {
     }
   }
 
-  Future<List<Device>> searchForDevices() async{
-    ReceivePort tempPort = ReceivePort();
-    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
-        sender: tempPort.sendPort,
-        command: "searchForCastDevices",
-        message: ""
-    ));
-
-    List<Device> deviceList =[];
-    await  tempPort.forEach((data){
-      print(data);
-      if(data!="OK"){
-        tempPort.close();
-        deviceList =data;
+  ///This will return true when the device is ready
+  ///
+  /// [searching] will track the device if it is searching already for other devices to cast to
+  ///
+  /// [awaitClearance] will make the function return true only if all the input conditions are met (e.g if the device is not searching anymore)
+  Future<bool> isDeviceClear({searching=true, awaitClearance=true}) async{
+    bool finalverdict=false;
+    DeviceSearchingState searchingState;
+    if(searching){
+      if(awaitClearance){
+        searchingState = await _deviceSearchingState.firstWhere((data){
+          return data==DeviceSearchingState.NOT_SEARCHING;
+        });
+        //redundant test for explaining
+        if(searchingState==DeviceSearchingState.NOT_SEARCHING){
+          finalverdict=true;
+        }
+      }else{
+        if(_deviceSearchingState.value==DeviceSearchingState.NOT_SEARCHING){
+          finalverdict=true;
+        }
       }
-    });
+    }
+    return finalverdict;
+  }
 
-    return deviceList;
+  Future<List<Device>> searchForDevices() async{
+    if(_deviceSearchingState.value!=DeviceSearchingState.SEARCHING){
+      _deviceSearchingState.add(DeviceSearchingState.SEARCHING);
+      ReceivePort tempPort = ReceivePort();
+      MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
+          sender: tempPort.sendPort,
+          command: "searchForCastDevices",
+          message: ""
+      ));
+
+      List<Device> deviceList =[];
+      await  tempPort.forEach((data){
+        print(data);
+        if(data!="OK"){
+          tempPort.close();
+          deviceList =data;
+          _deviceSearchingState.add(DeviceSearchingState.NOT_SEARCHING);
+        }
+      });
+
+      return deviceList;
+    }else{
+      return null;
+    }
   }
 
   Future castAndPlay(Tune songToCast)async {
@@ -266,6 +307,7 @@ class CastService {
     _currentPosition = BehaviorSubject<Duration>.seeded(null);
     _castingPlayerState= BehaviorSubject<PlayerState>.seeded(null);
     _currentDeviceToBeUsed = BehaviorSubject<Device>.seeded(null);
+    _deviceSearchingState = BehaviorSubject<DeviceSearchingState>.seeded(DeviceSearchingState.NOT_SEARCHING);
   }
 
 
@@ -273,6 +315,7 @@ class CastService {
   void dispose() {
     _castItem.close();
     _castingState.close();
+    _deviceSearchingState.close();
   }
 }
 

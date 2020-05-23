@@ -190,7 +190,9 @@ class DialogService{
               padding: EdgeInsets.all(3),
               itemBuilder: (context, index){
                 upnp.Device device = devices[index];
-                return SelectableTile(
+                return SelectableTile.mediumWithSubtitle(
+                  subtitle: "IP : ${Uri.parse(device.url).host}",
+                  initialSubtitleColor: MyTheme.grey300.withOpacity(.7),
                   imageUri:null,
                   title: device.friendlyName,
                   isSelected: false,
