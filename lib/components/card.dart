@@ -18,12 +18,14 @@ class MyCard extends StatelessWidget {
   final VoidCallback onContextTap;
   final musicService = locator<MusicService>();
   final List<Color>colors;
+  final Color selectedBackgrundColor;
   final Size ScreenSize;
   final double StaticContextMenuFromBottom;
   List<ContextMenuOptions> choices;
   final void Function(ContextMenuOptions) onContextSelect;
   final void Function(ContextMenuOptions) onContextCancel;
-  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap, this.colors, @required this.choices, @required this.onContextCancel, @required this.onContextSelect, this.ScreenSize, this.StaticContextMenuFromBottom})
+  MyCard({Key key, @required Tune song, VoidCallback onTap, VoidCallback onContextTap, this.colors, @required this.choices, @required this.onContextCancel,
+    @required this.onContextSelect, this.ScreenSize, this.StaticContextMenuFromBottom, this.selectedBackgrundColor})
       : _song = song,
         onTap=onTap,
         onContextTap=onContextTap,
@@ -194,118 +196,121 @@ class MyCard extends StatelessWidget {
             if(snapshot.data.key==previousState && previousState!=null){
               return previousInstance;
             }else{
-              Widget newInstance = Container(
-                color: Colors.transparent,
-                padding: EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            splashColor: MyTheme.darkgrey,
-                            child:Container(
-                              constraints: BoxConstraints.expand(),
-                              child:  Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 15),
-                                    child: SizedBox(
-                                      height: 62,
-                                      width: 62,
-                                      child: FadeInImage(
-                                        placeholder: AssetImage('images/track.png'),
-                                        fadeInDuration: Duration(milliseconds: 200),
-                                        fadeOutDuration: Duration(milliseconds: 100),
-                                        image: _song.albumArt != null
-                                            ? FileImage(
-                                          new File(_song.albumArt),
-                                        )
-                                            : AssetImage('images/track.png'),
+              Widget newInstance = Material(
+                color: _isSelectedSong?(selectedBackgrundColor!=null?selectedBackgrundColor:MyTheme.grey300).withAlpha(10):Colors.transparent,
+                elevation: _isSelectedSong?6:0,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: MyTheme.darkgrey,
+                              child:Container(
+                                constraints: BoxConstraints.expand(),
+                                child:  Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 15),
+                                      child: SizedBox(
+                                        height: 62,
+                                        width: 62,
+                                        child: FadeInImage(
+                                          placeholder: AssetImage('images/track.png'),
+                                          fadeInDuration: Duration(milliseconds: 200),
+                                          fadeOutDuration: Duration(milliseconds: 100),
+                                          image: _song.albumArt != null
+                                              ? FileImage(
+                                            new File(_song.albumArt),
+                                          )
+                                              : AssetImage('images/track.png'),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    flex: 8,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: EdgeInsets.only(bottom: (_isSelectedSong && _song.title.length>25)?3:8),
-                                          child: (!_isSelectedSong || _song.title.length<25)?Text(
-                                            (_song.title == null)
-                                                ? "Unknon Title"
-                                                : _song.title,
-                                            overflow: TextOverflow.fade,
-                                            maxLines: 1,
-                                            textWidthBasis: TextWidthBasis.parent,
-                                            softWrap: false,
-                                            style: TextStyle(
-                                              fontSize: 13.5,
-                                              fontWeight: _fontWeight,
-                                              color: colors!=null?colors[1].withAlpha(200):Colors.white,
-                                            ),
-                                          ): Container(
-                                            height: 19,
-                                            child: Marquee(
-                                              text: (_song.title == null)
+                                    Expanded(
+                                      flex: 8,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: EdgeInsets.only(bottom: (_isSelectedSong && _song.title.length>25)?3:8),
+                                            child: (!_isSelectedSong || _song.title.length<25)?Text(
+                                              (_song.title == null)
                                                   ? "Unknon Title"
                                                   : _song.title,
+                                              overflow: TextOverflow.fade,
+                                              maxLines: 1,
+                                              textWidthBasis: TextWidthBasis.parent,
+                                              softWrap: false,
                                               style: TextStyle(
                                                 fontSize: 13.5,
                                                 fontWeight: _fontWeight,
-                                                color: colors!=null?colors[1]:Colors.white,
+                                                color: colors!=null?colors[1].withAlpha(200):Colors.white,
                                               ),
-                                              scrollAxis: Axis.horizontal,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              blankSpace: _song.title.length*2.0,
-                                              velocity: (_song.title == null)?30.0:_song.title.length*1.2,
-                                              pauseAfterRound: Duration(seconds: (1+_song.title.length*0.110).floor()),
-                                              startPadding: 0.0,
-                                              accelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*40),
-                                              accelerationCurve: Curves.linear,
-                                              decelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*30),
-                                              decelerationCurve: Curves.easeOut,
+                                            ): Container(
+                                              height: 19,
+                                              child: Marquee(
+                                                text: (_song.title == null)
+                                                    ? "Unknon Title"
+                                                    : _song.title,
+                                                style: TextStyle(
+                                                  fontSize: 13.5,
+                                                  fontWeight: _fontWeight,
+                                                  color: colors!=null?colors[1]:Colors.white,
+                                                ),
+                                                scrollAxis: Axis.horizontal,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                blankSpace: _song.title.length*2.0,
+                                                velocity: (_song.title == null)?30.0:_song.title.length*1.2,
+                                                pauseAfterRound: Duration(seconds: (1+_song.title.length*0.110).floor()),
+                                                startPadding: 0.0,
+                                                accelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*40),
+                                                accelerationCurve: Curves.linear,
+                                                decelerationDuration: Duration(milliseconds: (_song.title == null)?500:_song.title.length*30),
+                                                decelerationCurve: Curves.easeOut,
+                                              ),
+                                            ),
+
+                                          ),
+                                          Text(
+                                            (_song.artist == null)
+                                                ? "Unknown Artist"
+                                                : _song.artist,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              fontWeight: _fontWeight,
+                                              color: _textColor,
                                             ),
                                           ),
-
-                                        ),
-                                        Text(
-                                          (_song.artist == null)
-                                              ? "Unknown Artist"
-                                              : _song.artist,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: _fontWeight,
-                                            color: _textColor,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                              onTap: (){
+                                onTap();
+                              },
                             ),
-                            onTap: (){
-                              onTap();
-                            },
                           ),
                         ),
+                        flex: 12,
                       ),
-                      flex: 12,
-                    ),
-                    choices!=null?ThreeDotPopupMenu(
-                      choices: choices,
-                      onContextSelect: onContextSelect,
-                      screenSize: ScreenSize,
-                      staticOffsetFromBottom: StaticContextMenuFromBottom,
-                    ):Container()
-                  ],
+                      choices!=null?ThreeDotPopupMenu(
+                        choices: choices,
+                        onContextSelect: onContextSelect,
+                        screenSize: ScreenSize,
+                        staticOffsetFromBottom: StaticContextMenuFromBottom,
+                      ):Container()
+                    ],
+                  ),
                 ),
               );
               return newInstance;

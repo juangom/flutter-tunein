@@ -267,38 +267,42 @@ class _PlayingPageState extends State<PlayingPage>
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                      Container(
-                        color: Colors.transparent,
-                          height: _screenHeight,
-                          constraints: BoxConstraints(
-                              maxHeight: _screenHeight / 2, minHeight: _screenHeight / 2),
-                          padding: const EdgeInsets.all(10),
-                          child: Dismissible(
-                            key: UniqueKey(),
-                            background: image == null
-                                ? Image.asset("images/cover.png")
-                                : Image.file(File(image)),
-                            secondaryBackground: image2 == null
-                                ? Image.asset("images/cover.png")
-                                : Image.file(File(image2)),
-                            movementDuration: Duration(milliseconds: 500),
-                            resizeDuration: Duration(milliseconds: 2),
-                            dismissThresholds: const {
-                              DismissDirection.endToStart: 0.3,
-                              DismissDirection.startToEnd: 0.3
-                            },
-                            direction: DismissDirection.horizontal,
-                            onDismissed: (DismissDirection direction) {
-                              if (direction == DismissDirection.startToEnd) {
-                                musicService.playPreviousSong();
-                              } else {
-                                musicService.playNextSong();
-                              }
-                            },
-                            child: _currentSong.albumArt == null
-                                ? Image.asset("images/cover.png")
-                                : Image.file(File(_currentSong.albumArt)),
-                          )
+                      Material(
+                        elevation: 22,
+                        color:Colors.transparent,
+                        child: Container(
+                            color: Colors.transparent,
+                            height: _screenHeight,
+                            constraints: BoxConstraints(
+                                maxHeight: _screenHeight / 2, minHeight: _screenHeight / 2),
+                            padding: const EdgeInsets.all(10),
+                            child: Dismissible(
+                              key: UniqueKey(),
+                              background: image == null
+                                  ? Image.asset("images/cover.png")
+                                  : Image.file(File(image),height: _screenHeight/2,fit: BoxFit.fill,),
+                              secondaryBackground: image2 == null
+                                  ? Image.asset("images/cover.png")
+                                  : Image.file(File(image2),height: _screenHeight/2,fit: BoxFit.fill,),
+                              movementDuration: Duration(milliseconds: 500),
+                              resizeDuration: Duration(milliseconds: 2),
+                              dismissThresholds: const {
+                                DismissDirection.endToStart: 0.3,
+                                DismissDirection.startToEnd: 0.3
+                              },
+                              direction: DismissDirection.horizontal,
+                              onDismissed: (DismissDirection direction) {
+                                if (direction == DismissDirection.startToEnd) {
+                                  musicService.playPreviousSong();
+                                } else {
+                                  musicService.playNextSong();
+                                }
+                              },
+                              child: _currentSong.albumArt == null
+                                  ? Image.asset("images/cover.png")
+                                  : Image.file(File(_currentSong.albumArt),height: _screenHeight/2,fit: BoxFit.fill,),
+                            )
+                        ),
                       ),
 
                       Expanded(

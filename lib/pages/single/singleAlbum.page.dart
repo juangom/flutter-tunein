@@ -442,7 +442,7 @@ class SingleAlbumPage extends StatelessWidget {
                           },
                         );
                       },
-                          childCount: album.songs.length
+                          childCount: album.songs.length+1
                       ),
                     )
                     /*AlbumSongList(album)*/

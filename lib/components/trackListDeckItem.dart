@@ -217,6 +217,7 @@ class _TrackListDeckItemState extends State<TrackListDeckItem> {
     if(stateStreamSubscription!=null){
       stateStreamSubscription.cancel();
     }
+    super.dispose();
   }
 
 

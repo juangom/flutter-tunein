@@ -38,7 +38,7 @@ class MoreOptionsCard extends StatelessWidget {
               child: ConstrainedBox(
                 child: imageUri == null ? Image.asset("images/artist.jpg",fit: BoxFit.cover) : Image(
                   image: FileImage(File(imageUri)),
-                  fit: BoxFit.fitHeight,
+                  fit: BoxFit.cover,
                   colorBlendMode: BlendMode.darken,
                 ),
                 constraints: BoxConstraints.expand(),

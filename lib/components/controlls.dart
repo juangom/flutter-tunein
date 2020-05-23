@@ -216,12 +216,14 @@ class MusicBoardControls extends StatelessWidget {
               ),
               GestureDetector(
                 onLongPress: (){
-                  if(castMenu.isShow){
-                    castMenu.dismiss();
-                  }else{
-                    castMenu.show(
-                        widgetKey:playButtonKey
-                    );
+                  if(castService.castingState.value==CastState.CASTING){
+                    if(castMenu.isShow){
+                      castMenu.dismiss();
+                    }else{
+                      castMenu.show(
+                          widgetKey:playButtonKey
+                      );
+                    }
                   }
                 },
                 child: IconButton(
@@ -371,12 +373,14 @@ class MusicBoardControls extends StatelessWidget {
               ),
               GestureDetector(
                 onLongPress: (){
-                  if(castMenu.isShow){
-                    castMenu.dismiss();
-                  }else{
-                    castMenu.show(
-                        widgetKey:playButtonKey
-                    );
+                  if(castService.castingState.value==CastState.CASTING){
+                    if(castMenu.isShow){
+                      castMenu.dismiss();
+                    }else{
+                      castMenu.show(
+                          widgetKey:playButtonKey
+                      );
+                    }
                   }
                 },
                 child: IconButton(
