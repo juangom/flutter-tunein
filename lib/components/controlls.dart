@@ -243,6 +243,7 @@ class MusicBoardControls extends StatelessWidget {
                       if (currentSong.uri == null) {
                         return;
                       }
+                      print(state);
                       if (PlayerState.paused == state) {
                         this.localState==PlayerState.playing;
                         musicService.playMusic(currentSong);
@@ -271,6 +272,7 @@ class MusicBoardControls extends StatelessWidget {
                                 IconSize: 21,
                                 colors: [MyTheme.grey300, MyTheme.darkRed],
                                 flash: doFlash,
+                                nonFlashingColor: MyTheme.darkRed,
                               );
                             },
                           ),

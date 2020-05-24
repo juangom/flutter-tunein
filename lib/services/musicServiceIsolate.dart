@@ -175,7 +175,6 @@ class musicServiceIsolate {
         }
       }catch(e){
         print(e);
-        print(e.stack);
         _sendNotFound(request.response);
       }
 

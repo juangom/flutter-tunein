@@ -2,9 +2,9 @@
 
 
 
-
+import 'package:xml/xml.dart' as xml;
 import 'package:upnp/upnp.dart';
-
+import 'dart:convert' show HtmlEscape;
 class upnp{
 
 
@@ -198,38 +198,34 @@ class upnp{
   /// Please visit the following source for more information
   ///
   ///
-  /// Source : https://www.researchgate.net/figure/UPnP-DIDL-Lite-Metadata-Model-Listing-1-Abstract-DID-Model-The-abstract-DID-model-has_fig1_237063436
+  /// Source : http://www.upnp.org/schemas/av/upnp.xsd
   ///
   ///
   /// [creator] is equivalent to author or artist and is just a string
   ///
   ///
   /// [uri] is the uri for the file, it should be public and accessible over http ( this is not a final version )
-  Future<Map<String, dynamic>> setCurrentURI({Service service, String uri, String title, String creator, String Objectclass,
-    String coverArt, String parentID, String ID}) async{
-    print(service.actionNames);
-    print(service.id);
-    print(service.controlUrl);
-    print(service.device.url);
-    print(service.device.friendlyName);
-    print(service.device.deviceType);
-    print(await service.device.getService("urn:schemas-upnp-org:service:AVTransport:1"));
-    print(uri);
+  Future<Map<String, dynamic>> setCurrentURI({Service service, String uri, String artUri, String title, String creator,
+    String Objectclass, String Duration, String Album ,int Size, String region, String genre, int trackNumber}) async{
+
+    HtmlEscape htmlEscape = const HtmlEscape();
+
     return await service.invokeAction("SetAVTransportURI", {
       "InstanceID":"0",
       "CurrentURI":uri??"",
-      "CurrentURIMetaData":'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sec="http://www.sec.co.kr/">'
-          '  <item id="f-0" parentID="0" restricted="0">'
-          '    <dc:title>${title??"Untitled"}</dc:title>'
-          '    <dc:creator>${creator??"NoCreator"}</dc:creator>'
-          '    <upnp:class>${Objectclass??"object.item.videoItem"}</upnp:class>'
-          '    <dc:description>A desription</dc:description>'
-          '    <upnp:artist>${creator??"NoCreator"}</upnp:artist>'
-          '    <upnp:album>${creator??"NoCreator"}</upnp:album>'
-          '    <upnp:albumArtURI xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" dlna:profileID="JPEG_TN">${coverArt??""}</upnp:albumArtURI>'
-          '    <res protocolInfo="*:*:audio:*" sec:URIType="public">${uri??""}</res>'
-          '  </item>'
-          '</DIDL-Lite>'
+      "CurrentURIMetaData":(htmlEscape.convert(xml.parse('<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sec="http://www.sec.co.kr/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'
+          '<item id="0" parentID="-1" restricted="false">'
+          '<upnp:class>${Objectclass??"object.item.audioItem.musicTrack"}</upnp:class>'
+          '<dc:title>${title??"Unknown Title"}</dc:title>'
+          '<dc:creator>${creator??"Unknown creator"}</dc:creator>'
+          '<upnp:artist>${creator??"Unknown Artist"}</upnp:artist>'
+          '<upnp:album>${Album}</upnp:album>'
+          '<upnp:originalTrackNumber>${trackNumber??1}</upnp:originalTrackNumber>'
+          '<dc:genre>${genre}</dc:genre>'
+          '<upnp:albumArtURI dlna:profileID="JPEG_TN" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/">${artUri}</upnp:albumArtURI>'
+          '<res duration="${Duration}" size="${Size}" protocolInfo="http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01700000000000000000000000000000">${uri}</res>'
+          '</item>'
+          '</DIDL-Lite>').toString()))
     });
   }
 

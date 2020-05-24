@@ -50,7 +50,8 @@ dependencies:
   popup_menu: ^1.0.5
   upnp:
     git:
-      url: https://github.com/SpinlockLabs/upnp.dart
+      url: https://github.com/moda20/upnp.dart
+      ref: master
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -77,6 +77,7 @@ class MusicService {
   StreamSubscription _audioStateChangeSub;
   StreamSubscription _upnpPositionSubscription;
   StreamSubscription _upnpPlayerStateSubscription;
+  StreamSubscription _upnpOnSongCompleteSubscription;
 
 
   MusicService() {
@@ -258,13 +259,69 @@ class MusicService {
       _position$.add(Duration(milliseconds: 0));
       playerState$.add(MapEntry(PlayerState.paused,playerState$.value.value));
     }
+
+    if(_upnpOnSongCompleteSubscription!=null){
+      _upnpOnSongCompleteSubscription.cancel();
+      _upnpOnSongCompleteSubscription=null;
+    }
+
+    if(_upnpOnSongCompleteSubscription!=null){
+      _upnpOnSongCompleteSubscription.cancel();
+      _upnpOnSongCompleteSubscription=null;
+    }
   }
 
   ///This will be called when a playing is already going and needs to stop playing
-  ///And reset the duration adn player state
+  ///And reset the duration and player state
   void reInitializePlayStreams(){
     _position$.add(Duration(milliseconds: 0));
     playerState$.add(MapEntry(PlayerState.paused,playerState$.value.value));
+
+    if(_upnpPositionSubscription==null){
+      //This will tie the current position on the casting device to the local position so
+      //that the ui updates correctly
+      _upnpPositionSubscription = castService.currentPosition.listen((data){
+        updatePosition(data);
+      });
+    }
+
+    if(_upnpPlayerStateSubscription ==null){
+      _upnpPlayerStateSubscription= castService.castingPlayerState.listen((data){
+        MapEntry<PlayerState,Tune> playerstate =playerState$.value;
+        if(playerstate!=null){
+          if(playerstate.value.id!=null){
+            if(playerstate.key!=data){
+              if(data!=null && data==PlayerState.stopped){
+                playerState$.add(MapEntry(PlayerState.paused,playerstate.value));
+              }else{
+                playerState$.add(MapEntry(data,playerstate.value));
+              }
+
+            }
+          }
+        }
+      });
+    }
+
+    if(_upnpOnSongCompleteSubscription==null){
+      _upnpOnSongCompleteSubscription = Rx.combineLatest2(castService.castingPlayerState, castService.currentPosition, (a,b)=>MapEntry<PlayerState,Duration>(a,b))
+          .listen(( data){
+            print(data);
+        if(data!=null){
+          if(data.key!=null && data.value!=null){
+            if((data.key==PlayerState.stopped) && (data.value.inMilliseconds==playerState$.value.value.duration)){
+              if(castService.castingState.value==CastState.CASTING){
+                print("must call songComplete now");
+                //The player is paused and the song has ended
+                //If we are still casting
+                //we need to call the onSongComplete method
+                //_onSongComplete();
+              }
+            }
+          }
+        }
+      });
+    }
   }
 
 
@@ -285,31 +342,6 @@ class MusicService {
         castService.castAndPlay(song);
       }
       castService.feedCurrentPosition();
-      if(_upnpPositionSubscription==null){
-        //This will tie the current position on the casting device to the local position so
-        //that the ui updates correctly
-        _upnpPositionSubscription = castService.currentPosition.listen((data){
-          updatePosition(data);
-        });
-      }
-
-      if(_upnpPlayerStateSubscription ==null){
-        _upnpPlayerStateSubscription= castService.castingPlayerState.listen((data){
-          MapEntry<PlayerState,Tune> playerstate =playerState$.value;
-          if(playerstate!=null){
-            if(playerstate.value.id!=null){
-              if(playerstate.key!=data){
-                if(data==PlayerState.stopped){
-                  playerState$.add(MapEntry(PlayerState.paused,playerstate.value));
-                }else{
-                  playerState$.add(MapEntry(data,playerstate.value));
-                }
-
-              }
-            }
-          }
-        });
-      }
     }else{
       //The stream subscription for the position should be initialized here and canceled if it is running since we will
       //refresh it everytime we play to the casting device
@@ -360,6 +392,8 @@ class MusicService {
     }else{
       //If the song is part of a playlist and a current playlist is being played
     }
+    print("dsds");
+    print(song.id);
     updatePlayerState(PlayerState.playing, song);
 
   }
@@ -1142,15 +1176,6 @@ class MusicService {
         _defaultSong,
       ),
     );
-
-    MusicServiceIsolate.defaultReceivePort.listen((data){
-      CrossIsolatesMessage newData = data as CrossIsolatesMessage;
-      switch(newData.command){
-        case "UPlayerstate":{
-          _playerState$.add(newData.message);
-        }
-      }
-    });
   }
 
   void _initAudioPlayer() {

@@ -467,7 +467,7 @@ class _PlayingPageState extends State<PlayingPage>
 
   //Returns the entire Player page widget
   //deprecated
-  getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
+  /*getPlayinglayout(Tune _currentSong, List<int> colors, double _screenHeight,
       bool _isFavorited, PlayerState state, MapEntry<PlayerState, Playlist> currentPlaylist, context) {
     MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
 
@@ -686,7 +686,7 @@ class _PlayingPageState extends State<PlayingPage>
         ),
       ],
     );
-  }
+  }*/
 
 
   gotoFullAlbumPage(context, Tune song) {

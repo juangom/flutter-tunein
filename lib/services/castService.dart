@@ -68,15 +68,17 @@ class CastService {
       if(positionTimer==null){
         if(_currentDeviceToBeUsed.value!=null){
           positionTimer = Timer.periodic(Duration(seconds: 1), (Timer) async{
-            UpnPPlugin.getPositionInfo(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value)).then(
-                (positionData){
-                  String position = positionData["RelTime"];
-                  Duration positionInDuration = FormatPositionToDuration(position);
-                  if(positionInDuration!=null && (_currentPosition.value==null || positionInDuration.inSeconds!=_currentPosition.value.inSeconds)){
-                    _currentPosition.add(positionInDuration);
+            if(castingState.value==CastState.CASTING &&  castingPlayerState.value==PlayerState.playing){
+              UpnPPlugin.getPositionInfo(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value)).then(
+                      (positionData){
+                    String position = positionData["RelTime"];
+                    Duration positionInDuration = FormatPositionToDuration(position);
+                    if(positionInDuration!=null && (_currentPosition.value==null || positionInDuration.inSeconds!=_currentPosition.value.inSeconds)){
+                      _currentPosition.add(positionInDuration);
+                    }
                   }
-                }
-            );
+              );
+            }
           });
         }
       }
@@ -85,27 +87,29 @@ class CastService {
         if(castingPlayerStateTimer==null){
           if(_currentDeviceToBeUsed.value!=null){
             castingPlayerStateTimer = Timer.periodic(Duration(seconds: 1), (Timer) async{
-              UpnPPlugin.getTransportInfo(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value)).then(
-                      (positionData){
-                    String state = positionData["CurrentTransportState"];
-                    switch(state){
-                      case "PLAYING":{
-                        _castingPlayerState.value!=PlayerState.playing?_castingPlayerState.add(PlayerState.playing):null;
-                        break;
+              if(castingState.value==CastState.CASTING){
+                UpnPPlugin.getTransportInfo(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value)).then(
+                        (positionData){
+                      String state = positionData["CurrentTransportState"];
+                      switch(state){
+                        case "PLAYING":{
+                          _castingPlayerState.value!=PlayerState.playing?_castingPlayerState.add(PlayerState.playing):null;
+                          break;
+                        }
+                        case "PAUSED_PLAYBACK":{
+                          _castingPlayerState.value!=PlayerState.paused?_castingPlayerState.add(PlayerState.paused):null;
+                          break;
+                        }
+                        case "STOPPED":{
+                          _castingPlayerState.value!=PlayerState.stopped?_castingPlayerState.add(PlayerState.stopped):null;
+                          break;
+                        }
+                        default:
+                          break;
                       }
-                      case "PAUSED_PLAYBACK":{
-                        _castingPlayerState.value!=PlayerState.paused?_castingPlayerState.add(PlayerState.paused):null;
-                        break;
-                      }
-                      case "STOPPED":{
-                        _castingPlayerState.value!=PlayerState.paused?_castingPlayerState.add(PlayerState.paused):null;
-                        break;
-                      }
-                      default:
-                        break;
                     }
-                  }
-              );
+                );
+              }
             });
           }
         }
@@ -176,7 +180,7 @@ class CastService {
     }
   }
 
-  Future castAndPlay(Tune songToCast)async {
+  Future castAndPlay(Tune songToCast, {Tune nextSong})async {
     if(_castingState.value==CastState.CASTING){
       await registerSongForServing(songToCast);
       if(songToCast.albumArt!=null){
@@ -190,16 +194,18 @@ class CastService {
 
       Device currentDev = _currentDeviceToBeUsed.value;
       UpnPPlugin.setCurrentURI(service: await currentDev.getService("urn:schemas-upnp-org:service:AVTransport:1"),
-          uri: newItemToCast.uri,
-          Objectclass: "object.item.audioItem",
-          creator: songToCast.artist,
-          title: newItemToCast.name,
-          coverArt: songToCast.albumArt!=null?newArtURI:null,
-          ID: songToCast.id,
-          parentID: "Parent${songToCast.id}"
+        uri: newItemToCast.uri,
+        Objectclass: "object.item.audioItem",
+        creator: songToCast.artist,
+        title: newItemToCast.name,
+        artUri: songToCast.albumArt!=null?newArtURI:null,
+        Duration: DurationToFormatPosition(Duration(milliseconds: songToCast.duration)),
+        trackNumber: songToCast.numberInAlbum,
+        Album: songToCast.album,
       ).then((data){
         play();
         _castItem.add(newItemToCast);
+        //_castingPlayerState.add(PlayerState.playing);
         return;
       });
 
@@ -304,8 +310,8 @@ class CastService {
     UpnPPlugin= UpnpPlugin.upnp();
     _castingState = BehaviorSubject<CastState>.seeded(CastState.NOT_CASTING);
     _castItem = BehaviorSubject<CastItem>.seeded(null);
-    _currentPosition = BehaviorSubject<Duration>.seeded(null);
-    _castingPlayerState= BehaviorSubject<PlayerState>.seeded(null);
+    _currentPosition = BehaviorSubject<Duration>.seeded(Duration(milliseconds: 0));
+    _castingPlayerState= BehaviorSubject<PlayerState>.seeded(PlayerState.stopped);
     _currentDeviceToBeUsed = BehaviorSubject<Device>.seeded(null);
     _deviceSearchingState = BehaviorSubject<DeviceSearchingState>.seeded(DeviceSearchingState.NOT_SEARCHING);
   }
