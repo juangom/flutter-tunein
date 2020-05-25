@@ -281,7 +281,11 @@ class MusicService {
       //This will tie the current position on the casting device to the local position so
       //that the ui updates correctly
       _upnpPositionSubscription = castService.currentPosition.listen((data){
-        updatePosition(data);
+        if(castService.castingPlayerState.value!=PlayerState.stopped){
+          updatePosition(data);
+        }else{
+          updatePosition(Duration(milliseconds: 0));
+        }
       });
     }
 
@@ -304,18 +308,30 @@ class MusicService {
     }
 
     if(_upnpOnSongCompleteSubscription==null){
+      Duration lastDuration;
       _upnpOnSongCompleteSubscription = Rx.combineLatest2(castService.castingPlayerState, castService.currentPosition, (a,b)=>MapEntry<PlayerState,Duration>(a,b))
           .listen(( data){
-            print(data);
+            //print(data);
         if(data!=null){
           if(data.key!=null && data.value!=null){
-            if((data.key==PlayerState.stopped) && (data.value.inMilliseconds==playerState$.value.value.duration)){
+
+            //Due to the nature of us getting the current position we can't be sure that a song ended or not.
+            //e.g when a song ends on the device it stops reporting the last position it was in. if the song ends between our position probe requests
+            //we on't be able to get that the song ended so we will be at songLength - 1 second then Zero.
+
+            bool willCallOnSongComplete =false;
+            willCallOnSongComplete = ((data.value.inMilliseconds==0 && (lastDuration!=null && lastDuration.inMilliseconds + 2100 > playerState$.value.value.duration))
+                || (data.value.inMilliseconds + 2100 > playerState$.value.value.duration));
+
+
+            lastDuration=data.value;
+            if((data.key==PlayerState.stopped) && willCallOnSongComplete){
               if(castService.castingState.value==CastState.CASTING){
                 print("must call songComplete now");
                 //The player is paused and the song has ended
                 //If we are still casting
                 //we need to call the onSongComplete method
-                //_onSongComplete();
+                _onSongComplete();
               }
             }
           }

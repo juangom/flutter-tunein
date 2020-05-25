@@ -2,13 +2,17 @@
 
 
 
+import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:upnp/upnp.dart';
 import 'dart:convert' show HtmlEscape;
 class upnp{
 
-
+  StateSubscriptionManager globalSub;
+  List<StateSubscriptionManager> individualSubs=[];
   upnp();
+
+
 
 
   Future<Map<String, dynamic>> getCurrentMediaInfo({Service service}) async{
@@ -251,6 +255,70 @@ class upnp{
       "Unit":"REL_TIME",
       "Target":position??"00:01:00"
     });
+  }
+
+  ///Subscribes to a service events and returns a map of the subscriptionID and all the event elements
+  ///
+  ///
+  /// Returns a Future of a behavior stream that you can listen to. The returned stream needs to be MANUALLY
+  /// canceled and closed when not used or when disposing of it
+  ///
+  ///
+  /// [newSub] creates a new subscription to the event for the given service, so that it can be unsubscribed to on it's own
+  /// it defaults to false and if set so, the subscription will be part of the global state subscription manager and will be unsubscribed to
+  /// whenever that global state manager has been unsubscribed
+  ///
+  ///
+  /// When set to true [newSub] will NEED a MANUAL un-subscription in order to free cpu and memory
+  Future<BehaviorSubject<Map<String,String>>> subscribeToService({Service service, bool newSub=false}) async{
+    var sub;
+    int subIndex;
+    BehaviorSubject<Map<String,String>> returnedBehaviorSubject = BehaviorSubject<Map<String,String>>.seeded(null);
+
+
+    if(newSub || globalSub==null){
+      sub = new StateSubscriptionManager();
+      await sub.init();
+      individualSubs.add(sub);
+      subIndex=individualSubs.length-1;
+    }else{
+      if(globalSub==null){
+        globalSub = new StateSubscriptionManager();
+        await globalSub.init();
+      }
+      sub=globalSub;
+    }
+
+
+    Map<String,String> eventDataMap=Map();
+    eventDataMap["subscriptionID"]= subIndex.toString();
+    sub.subscribeToService(service).listen((value) {
+      value.keys.forEach((elem){
+        var eventData = value[elem];
+        eventDataMap[elem]= eventData;
+      });
+      returnedBehaviorSubject.add(eventDataMap);
+    }, onError: (e, stack) {
+      print("Error while subscribing to ${service.type} : ${e}");
+    });
+
+    return returnedBehaviorSubject;
+  }
+
+
+
+  Future<bool> closeserviceSubscriptions({List<int> IDs}){
+    if(IDs!=null){
+      IDs.forEach((elemID){
+        if(elemID < individualSubs.length-1 && individualSubs[elemID]!=null){
+          individualSubs[elemID].close();
+        }
+      });
+    }else{
+      individualSubs.forEach((elem){
+        elem.close();
+      });
+    }
   }
 
   Future<List<Device>> getDevices() async{

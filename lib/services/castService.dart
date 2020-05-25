@@ -10,6 +10,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:upnp/upnp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:Tunein/plugins/upnp.dart' as UpnpPlugin;
+import 'package:xml/xml.dart' as xml;
 
 enum CastState{
   CASTING,
@@ -34,8 +35,11 @@ class CastService {
   BehaviorSubject<Duration> _currentPosition;
   BehaviorSubject<Device> _currentDeviceToBeUsed;
   Timer positionTimer;
-  Timer castingPlayerStateTimer;
+  StreamSubscription castingPlayerStateTimer;
+  BehaviorSubject<Map<String,String>> PlayerStateStream;
   UpnpPlugin.upnp UpnPPlugin;
+
+  List<int> subscriptionIDs=[];
   final MusicServiceIsolate = locator<musicServiceIsolate>();
   final platformService = locator<PlatformService>();
 
@@ -63,7 +67,7 @@ class CastService {
   }
 
 
-  Future feedCurrentPosition({bool perpetual=true, bool feedState=true}){
+  Future feedCurrentPosition({bool perpetual=true, bool feedState=true}) async{
     if(perpetual){
       if(positionTimer==null){
         if(_currentDeviceToBeUsed.value!=null){
@@ -86,7 +90,7 @@ class CastService {
       if(feedState){
         if(castingPlayerStateTimer==null){
           if(_currentDeviceToBeUsed.value!=null){
-            castingPlayerStateTimer = Timer.periodic(Duration(seconds: 1), (Timer) async{
+            /*castingPlayerStateTimer = Timer.periodic(Duration(seconds: 1), (Timer) async{
               if(castingState.value==CastState.CASTING){
                 UpnPPlugin.getTransportInfo(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value)).then(
                         (positionData){
@@ -110,6 +114,36 @@ class CastService {
                     }
                 );
               }
+            });*/
+
+             PlayerStateStream = await UpnPPlugin.subscribeToService(service: await UpnPPlugin.getAVTTransportServiceFromDevice(_currentDeviceToBeUsed.value), newSub: true);
+
+            castingPlayerStateTimer = PlayerStateStream.listen((data){
+              if(data!=null){
+                subscriptionIDs.indexOf(int.tryParse(data["subscriptionID"]))==-1?subscriptionIDs.add(int.tryParse(data["subscriptionID"])):null;
+                xml.XmlDocument doc = xml.parse(data["LastChange"]);
+                List<xml.XmlElement> listOFTransportState = doc.findAllElements("TransportState").toList();
+
+                if(listOFTransportState.length!=0){
+                  String state = listOFTransportState[0].getAttribute("val");
+                  switch(state){
+                    case "PLAYING":{
+                      _castingPlayerState.value!=PlayerState.playing?_castingPlayerState.add(PlayerState.playing):null;
+                      break;
+                    }
+                    case "PAUSED_PLAYBACK":{
+                      _castingPlayerState.value!=PlayerState.paused?_castingPlayerState.add(PlayerState.paused):null;
+                      break;
+                    }
+                    case "STOPPED":{
+                      _castingPlayerState.value!=PlayerState.stopped?_castingPlayerState.add(PlayerState.stopped):null;
+                      break;
+                    }
+                    default:
+                      break;
+                  }
+                }
+              }
             });
           }
         }
@@ -125,6 +159,16 @@ class CastService {
     if(castingPlayerStateTimer!=null){
       castingPlayerStateTimer.cancel();
       castingPlayerStateTimer=null;
+      if(PlayerStateStream!=null){
+        PlayerStateStream.close();
+        PlayerStateStream=null;
+      }
+    }
+
+    try{
+      UpnPPlugin.closeserviceSubscriptions(IDs: subscriptionIDs);
+    }catch(e){
+      print(e);
     }
   }
 

@@ -725,17 +725,34 @@ class _TracksPageState extends State<TracksPage>
                                         fontSize: 10.0,
                                         color: MyTheme.darkBlack
                                     ),
-                                    image: Icon(
-                                      Icons.refresh,
-                                      size: 30,
-                                      color: MyTheme.darkBlack
+                                    image: Container(
+                                      height: 30,
+                                      width: 30,
+                                      child: Stack(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.search,
+                                            size: 35,
+                                            color: MyTheme.darkBlack,
+                                          ),
+                                          Positioned(
+                                            child: Icon(
+                                              Icons.cast,
+                                              size: 10,
+                                              color: MyTheme.darkBlack
+                                            ),
+                                            left: 9,
+                                            top: 9,
+                                          )
+                                        ],
+                                      ),
                                     )
                                 ),
                               ],
                               onClickMenu: (provider){
                                 print("provider got is : ${provider}");
                                 switch(provider.menuTitle){
-                                  case "Refresh":{
+                                  case "Search":{
                                     DialogService.openDevicePickingDialog(context, null).then(
                                         (data){
                                           upnp.Device deviceChosen = data;
