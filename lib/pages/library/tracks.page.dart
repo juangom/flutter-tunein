@@ -824,7 +824,7 @@ class _TracksPageState extends State<TracksPage>
                                 ScreenSize: screensize,
                                 choices: songCardContextMenulist,
                                 StaticContextMenuFromBottom: 190,
-                                onContextSelect: (choice){
+                                onContextSelect: (choice) async{
                                   switch(choice.id){
                                     case 1: {
                                       musicService.playOne(_songs[newIndex]);
@@ -840,6 +840,24 @@ class _TracksPageState extends State<TracksPage>
                                     }
                                     case 4:{
                                       musicService.playAlbum(_songs[newIndex]);
+                                      break;
+                                    }
+                                    case 5:{
+                                      if(castService.currentDeviceToBeUsed.value==null){
+                                        upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                        if(result!=null){
+                                          castService.setDeviceToBeUsed(result);
+                                        }
+                                      }
+                                      musicService.castOrPlay(_songs[newIndex], SingleCast: true);
+                                      break;
+                                    }
+                                    case 6:{
+                                      upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                      if(result!=null){
+                                        musicService.castOrPlay(_songs[newIndex], SingleCast: true, device: result);
+                                      }
+                                      break;
                                     }
                                   }
                                 },

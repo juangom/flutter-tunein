@@ -65,7 +65,7 @@ class ThreeDotPopupMenu extends StatelessWidget {
       ),
       overlay.size,
     );
-    ContextMenuOptions Choice = await showMenu<ContextMenuOptions>(context: context, position: position, items: items);
+    ContextMenuOptions Choice = await showMenu<ContextMenuOptions>(context: context, position: position, items: items, useRootNavigator: true);
     if(Choice !=null){
       onContextSelect(Choice);
     }else{

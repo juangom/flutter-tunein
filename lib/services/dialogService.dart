@@ -10,7 +10,6 @@ import 'package:Tunein/globals.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:flushbar/flushbar.dart';
 
-final themeService = locator<ThemeService>();
 final layoutService = locator<LayoutService>();
 final castService = locator<CastService>();
 

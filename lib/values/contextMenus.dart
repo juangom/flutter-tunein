@@ -23,6 +23,16 @@ final songCardContextMenulist=[
     title: "Start with and shuffle album",
     icon: Icons.shuffle,
   ),
+  ContextMenuOptions(
+    id: 5,
+    title: "Cast to Current Device",
+    icon: Icons.cast_connected,
+  ),
+  ContextMenuOptions(
+    id: 6,
+    title: "Cast to new Device",
+    icon: Icons.cast,
+  ),
 ];
 ///The context menu for the regular artist card found in the artists page
 final artistCardContextMenulist=[

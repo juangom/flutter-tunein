@@ -22,6 +22,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:upnp/upnp.dart';
 import 'dart:convert';
 import 'locator.dart';
 final themeService = locator<ThemeService>();
@@ -341,22 +342,26 @@ class MusicService {
   }
 
 
+  void castOrPlay(Tune song, {bool SingleCast=false, Device device}){
+    CastItem currentCastingItem = castService.castItem.value;
+    if(currentCastingItem!=null && castService.castingState.value==CastState.CASTING && (SingleCast==null || !SingleCast)){
+      if(currentCastingItem.id == song.id){
+        castService.play();
+      }else{
+        castService.castAndPlay(song);
+      }
+    }else{
+      castService.castAndPlay(song, SingleCast: SingleCast, deviceToUse: device);
+    }
+  }
+
 
   void playMusic(Tune song, {bool isPartOfAPlaylist=false, Playlist playlist}) async {
 
     if(castService.castingState.value==CastState.CASTING){
       //If this is true the play should play on the cast device
       //get the current casting item
-      CastItem currentCastingItem = castService.castItem.value;
-      if(currentCastingItem!=null){
-        if(currentCastingItem.id == song.id){
-          castService.play();
-        }else{
-          castService.castAndPlay(song);
-        }
-      }else{
-        castService.castAndPlay(song);
-      }
+      castOrPlay(song);
       castService.feedCurrentPosition();
     }else{
       //The stream subscription for the position should be initialized here and canceled if it is running since we will

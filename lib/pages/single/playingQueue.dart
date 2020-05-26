@@ -8,6 +8,8 @@ import 'package:Tunein/components/scrollbar.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
@@ -18,6 +20,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:Tunein/components/smallControlls.dart';
+import 'package:upnp/upnp.dart' as upnp;
 
 class playingQueue extends StatefulWidget {
   @override
@@ -27,6 +30,7 @@ class playingQueue extends StatefulWidget {
 class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClientMixin<playingQueue> {
 
   final musicService = locator<MusicService>();
+  final castService = locator<CastService>();
   final themeService = locator<ThemeService>();
   StreamSubscription<MapEntry<PlayerState, Tune>> scrollAnimationListener;
   ScrollController controller;
@@ -330,7 +334,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                         choices: songCardContextMenulist,
                                         ScreenSize: screensize,
                                         StaticContextMenuFromBottom: 0.0,
-                                        onContextSelect: (choice){
+                                        onContextSelect: (choice) async{
                                           switch(choice.id){
                                             case 1: {
                                               musicService.playOne(_playlist[newIndex]);
@@ -346,6 +350,24 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                             }
                                             case 4:{
                                               musicService.playAlbum(_playlist[newIndex]);
+                                              break;
+                                            }
+                                            case 5:{
+                                              if(castService.currentDeviceToBeUsed.value==null){
+                                                upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                                if(result!=null){
+                                                  castService.setDeviceToBeUsed(result);
+                                                }
+                                              }
+                                              musicService.castOrPlay(_playlist[newIndex], SingleCast: true);
+                                              break;
+                                            }
+                                            case 6:{
+                                              upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                              if(result!=null){
+                                                musicService.castOrPlay(_playlist[newIndex], SingleCast: true, device: result);
+                                              }
+                                              break;
                                             }
                                           }
                                         },

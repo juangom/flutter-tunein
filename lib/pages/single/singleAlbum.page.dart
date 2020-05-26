@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:Tunein/components/card.dart';
@@ -10,6 +11,7 @@ import 'package:Tunein/components/selectableTile.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
@@ -17,11 +19,13 @@ import 'package:Tunein/services/themeService.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:upnp/upnp.dart' as upnp;
 
 class SingleAlbumPage extends StatelessWidget {
   final Tune song;
   final Album album;
   final musicService = locator<MusicService>();
+  final castService = locator<CastService>();
   final themeService = locator<ThemeService>();
 
 
@@ -414,7 +418,7 @@ class SingleAlbumPage extends StatelessWidget {
                           choices: songCardContextMenulist,
                           ScreenSize: screenSize,
                           StaticContextMenuFromBottom: 0.0,
-                          onContextSelect: (choice){
+                          onContextSelect: (choice) async{
                             switch(choice.id){
                               case 1: {
                                 musicService.playOne(album.songs[newIndex]);
@@ -430,7 +434,26 @@ class SingleAlbumPage extends StatelessWidget {
                               }
                               case 4:{
                                 musicService.playAlbum(album.songs[newIndex]);
+                                break;
                               }
+                              case 5:{
+                                if(castService.currentDeviceToBeUsed.value==null){
+                                  upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                  if(result!=null){
+                                    castService.setDeviceToBeUsed(result);
+                                  }
+                                }
+                                musicService.castOrPlay(album.songs[newIndex], SingleCast: true);
+                                break;
+                              }
+                              case 6:{
+                                upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                if(result!=null){
+                                  musicService.castOrPlay(album.songs[newIndex], SingleCast: true, device: result);
+                                }
+                                break;
+                              }
+
                             }
                           },
                           onContextCancel: (choice){
@@ -802,7 +825,7 @@ class SingleAlbumPage extends StatelessWidget {
                             choices: songCardContextMenulist,
                             ScreenSize: screenSize,
                             StaticContextMenuFromBottom: 0.0,
-                            onContextSelect: (choice){
+                            onContextSelect: (choice) async{
                               switch(choice.id){
                                 case 1: {
                                   musicService.playOne(album.songs[newIndex]);
@@ -818,6 +841,24 @@ class SingleAlbumPage extends StatelessWidget {
                                 }
                                 case 4:{
                                   musicService.playAlbum(album.songs[newIndex]);
+                                  break;
+                                }
+                                case 5:{
+                                  if(castService.currentDeviceToBeUsed.value==null){
+                                    upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                    if(result!=null){
+                                      castService.setDeviceToBeUsed(result);
+                                    }
+                                  }
+                                  musicService.castOrPlay(album.songs[newIndex], SingleCast: true);
+                                  break;
+                                }
+                                case 6:{
+                                  upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                  if(result!=null){
+                                    musicService.castOrPlay(album.songs[newIndex], SingleCast: true, device: result);
+                                  }
+                                  break;
                                 }
                               }
                             },

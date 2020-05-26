@@ -224,8 +224,8 @@ class CastService {
     }
   }
 
-  Future castAndPlay(Tune songToCast, {Tune nextSong})async {
-    if(_castingState.value==CastState.CASTING){
+  Future castAndPlay(Tune songToCast, {Tune nextSong, bool SingleCast=false, Device deviceToUse})async {
+    if(_castingState.value==CastState.CASTING || SingleCast){
       await registerSongForServing(songToCast);
       if(songToCast.albumArt!=null){
         await registerArtForService("art${songToCast.id}",songToCast.albumArt);
@@ -236,7 +236,7 @@ class CastService {
       String newArtURI = "http://${currentIP}:8089/file/?fileID=art${songToCast.id}.jpg";
       CastItem newItemToCast = CastItem(uri: newURI, name: songToCast.title.toString(), coverArtUri: songToCast.albumArt!=null?newArtURI:null, id: songToCast.id);
 
-      Device currentDev = _currentDeviceToBeUsed.value;
+      Device currentDev = deviceToUse??_currentDeviceToBeUsed.value;
       UpnPPlugin.setCurrentURI(service: await currentDev.getService("urn:schemas-upnp-org:service:AVTransport:1"),
         uri: newItemToCast.uri,
         Objectclass: "object.item.audioItem",
@@ -248,11 +248,12 @@ class CastService {
         Album: songToCast.album,
       ).then((data){
         play();
-        _castItem.add(newItemToCast);
+        if(!SingleCast){
+          _castItem.add(newItemToCast);
+        }
         //_castingPlayerState.add(PlayerState.playing);
         return;
       });
-
     }
   }
 
