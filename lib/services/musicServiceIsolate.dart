@@ -13,8 +13,8 @@ import 'package:path/path.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:Tunein/plugins/upnp.dart' as UPnPPlugin;
 import 'package:upnp/upnp.dart';
+import 'package:flutter_file_meta_data/flutter_file_meta_data.dart';
 
-MethodChannel platform = MethodChannel('android_app_retain');
 
 class musicServiceIsolate {
   static BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
@@ -279,6 +279,7 @@ class musicServiceIsolate {
 
 
     newIsolateReceivePort.listen((dynamic message) {
+      WidgetsFlutterBinding.ensureInitialized();
       List<dynamic> incomingMessage = message as List<dynamic>;
       switch(incomingMessage[0] as String){
         case "test":{
@@ -303,8 +304,6 @@ class musicServiceIsolate {
     List _metaData=[];
     for (var track in tracks) {
       var data = await getFileMetaData(track);
-      print(data);
-      // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
       if (data!=null && data[2] != null) {
         if (data[2] is List<int>) {
           var digest = sha1.convert(data[2]).toString();
@@ -326,17 +325,14 @@ class musicServiceIsolate {
     var value;
     try {
       if (mapMetaData[track] == null) {
-
-
-        var metaValue = await platform
-            .invokeMethod("getMetaData", <String, dynamic>{'filepath': track});
+        var metaValue = await FlutterFileMetaData.getFileMetaData(track);
         return metaValue;
       } else {
         value = mapMetaData[track];
         return value;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, stack) {
+
     }
 
   }

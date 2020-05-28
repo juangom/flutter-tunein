@@ -120,8 +120,8 @@ class Nano {
 
     //Metadata is not currently possible through isolate as it is using platform methods that are only available from the main UI thread.
     //The use of the traditional
-    /*ReceivePort tempPort = ReceivePort();
-    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage<List>(
+    ReceivePort tempPort = ReceivePort();
+    MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<List>(
         sender: tempPort.sendPort,
         command: "getAllTracksMetadata",
         message: List.from(_musicFiles)
@@ -134,9 +134,9 @@ class Nano {
       }else{
 
       }
-    });*/
+    });
 
-    for (var track in _musicFiles) {
+/*    for (var track in _musicFiles) {
       var data = await getFileMetaData(track);
       // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
       if (data!=null && data[2] != null) {
@@ -151,7 +151,7 @@ class Nano {
       } else {
         _metaData.add(data);
       }
-    }
+    }*/
   }
 
   Future getFileMetaData(track) async {

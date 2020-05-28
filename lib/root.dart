@@ -40,11 +40,10 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     MusicServiceIsolate.callerCreateIsolate().then((value){
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
         print("the returned value is ${retunedValue}");
-        loadFiles();
-        /*MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
+        MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
           print("isolate with plugins initiated");
-
-        });*/
+          loadFiles();
+        });
       });
 
 
@@ -150,22 +149,23 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           print("playlist songs not zero will set paused");
         }
 
-        //setting the position to Zero
-        musicService.updatePosition(Duration(milliseconds: 0));
-        ByteData dibd = await rootBundle.load("images/cover.png");
-        List<int> defaultImageBytes = dibd.buffer.asUint8List();
-        MediaNotification.show(
-            title: '${musicService.playerState$.value.value.title}',
-            author: '${musicService.playerState$.value.value.artist}',
-            play: false,
-            image: musicService.playerState$.value.value.albumArt,
-            BitmapImage:
-            musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
-            titleColor: Color(musicService.playerState$.value.value.colors[1]),
-            subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
-            iconColor: Color(musicService.playerState$.value.value.colors[1]),
-            bgColor: Color(musicService.playerState$.value.value.colors[0]));
-
+        if(lastPlayedSongs.length!=0){
+          //setting the position to Zero
+          musicService.updatePosition(Duration(milliseconds: 0));
+          ByteData dibd = await rootBundle.load("images/cover.png");
+          List<int> defaultImageBytes = dibd.buffer.asUint8List();
+          MediaNotification.show(
+              title: '${musicService.playerState$.value.value.title}',
+              author: '${musicService.playerState$.value.value.artist}',
+              play: false,
+              image: musicService.playerState$.value.value.albumArt,
+              BitmapImage:
+              musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
+              titleColor: Color(musicService.playerState$.value.value.colors[1]),
+              subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
+              iconColor: Color(musicService.playerState$.value.value.colors[1]),
+              bgColor: Color(musicService.playerState$.value.value.colors[0]));
+        }
         metricsLoaded.cancel();
       }
     });
