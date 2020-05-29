@@ -14,13 +14,22 @@ class BottomPanel extends StatelessWidget {
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   Widget playPauseButton;
+  Tune oldSong;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<MapEntry<PlayerState, Tune>>(
-      stream: musicService.playerState$,
+      stream: musicService.playerState$.where((newValue){
+        if(oldSong!=null && oldSong.id==newValue.value.id){
+          return false;
+        }else{
+          oldSong= newValue.value;
+          return true;
+        }
+      }),
       builder: (BuildContext context,
           AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot) {
+
         if (!snapshot.hasData) {
           return Container(
             color: MyTheme.bgBottomBar,
@@ -125,7 +134,9 @@ class BottomPanel extends StatelessWidget {
                               if (_currentSong.uri == null) {
                                 return;
                               }
-                              musicService.playPreviousSong();
+                              Future.delayed(Duration(milliseconds: 200),(){
+                                musicService.playPreviousSong();
+                              });
                             },
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
@@ -145,26 +156,30 @@ class BottomPanel extends StatelessWidget {
                         ),
                         Material(
                           color: Colors.transparent,
-                          child: IconButton(
-                            onPressed: () {
-                              if (_currentSong.uri == null) {
-                                return;
+                          child: StreamBuilder(
+                            initialData: MapEntry<PlayerState, Tune>(_state,_currentSong),
+                            stream: musicService.playerState$,
+                            builder: (context, AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot){
+                              PlayerState newStat = snapshot.data.key;
+                              print("newStat ${newStat}");
+                              return PlayPauseButtonWidget(newStat, colors, (PlayerState state){
+                                if(state==PlayerState.playing){
+                                  //will run pause
+                                  Future.delayed(Duration(milliseconds: 200),(){
+                                    musicService.playOrPause(null, PlayPauseCurrentSong: true);
+                                  });
+                                  return;
+                                }
+                                if(state==PlayerState.paused){
+                                  //will run play
+                                  Future.delayed(Duration(milliseconds: 200),(){
+                                    musicService.playOrPause(null, PlayPauseCurrentSong: true);
+                                  });
+                                  return;
+                                }
                               }
-                              if (PlayerState.paused == _state) {
-                                musicService.playMusic(_currentSong);
-                              } else {
-                                musicService.pauseMusic(_currentSong);
-                              }
+                              );
                             },
-                            icon: _state == PlayerState.playing
-                                ? Icon(
-                              Icons.pause,
-                              color: Color(colors[1]).withOpacity(.7),
-                            )
-                                : Icon(
-                              Icons.play_arrow,
-                              color: Color(colors[1]).withOpacity(.7),
-                            ),
                           ),
                         )
                       ],
@@ -211,54 +226,83 @@ class BottomPanel extends StatelessWidget {
 //Deprecated
   Widget PlayPauseButton(PlayerState state, Tune _currentSong, List<int> colors){
     PlayerState _state = state;
-    return PlayPauseButtonWidget(_state,colors);
+    return PlayPauseButtonWidget(_state,colors, (PlayerState state){
+      if(state==PlayerState.playing){
+        //will run pause
+        Future.delayed(Duration(milliseconds: 200),(){
+          musicService.pauseMusic(_currentSong);
+        });
+        return;
+      }
+      if(state==PlayerState.paused){
+        //will run play
+        Future.delayed(Duration(milliseconds: 200),(){
+          musicService.playMusic(_currentSong);
+        });
+        return;
+      }
+    });
   }
 }
 
 class PlayPauseButtonWidget extends StatefulWidget {
   final PlayerState _state;
   final List<int> colors;
+  final Function(PlayerState) onTap;
 
-
-  const PlayPauseButtonWidget(this._state, this.colors);
+  PlayPauseButtonWidget(this._state, this.colors, this.onTap){
+    print("stat from constructor ${this._state}");
+  }
 
   @override
   _PlayPauseButtonState createState() => _PlayPauseButtonState();
 }
 
 class _PlayPauseButtonState extends State<PlayPauseButtonWidget> {
-  Tune _currentSong;
   PlayerState _state;
   List<int> colors;
-  final musicService = locator<MusicService>();
+  Function(PlayerState) onTap;
 
 
   @override
   void initState() {
-    _currentSong=musicService.playerState$.value.value;
+    super.initState();
     _state = widget._state;
     colors=widget.colors;
+    onTap=widget.onTap;
+    print("stat from initState : ${_state}");
+  }
+
+  @override
+  void didUpdateWidget(PlayPauseButtonWidget oldWidget) {
+    if(oldWidget._state != widget._state || oldWidget.colors != widget.colors || oldWidget.onTap != widget.onTap) {
+      setState((){
+        _state = widget._state;
+        colors=widget.colors;
+        onTap=widget.onTap;
+      });
+    }
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
+    print(_state);
     return Material(
       color: Colors.transparent,
       child: IconButton(
         onPressed: () {
-          if (_currentSong.uri == null) {
-            return;
-          }
           if (PlayerState.paused == _state) {
+            onTap(_state);
             setState(() {
               _state = PlayerState.playing;
             });
-            musicService.playMusic(_currentSong);
+
           } else {
+            onTap(_state);
             setState(() {
               _state=PlayerState.paused;
             });
-            musicService.pauseMusic(_currentSong);
           }
         },
         icon: _state == PlayerState.playing

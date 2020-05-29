@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/plugins/AudioPluginService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/http/requests.dart';
@@ -49,7 +50,7 @@ class MusicService {
   BehaviorSubject<List<Playback>> _playback$;
   BehaviorSubject<List<Tune>> _favorites$;
   BehaviorSubject<bool> _isAudioSeeking$;
-  AudioPlayer _audioPlayer;
+  AudioPluginService _audioPlayer;
   Nano _nano;
   Tune _defaultSong;
 
@@ -84,6 +85,10 @@ class MusicService {
   MusicService() {
     _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null);
     _initStreams();
+   // _initAudioPlayer();
+  }
+
+  manualAudioPlayerInit(){
     _initAudioPlayer();
   }
 
@@ -368,7 +373,7 @@ class MusicService {
       //refresh it everytime we play to the casting device
       initializePlayStreams();
       //playing the song if it is a local play
-      _audioPlayer.play(song.uri);
+      _audioPlayer.playSong(song.uri);
     }
 
 
@@ -413,8 +418,6 @@ class MusicService {
     }else{
       //If the song is part of a playlist and a current playlist is being played
     }
-    print("dsds");
-    print(song.id);
     updatePlayerState(PlayerState.playing, song);
 
   }
@@ -426,7 +429,7 @@ class MusicService {
 
     }else{
       //pause the song if it is a local play
-      _audioPlayer.pause();
+      _audioPlayer.pauseSong();
     }
 
 
@@ -445,16 +448,17 @@ class MusicService {
       updatePlayerState(PlayerState.paused, playerState$.value.value);
     }else{
       //pause the song if it is a local play
-      _audioPlayer.stop();
+      _audioPlayer.stopSong();
       updatePlayerState(PlayerState.paused, playerState$.value.value);
     }
 
   }
 
   //This was introduced to eliminate useless subscriptions to the playerState stream
-  void playOrPause(Tune song) async {
+  void playOrPause(Tune song, {bool PlayPauseCurrentSong=false}) async {
     PlayerState _state = _playerState$.value.key;
     final Tune _currentSong = _playerState$.value.value;
+    PlayPauseCurrentSong?song=_currentSong:null;
     final bool _isSelectedSong =
         _currentSong.id == song.id;
     switch (_state) {
@@ -1200,9 +1204,9 @@ class MusicService {
   }
 
   void _initAudioPlayer() {
-    _audioPlayer = AudioPlayer();
+    _audioPlayer = AudioPluginService();
     _audioPositionSub =
-        _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
+        _audioPlayer.subscribeToPositionChanges().listen((Duration duration) {
       final bool _isAudioSeeking = _isAudioSeeking$.value;
       if (!_isAudioSeeking) {
         if(!(castService.castingState.value==CastState.CASTING)){
@@ -1213,13 +1217,14 @@ class MusicService {
 
     //This will synchronize the playing states of
     _audioStateChangeSub =
-        _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
+        _audioPlayer.subscribeToStateChanges().listen((AudioPlayerState state) {
      if(castService.castingState.value==CastState.NOT_CASTING){
        if (state == AudioPlayerState.COMPLETED) {
          _onSongComplete();
        }
        if (state == AudioPlayerState.PAUSED) {
          //MediaNotification.setTo(false);
+         print("state coming form audipoPlayer:  ${state}");
          updatePlayerState(PlayerState.paused, _playerState$.value.value);
        }
      }else{
@@ -1230,7 +1235,7 @@ class MusicService {
 
     });
 
-    _audioPlayer.onPlaybackKeyEvent.listen((data) {
+    _audioPlayer.subscribeToPlaybackKeys().listen((data) {
       print(data);
       switch (data) {
         case PlayBackKeys.PAUSE_KEY:

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/plugins/AudioReceiverService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -274,6 +275,7 @@ class musicServiceIsolate {
 
     ReceivePort newIsolateReceivePort = ReceivePort();
 
+    AudioReceiverService audioReceiverService = new AudioReceiverService();
 
     callerSendPort.send(newIsolateReceivePort.sendPort);
 
@@ -291,6 +293,49 @@ class musicServiceIsolate {
             fetchMetadataOfAllTracks(incomingMessage[1],(data){
               (incomingMessage[2] as SendPort).send(data);
             });
+          }
+          break;
+        }
+        case "playMusic":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.playSong(incomingMessage[1]).then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "pauseMusic":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.pauseSong().then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "stopMusic":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.stopSong().then((data)=>(incomingMessage[2] as SendPort).send(data));
+
+          }
+          break;
+        }
+        case "seekMusic":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.seek(double.tryParse(incomingMessage[1])).then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "subscribeToPosition":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.onPositionChanges((position) => (incomingMessage[2] as SendPort).send(position));
+          }
+          break;
+        }
+        case "subscribeToState":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.onPositionChanges((state) => (incomingMessage[2] as SendPort).send(state));
+          }
+          break;
+        }
+        case "subscribeToplaybackKeys":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.onPlaybackKeys((keys) => (incomingMessage[2] as SendPort).send(keys));
           }
           break;
         }

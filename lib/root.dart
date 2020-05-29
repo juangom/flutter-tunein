@@ -42,6 +42,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
         print("the returned value is ${retunedValue}");
         MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
           print("isolate with plugins initiated");
+          musicService.manualAudioPlayerInit();
           loadFiles();
         });
       });
