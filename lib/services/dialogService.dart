@@ -142,6 +142,7 @@ class DialogService{
   }
 
   static Future<upnp.Device> openDevicePickingDialog(context, List<upnp.Device> devices){
+    Widget devicesNotSent;
     Widget ShallowWidget = Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -176,63 +177,65 @@ class DialogService{
         ),
       ),
     );
-    Widget devicesNotSent = StreamBuilder(
-      stream: castService.searchForDevices().asStream(),
-      builder: (context, AsyncSnapshot<List<upnp.Device>> snapshot){
-        devices=snapshot.data;
-        Widget animtableChild;
-        if(!snapshot.hasData){
-          animtableChild=ShallowWidget;
-        }else{
-          if(devices.length!=0){
-            animtableChild = ListView.builder(
-              padding: EdgeInsets.all(3),
-              itemBuilder: (context, index){
-                upnp.Device device = devices[index];
-                return SelectableTile.mediumWithSubtitle(
-                  subtitle: "IP : ${Uri.parse(device.url).host}",
-                  initialSubtitleColor: MyTheme.grey300.withOpacity(.7),
-                  imageUri:null,
-                  title: device.friendlyName,
-                  isSelected: false,
-                  selectedBackgroundColor: MyTheme.darkRed,
-                  onTap: (willItBeSelected){
-                    Navigator.of(context, rootNavigator: true).pop(device);
-                  },
-                  placeHolderAssetUri: "images/blackbgUpnp.png",
-                );
-              },
-              semanticChildCount: devices.length,
-              cacheExtent: 60,
-              itemCount: devices.length,
-            );
+    if(devices==null){
+      devicesNotSent = StreamBuilder(
+        stream: castService.searchForDevices().asStream(),
+        builder: (context, AsyncSnapshot<List<upnp.Device>> snapshot){
+          devices=snapshot.data;
+          Widget animtableChild;
+          if(!snapshot.hasData){
+            animtableChild=ShallowWidget;
           }else{
-            animtableChild= Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(top: 8),
-                    child: Text("No Devices Found",
-                      style: TextStyle(
-                          color: MyTheme.grey300,
-                          fontSize: 17
+            if(devices.length!=0){
+              animtableChild = ListView.builder(
+                padding: EdgeInsets.all(3),
+                itemBuilder: (context, index){
+                  upnp.Device device = devices[index];
+                  return SelectableTile.mediumWithSubtitle(
+                    subtitle: "IP : ${Uri.parse(device.url).host}",
+                    initialSubtitleColor: MyTheme.grey300.withOpacity(.7),
+                    imageUri:null,
+                    title: device.friendlyName,
+                    isSelected: false,
+                    selectedBackgroundColor: MyTheme.darkRed,
+                    onTap: (willItBeSelected){
+                      Navigator.of(context, rootNavigator: true).pop(device);
+                    },
+                    placeHolderAssetUri: "images/blackbgUpnp.png",
+                  );
+                },
+                semanticChildCount: devices.length,
+                cacheExtent: 60,
+                itemCount: devices.length,
+              );
+            }else{
+              animtableChild= Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(top: 8),
+                      child: Text("No Devices Found",
+                        style: TextStyle(
+                            color: MyTheme.grey300,
+                            fontSize: 17
+                        ),
                       ),
-                    ),
-                  )
-                ],
-              ),
-            );
+                    )
+                  ],
+                ),
+              );
+            }
           }
-        }
-        return AnimatedSwitcher(
-          reverseDuration: Duration(milliseconds: 300),
-          duration: Duration(milliseconds: 300),
-          switchInCurve: Curves.easeInToLinear,
-          child:animtableChild,
-        );
-      },
-    );
+          return AnimatedSwitcher(
+            reverseDuration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 300),
+            switchInCurve: Curves.easeInToLinear,
+            child:animtableChild,
+          );
+        },
+      );
+    }
     return showDialog(
         context: context,
         builder: (_) {
@@ -247,7 +250,7 @@ class DialogService{
             content: Container(
               height: MediaQuery.of(context).size.height/2.5,
               width: MediaQuery.of(context).size.width/1.2,
-              child: devices==null?devicesNotSent:ListView.builder(
+              child: devices==null?devicesNotSent:devices.length!=0?ListView.builder(
                 padding: EdgeInsets.all(3),
                 itemBuilder: (context, index){
                   upnp.Device device = devices[index];
@@ -265,6 +268,21 @@ class DialogService{
                 semanticChildCount: devices.length,
                 cacheExtent: 60,
                 itemCount: devices.length,
+              ):Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(top: 8),
+                      child: Text("No Devices Found",
+                        style: TextStyle(
+                            color: MyTheme.grey300,
+                            fontSize: 17
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             actions: <Widget>[
@@ -280,13 +298,6 @@ class DialogService{
           );
         });
 
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => EditPlaylist(playlist: playlist),
-          fullscreenDialog: true
-      ),
-    );*/
   }
 }
 
-class YYDialogType extends YYDialog{}

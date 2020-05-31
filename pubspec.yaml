@@ -54,6 +54,7 @@ dependencies:
     git:
       url: /Users/kadhem/Documents/flutter_projects/flutter_file_meta_data
       ref: master
+  dart_ping: ^1.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,5 @@
 import 'package:connectivity/connectivity.dart';
+import 'package:dart_ping/dart_ping.dart';
 
 class PlatformService{
 
@@ -17,7 +18,13 @@ class PlatformService{
     return ipAddress;
   }
 
-
-
-
+  Future<dynamic> pingIp(String ip, {Duration interval = const Duration(seconds: 1), int pingNumber=2}) async{
+    Stream<PingInfo> stream = await ping("ip", times: pingNumber, interval: interval.inSeconds);
+    await stream.forEach((event) {
+      print(event);
+      if(event.seq==5){
+       return true;
+      }
+    });
+  }
 }

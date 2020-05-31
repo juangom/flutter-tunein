@@ -11,6 +11,7 @@ import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
+import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/settingService.dart';
@@ -25,6 +26,7 @@ import 'package:popup_menu/popup_menu.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/components/selectableTile.dart';
 import 'package:upnp/upnp.dart' as upnp;
+
 class TracksPage extends StatefulWidget {
 
   _TracksPageState createState() => _TracksPageState();
@@ -35,6 +37,8 @@ class _TracksPageState extends State<TracksPage>
   final musicService = locator<MusicService>();
   final SettingService = locator<settingService>();
   final castService = locator<CastService>();
+  final RequestSettings = locator<Requests>();
+
   ScrollController controller;
   ScrollPosition listPosition;
   List<Tune> songs;
@@ -683,7 +687,7 @@ class _TracksPageState extends State<TracksPage>
                               print("device not clear");
                             }
                             if(data){
-                              togglCasting().then((castingData){
+                              toggleCasting().then((castingData){
                                 returnFirstValue();
                               });
                             }
@@ -1032,7 +1036,7 @@ class _TracksPageState extends State<TracksPage>
     return ;
   }
 
-  Future<void> togglCasting() async{
+  Future<void> toggleCasting() async{
 
 
     if(deckItemState["cast"].isActive && castService.currentDeviceToBeUsed.value!=null && castService.castingState.value==CastState.CASTING){
@@ -1050,27 +1054,30 @@ class _TracksPageState extends State<TracksPage>
       }
     }else{
       upnp.Device registeredDevice = castService.currentDeviceToBeUsed.value;
+      print(registeredDevice);
       if(registeredDevice!=null){
         //This means that a device is already registered and has been found, So we need to try and connect
         // to that device and see if it is already up or not
-        List<upnp.Device> deviceFound = await castService.searchForDevices();
-        if(deviceFound.indexWhere((elem)=>elem.uuid==registeredDevice.uuid)!=-1){
+        RequestSettings.pingURL(registeredDevice.url, timeout: Duration(seconds: 2)).then((value) async{
+          if(value==null){
+            throw "pingFailed";
+          }
           musicService.stopMusic();
           castService.setCastingState(CastState.CASTING);
           deckItemState["cast"].isActive=true;
           musicService.reInitializePlayStreams();
 
-        }else{
-          //if the device is not there anymore a dialog will popup letting the user pick their device from the list of compatible devices
-            upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,deviceFound);
-            if(selectedDevice!=null){
-              castService.setDeviceToBeUsed(selectedDevice);
-              musicService.stopMusic();
-              castService.setCastingState(CastState.CASTING);
-              deckItemState["cast"].isActive=true;
-              musicService.reInitializePlayStreams();
-            }
-        }
+        }).catchError((err)async{
+          print(err);
+          upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,null);
+          if(selectedDevice!=null){
+            castService.setDeviceToBeUsed(selectedDevice);
+            musicService.stopMusic();
+            castService.setCastingState(CastState.CASTING);
+            deckItemState["cast"].isActive=true;
+            musicService.reInitializePlayStreams();
+          }
+        });
       }else{
         //If there is no device registered so we need to search for devices and show a dialog for the user to pick from
         upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,null);

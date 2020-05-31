@@ -142,6 +142,20 @@ class Requests {
     }
   }
 
+  Future<dynamic> pingURL(String url, {Duration timeout}) async{
+    if(url!=null){
+      Response requestResponse = await requestService.get(
+        url: url,
+        timeout: timeout.inSeconds,
+      );
+      if(requestResponse!=null){
+        return requestResponse.data;
+      }else{
+        return null;
+      }
+    }
+  }
+
 
   void dispose(){
     settingStreamSubscription?.cancel();

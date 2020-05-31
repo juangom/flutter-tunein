@@ -13,11 +13,12 @@ class httpRequests{
    instance.transformer = FlutterTransformer();
   }
 
-  Future<Response> get({@required String url, Map<String, dynamic>data, Map<String, dynamic> headers}) async{
+  Future<Response> get({@required String url, Map<String, dynamic>data, Map<String, dynamic> headers, int timeout}) async{
     try {
       Response response = await Dio().get(url,
           options: Options(
             headers: headers,
+            sendTimeout: timeout
           ),
         queryParameters: data
       );
@@ -29,11 +30,12 @@ class httpRequests{
     }
   }
 
-  Future<Response> post({@required String url, Map<String, dynamic>data, Map<String, dynamic> headers}) async{
+  Future<Response> post({@required String url, Map<String, dynamic>data, Map<String, dynamic> headers, int timeout}) async{
     try {
       Response response = await Dio().post(url,
           options: Options(
             headers: headers,
+            sendTimeout: timeout
           ),
           data: data,
       );
