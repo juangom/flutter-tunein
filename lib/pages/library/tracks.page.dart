@@ -1054,7 +1054,6 @@ class _TracksPageState extends State<TracksPage>
       }
     }else{
       upnp.Device registeredDevice = castService.currentDeviceToBeUsed.value;
-      print(registeredDevice);
       if(registeredDevice!=null){
         //This means that a device is already registered and has been found, So we need to try and connect
         // to that device and see if it is already up or not
@@ -1068,7 +1067,6 @@ class _TracksPageState extends State<TracksPage>
           musicService.reInitializePlayStreams();
 
         }).catchError((err)async{
-          print(err);
           upnp.Device selectedDevice = await DialogService.openDevicePickingDialog(context,null);
           if(selectedDevice!=null){
             castService.setDeviceToBeUsed(selectedDevice);

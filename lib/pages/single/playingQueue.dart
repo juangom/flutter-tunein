@@ -35,10 +35,54 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
   StreamSubscription<MapEntry<PlayerState, Tune>> scrollAnimationListener;
   ScrollController controller;
   List<Tune> songs;
+  MapEntry<List<Playback>, MapEntry<List<Tune>,List<Tune>>> tempState;
+  BehaviorSubject<MapEntry<List<Playback>, MapEntry<List<Tune>,List<Tune>>>> newStream = new BehaviorSubject<MapEntry<List<Playback>, MapEntry<List<Tune>,List<Tune>>>>();
+  Timer isScheduelingtoPushData;
 
   @override
   void initState() {
     controller = ScrollController();
+
+    Stream<MapEntry<List<Playback>, MapEntry<List<Tune>,List<Tune>>>>  originalStream = Rx.combineLatest2(
+      musicService.playback$,
+      musicService.playlist$,
+          (a, b) => MapEntry(a, b),
+    );
+
+    //
+    layoutService.onPanelOpenCallback= (){
+      if(tempState!=null){
+        newStream.add(tempState);
+        tempState=null;
+      }
+    };
+    //
+    originalStream.listen((Data){
+      if(!layoutService.globalPanelController.isPanelClosed()){
+        newStream.add(Data);
+      }else{
+        tempState=Data;
+        if(isScheduelingtoPushData==null){
+          isScheduelingtoPushData = Timer(Duration(milliseconds: 4000),(){
+            if(tempState!=null){
+              newStream.add(tempState);
+              tempState=null;
+            }
+            isScheduelingtoPushData=null;
+          });
+        }else{
+          isScheduelingtoPushData.cancel();
+          isScheduelingtoPushData = Timer(Duration(milliseconds: 4000),(){
+            if(tempState!=null){
+              newStream.add(tempState);
+              tempState=null;
+            }
+            isScheduelingtoPushData=null;
+          });
+        }
+      }
+    });
+
 
     super.initState();
   }
@@ -46,7 +90,7 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
 
   @override
   bool get wantKeepAlive {
-    return false;
+    return true;
   }
 
   @override
@@ -89,52 +133,23 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
     WidgetsBinding.instance.addPostFrameCallback((duration){
       double numberOfSongsPerScreen =((screensize.height-160)/62);
       scrollAnimationListener = musicService.playerState$.listen((MapEntry<PlayerState, Tune> value) async{
-        void delayedAction(){
-          if(currentDelayedAnimate==null){
-            currentDelayedAnimate = Timer(Duration(milliseconds: 80),() async{
-              if(value!=null && songs!=null){
-                int indexOfThePlayingSong =songs.indexWhere((elem)=>elem.id==value.value.id);
-                if(indexOfThePlayingSong>0)
-                  /*print("  index : ${indexOfThePlayingSong} final value : ${(pow(log(indexOfThePlayingSong)*2, 2)).floor()}  value of Songs per screen : ${numberOfSongsPerScreen}  and the pool ${(indexOfThePlayingSong/numberOfSongsPerScreen)}");
-          print("the difference between the pool number based postion and the oridnary index*size postion : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}");
-          print(" the ideal position would be equal to the desired pool and a portion of the next pool so that the final position to scroll to would be determined by creating a virtual pool between the previous"
-              "pool and the next one in order to put the desired song in the middle of the screen this will be done by finding out the difference between the position of the song in the pool and "
-              "half of the pool : the position of the song in the new pool : ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}, The difference "
-              "is (${numberOfSongsPerScreen} - ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen}) = ${((indexOfThePlayingSong)/numberOfSongsPerScreen - ((indexOfThePlayingSong)/numberOfSongsPerScreen).floor())*numberOfSongsPerScreen - numberOfSongsPerScreen}"
-              "if the difference is less than half of the pool size in number of songs the scroll position should be pulled back else it should be pushed forward");
-
-
-          print("${((((indexOfThePlayingSong)/numberOfSongsPerScreen))*numberOfSongsPerScreen*62)} added value : ${getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)} final Value : ${(indexOfThePlayingSong*61.2)+getSongPosition(indexOfThePlayingSong,numberOfSongsPerScreen)}");*/
-
-                {
-                  bool didanimate = await animate(indexOfThePlayingSong,numberOfSongsPerScreen);
-                  if(didanimate==true){
-                    currentDelayedAnimate?.cancel();
-                    currentDelayedAnimate=null;
-                    return;
-
-                  }else{
-                    delayedAction();
-                  }
-                }
-              }else{
-
-              }
-            });
+        if(value!=null && songs!=null){
+          int indexOfThePlayingSong =songs.indexWhere((elem)=>elem.id==value.value.id);
+          if(indexOfThePlayingSong>0){
+            bool didanimate = await animate(indexOfThePlayingSong,numberOfSongsPerScreen);
+            if(didanimate==true){
+              currentDelayedAnimate?.cancel();
+              currentDelayedAnimate=null;
+              return;
+            }
           }
-
         }
-        delayedAction();
       });
     });
 
 
     return StreamBuilder<MapEntry<List<Playback>,MapEntry<List<Tune>,List<Tune>>>>(
-      stream: Rx.combineLatest2(
-        musicService.playback$,
-        musicService.playlist$,
-            (a, b) => MapEntry(a, b),
-      ),
+      stream: newStream,
       builder: (BuildContext context, AsyncSnapshot<MapEntry<List<Playback>,MapEntry<List<Tune>,List<Tune>>>> snapshot){
 
         if(!snapshot.hasData){
