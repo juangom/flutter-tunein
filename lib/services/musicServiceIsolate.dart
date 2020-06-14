@@ -329,7 +329,7 @@ class musicServiceIsolate {
         }
         case "subscribeToState":{
           if(incomingMessage[1]!=null){
-            audioReceiverService.onPositionChanges((state) => (incomingMessage[2] as SendPort).send(state));
+            audioReceiverService.onStateChanges((state) => (incomingMessage[2] as SendPort).send(state));
           }
           break;
         }

@@ -76,7 +76,7 @@ class AudioPluginService{
     tempPort.forEach((data){
       if(data!=null && data!="OK"){
         print(data);
-        returnedSubject.add(data);
+        returnedSubject.add(_deserializeAudioPlayerStateEnum(data));
       }
     });
 
@@ -95,11 +95,57 @@ class AudioPluginService{
     tempPort.forEach((data){
       if(data!=null && data!="OK"){
         print(data);
-        returnedSubject.add(data);
+        returnedSubject.add(_deserializePlaybackKeysEnum(data));
       }
     });
 
     return returnedSubject;
+  }
+
+
+  AudioPlayerState _deserializeAudioPlayerStateEnum(String entry){
+    List<String> enumStringList = entry.split(".");
+    switch (enumStringList[1]){
+      case "COMPLETED":{
+        return AudioPlayerState.COMPLETED;
+      }
+      case "PLAYING":{
+        return AudioPlayerState.PLAYING;
+      }
+      case "PAUSED":{
+        return AudioPlayerState.PAUSED;
+      }
+      case "STOPPED":{
+        return AudioPlayerState.STOPPED;
+      }
+    }
+  }
+
+  PlayBackKeys _deserializePlaybackKeysEnum(String entry){
+    List<String> enumStringList = entry.split(".");
+    switch (enumStringList[1]){
+      case "PAUSE_KEY":{
+        return PlayBackKeys.PAUSE_KEY;
+      }
+      case "PLAY_KEY":{
+        return PlayBackKeys.PLAY_KEY;
+      }
+      case "NEXT_KEY":{
+        return PlayBackKeys.NEXT_KEY;
+      }
+      case "REWIND_KEY":{
+        return PlayBackKeys.REWIND_KEY;
+      }
+      case "STOP_KEY":{
+        return PlayBackKeys.STOP_KEY;
+      }
+      case "SEEK_KEY":{
+        return PlayBackKeys.SEEK_KEY;
+      }
+      case "FAST_FORWARD_KEY":{
+        return PlayBackKeys.FAST_FORWARD_KEY;
+      }
+    }
   }
 
 }

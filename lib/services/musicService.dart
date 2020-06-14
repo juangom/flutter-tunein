@@ -1218,6 +1218,7 @@ class MusicService {
     //This will synchronize the playing states of
     _audioStateChangeSub =
         _audioPlayer.subscribeToStateChanges().listen((AudioPlayerState state) {
+          print("state from the sub is ${state}");
      if(castService.castingState.value==CastState.NOT_CASTING){
        if (state == AudioPlayerState.COMPLETED) {
          _onSongComplete();

@@ -46,20 +46,20 @@ class AudioReceiverService{
     }
   }
 
-  onStateChanges(Function(AudioPlayerState) callback){
+  onStateChanges(Function(String) callback){
    if(_audioStateChangeSub==null){
      _audioStateChangeSub =
          _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
-           callback(state);
+           callback(serializeEnums(state));
          });
    }
   }
 
-  onPlaybackKeys(Function(PlayBackKeys) callback){
+  onPlaybackKeys(Function(String) callback){
     if(_audioPlaybkacKeysSub==null){
       _audioPlaybkacKeysSub =
           _audioPlayer.onPlaybackKeyEvent.listen((PlayBackKeys data) {
-            callback(data);
+            callback(serializeEnums(data));
           });
     }
   }
@@ -69,6 +69,10 @@ class AudioReceiverService{
     if(_audioPlaybkacKeysSub!=null)_audioPlaybkacKeysSub.cancel();
     if(_audioPositionSub!=null)_audioPositionSub.cancel();
     if(_audioStateChangeSub!=null)_audioStateChangeSub.cancel();
+  }
+
+  serializeEnums(entry){
+    return entry.toString();
   }
 
 }
