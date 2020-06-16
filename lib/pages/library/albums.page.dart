@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/services/settingService.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
 import 'package:Tunein/services/locator.dart';
@@ -22,25 +23,31 @@ class AlbumsPage extends StatefulWidget {
 class _AlbumsPageState extends State<AlbumsPage> {
 
   final musicService = locator<MusicService>();
+  final SettingService = locator<settingService>();
   BehaviorSubject<Album> currentAlbum= new BehaviorSubject<Album>();
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
 
-    final double itemWidth = size.width / 3;
+
     return Container(
       child:  StreamBuilder(
-        stream: musicService.albums$,
+        stream: Rx.combineLatest2(musicService.albums$, SettingService.getOrCreateSingleSettingStream(SettingsIds.SET_ALBUM_LIST_PAGE), (a, b) => MapEntry<List<Album>, String>(a,b)),
         builder: (BuildContext context,
-            AsyncSnapshot<List<Album>> snapshot) {
+            AsyncSnapshot<MapEntry<List<Album>,String>> snapshot) {
           if (!snapshot.hasData) {
             return Container();
           }
-          if(snapshot.data.length==0){
+
+          if(snapshot.data.key.length==0){
             return Container();
           }
-          final _albums = snapshot.data;
+          final _albums = snapshot.data.key;
+          Map<LIST_PAGE_SettingsIds, String> UISettings = SettingService.DeserializeUISettings(snapshot.data.value);
+          int itemsPerRow = int.tryParse(UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_GRID_ROW_ITEM_COUNT])??3;
+          int animationDelay = int.tryParse(UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_BOX_FADE_IN_DURATION])??150;
+          final double itemWidth = size.width / itemsPerRow;
           return PageView(
             controller: widget.controller,
             children: <Widget>[
@@ -48,19 +55,21 @@ class _AlbumsPageState extends State<AlbumsPage> {
                 padding: EdgeInsets.all(0),
                 itemCount: _albums.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 3,
-                  crossAxisSpacing: 3,
+                  crossAxisCount: itemsPerRow,
+                  mainAxisSpacing: itemsPerRow.toDouble(),
+                  crossAxisSpacing: itemsPerRow.toDouble(),
                   childAspectRatio: (itemWidth / (itemWidth + 50)),
                 ),
                 itemBuilder: (BuildContext context, int index) {
-                  int newIndex = (index%3)+2;
+                  int newIndex = (index%itemsPerRow)+2;
                   return GestureDetector(
                     onTap: () {
                       goToAlbumSongsList(_albums[index]);
                     },
-                    child: AlbumGridCell(_albums[index],135,80,
-                    animationDelay: (60*newIndex) - (index<6?((6-index)*150):0)),
+                    child: AlbumGridCell(_albums[index],135/itemsPerRow*3,80,
+                    animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
+                    useAnimation: !(animationDelay==0),
+                    ),
                   );
                 },
               ),

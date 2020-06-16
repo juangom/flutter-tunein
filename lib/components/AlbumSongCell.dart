@@ -25,7 +25,7 @@ class AlbumGridCell extends StatelessWidget {
     List<int> songColors;
     Widget  shallowWidget;
     shallowWidget= Container(height: imageHeight+40, color: MyTheme.darkgrey.withOpacity(.01),);
-    int animationDelayComputed = (600+(animationDelay??0)).isNegative?0:(600+(animationDelay??0));
+    int animationDelayComputed = useAnimation?((600+(animationDelay??0)).isNegative?0:(600+(animationDelay??0))):0;
     return StreamBuilder<List<int>>(
       stream: themeService.getThemeColors(album.songs[0]).asStream(),
       builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {

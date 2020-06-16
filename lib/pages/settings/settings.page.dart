@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:Tunein/components/pagenavheader.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/services/dialogService.dart';
@@ -116,6 +118,105 @@ class SettingsPage extends StatelessWidget {
                               )
                             ],
                           ),
+                        ],
+                      ),
+                    );
+
+                  },
+                ),
+                StreamBuilder(
+                  stream: SettingService.getOrCreateSingleSettingStream(SettingsIds.SET_ALBUM_LIST_PAGE),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<String> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container();
+                    }
+                    final _settings = snapshot.data;
+                    Map<LIST_PAGE_SettingsIds, String> UISettings = SettingService.DeserializeUISettings(_settings);
+                    return Container(
+                      child: SettingsList(
+                        backgroundColor: MyTheme.darkBlack,
+                        textColor: MyTheme.grey300,
+                        headingTextColor: MyTheme.darkRed,
+                        sections: [
+                          SettingsSection(
+                            title: 'Album List',
+                            tiles: [
+                              SettingsTile(
+                                title: 'Album box animation duration',
+                                subtitle: "${UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_BOX_FADE_IN_DURATION]} ms",
+                                leading: Icon(
+                                  Icons.av_timer,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  String newValue = await openChangeNumericalValueDialog(context,"${UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_BOX_FADE_IN_DURATION]} ms",
+                                    title: "Change Animation Duration",
+                                    hint: "*0 value will stop the animation completely"
+                                  );
+                                  if(newValue!=null && newValue!=""){
+                                    saveAlbumPageSettingValue(LIST_PAGE_SettingsIds.ALBUMS_PAGE_BOX_FADE_IN_DURATION,newValue, UISettings);
+                                  }
+                                },
+                              ),
+                              SettingsTile(
+                                title: 'Row\'s Item count',
+                                subtitle: "${UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_GRID_ROW_ITEM_COUNT]} items per row",
+                                leading: Icon(
+                                  Icons.grid_on,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  String newValue = await openChangeNumericalValueDialog(context,"${UISettings[LIST_PAGE_SettingsIds.ALBUMS_PAGE_GRID_ROW_ITEM_COUNT]} items per row",
+                                      title: "Change Item Count Per Row"
+                                  );
+                                  if(newValue!=null && newValue!=""){
+                                    saveAlbumPageSettingValue(LIST_PAGE_SettingsIds.ALBUMS_PAGE_GRID_ROW_ITEM_COUNT,newValue, UISettings);
+                                  }
+                                },
+                              ),
+
+                            ],
+                          ),
+                          SettingsSection(
+                            title: 'Artist List',
+                            tiles: [
+                              SettingsTile(
+                                title: 'Artist box animation duration',
+                                subtitle: "${UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_BOX_FADE_IN_DURATION]} ms",
+                                leading: Icon(
+                                  Icons.av_timer,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  String newValue = await openChangeNumericalValueDialog(context,"${UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_BOX_FADE_IN_DURATION]} ms",
+                                      title: "Change Animation Duration",
+                                      hint: "*0 value will stop the animation completely"
+                                  );
+                                  if(newValue!=null && newValue!=""){
+                                    saveAlbumPageSettingValue(LIST_PAGE_SettingsIds.ARTISTS_PAGE_BOX_FADE_IN_DURATION,newValue, UISettings);
+                                  }
+                                },
+                              ),
+                              SettingsTile(
+                                title: 'Row\'s Item count',
+                                subtitle: "${UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_GRID_ROW_ITEM_COUNT]} items per row",
+                                leading: Icon(
+                                  Icons.grid_on,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  String newValue = await openChangeNumericalValueDialog(context,"${UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_GRID_ROW_ITEM_COUNT]} items per row",
+                                      title: "Change Item Count Per Row"
+                                  );
+                                  if(newValue!=null && newValue!=""){
+                                    saveAlbumPageSettingValue(LIST_PAGE_SettingsIds.ARTISTS_PAGE_GRID_ROW_ITEM_COUNT,newValue, UISettings);
+                                  }
+                                },
+                              ),
+
+                            ],
+                          )
                         ],
                       ),
                     );
@@ -354,6 +455,100 @@ class SettingsPage extends StatelessWidget {
           );
         });
   }
+  Future<String> openChangeNumericalValueDialog(context, String current, {String title="Change the numeric value", String hint}){
+    String currentKey = "";
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              title,
+              style: TextStyle(
+                  color: Colors.white70
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  autofocus: true,
+                  onChanged: (string){
+                    currentKey=string;
+                  },
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: false
+                  ),
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                      hintText: "${current}",
+                      hintStyle: TextStyle(
+                          color: MyTheme.grey500.withOpacity(0.2)
+                      )
+                  ),
+                ),
+                hint!=null?Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(hint,
+                    style: TextStyle(
+                        color: MyTheme.grey300.withOpacity(0.9),
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w100,
+                        fontSize: 13
+                    ),
+                  ),
+                ):Container()
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  "Save Changes",
+                  style: TextStyle(
+                      color: MyTheme.grey300
+                  ),
+                ),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop(currentKey);
+                },
+              ),
+              FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop(null))
+            ],
+          );
+        });
+  }
+
+
+
+
+  Future saveSettingValue(SettingsIds setting, value){
+    if(setting!=null){
+      return SettingService.updateSingleSetting(setting, value);
+    }
+  }
+
+  Future saveAlbumPageSettingValue(LIST_PAGE_SettingsIds albumPageSetting, value, Map<LIST_PAGE_SettingsIds,String> originalAlbumSettingListValue) async{
+    if(albumPageSetting!=null){
+      originalAlbumSettingListValue[albumPageSetting] = value;
+      Map<String,String> TransformedMap = originalAlbumSettingListValue.map((key, value) => MapEntry(SettingService.getAlbumListEnumValue(key), value));
+      print(TransformedMap);
+      SettingService.updateSingleSetting(SettingsIds.SET_ALBUM_LIST_PAGE, json.encode(TransformedMap));
+      return true;
+    }else{
+      return null;
+    }
+  }
+
 
 
 
