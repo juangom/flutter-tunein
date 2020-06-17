@@ -25,7 +25,8 @@ enum SettingsIds{
   SET_DISCOG_API_KEY,
   SET_DISCOG_THUMB_QUALITY,
   SET_TRACK_LIST_DECK_ITEMS,
-  SET_ALBUM_LIST_PAGE
+  SET_ALBUM_LIST_PAGE,
+  SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL
 }
 
 
@@ -195,6 +196,9 @@ class settingService{
         break;
       case SettingsIds.SET_ALBUM_LIST_PAGE:
         return "{}";
+        break;
+      case SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL:
+        return "true";
         break;
       default:
         return null;

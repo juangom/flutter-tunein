@@ -155,17 +155,19 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           musicService.updatePosition(Duration(milliseconds: 0));
           ByteData dibd = await rootBundle.load("images/cover.png");
           List<int> defaultImageBytes = dibd.buffer.asUint8List();
-          MediaNotification.show(
-              title: '${musicService.playerState$.value.value.title}',
-              author: '${musicService.playerState$.value.value.artist}',
-              play: false,
-              image: musicService.playerState$.value.value.albumArt,
-              BitmapImage:
-              musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
-              titleColor: Color(musicService.playerState$.value.value.colors[1]),
-              subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
-              iconColor: Color(musicService.playerState$.value.value.colors[1]),
-              bgColor: Color(musicService.playerState$.value.value.colors[0]));
+          if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
+            MediaNotification.show(
+                title: '${musicService.playerState$.value.value.title}',
+                author: '${musicService.playerState$.value.value.artist}',
+                play: false,
+                image: musicService.playerState$.value.value.albumArt,
+                BitmapImage:
+                musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
+                titleColor: Color(musicService.playerState$.value.value.colors[1]),
+                subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
+                iconColor: Color(musicService.playerState$.value.value.colors[1]),
+                bgColor: Color(musicService.playerState$.value.value.colors[0]));
+          }
         }
         metricsLoaded.cancel();
       }

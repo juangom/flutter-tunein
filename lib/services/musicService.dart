@@ -103,43 +103,48 @@ class MusicService {
   showUI() async {
     ByteData dibd = await rootBundle.load("images/cover.png");
     List<int> defaultImageBytes = dibd.buffer.asUint8List();
-    //AudioService.connect();
-    MediaNotification.show(
-        title: 'No song',
-        author: 'no Author',
-        play: false,
-        image: null,
-        BitmapImage: defaultImageBytes,
-        iconColor: Colors.white,
-        titleColor: Colors.white,
-        subtitleColor: Colors.white.withAlpha(50),
-        bgColor: MyTheme.darkBlack);
-
-    _playerState$.listen((data) async {
-      List<int> SongColors = await themeService.getThemeColors(data.value);
-      switch (data.key) {
+    if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
+      //AudioService.connect();
+      MediaNotification.show(
+          title: 'No song',
+          author: 'no Author',
+          play: false,
+          image: null,
+          BitmapImage: defaultImageBytes,
+          iconColor: Colors.white,
+          titleColor: Colors.white,
+          subtitleColor: Colors.white.withAlpha(50),
+          bgColor: MyTheme.darkBlack);
+    }
+    Rx.combineLatest2(_playerState$, SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL), (a, b) => MapEntry<MapEntry<PlayerState, Tune>,String>(a,b)).listen((data) async {
+      if(data.value=="true"){
+        List<int> SongColors = await themeService.getThemeColors(data.key.value);
+        switch (data.key.key) {
 
         ///Playing status means that it is a new song and it needs to load its new content like colors and image
         ///in other cases it will be just stopping the player or pausing it requiring no change in content data
-        case PlayerState.playing:
-          MediaNotification.show(
-              title: '${data.value.title}',
-              author: '${data.value.artist}',
-              play: true,
-              image: data.value.albumArt,
-              BitmapImage:
-                  data.value.albumArt == null ? defaultImageBytes : null,
-              titleColor: Color(SongColors[1]),
-              subtitleColor: Color(SongColors[1]).withAlpha(50),
-              iconColor: Color(SongColors[1]),
-              bgColor: Color(SongColors[0]));
-          break;
-        case PlayerState.paused:
-          MediaNotification.setTo(false);
-          break;
-        case PlayerState.stopped:
-          MediaNotification.setTo(false);
-          break;
+          case PlayerState.playing:
+            MediaNotification.show(
+                title: '${data.key.value.title}',
+                author: '${data.key.value.artist}',
+                play: true,
+                image: data.key.value.albumArt,
+                BitmapImage:
+                data.key.value.albumArt == null ? defaultImageBytes : null,
+                titleColor: Color(SongColors[1]),
+                subtitleColor: Color(SongColors[1]).withAlpha(50),
+                iconColor: Color(SongColors[1]),
+                bgColor: Color(SongColors[0]));
+            break;
+          case PlayerState.paused:
+            MediaNotification.setTo(false);
+            break;
+          case PlayerState.stopped:
+            MediaNotification.setTo(false);
+            break;
+        }
+      }else{
+        hideUI();
       }
     });
     MediaNotification.setListener('play', () {
@@ -180,7 +185,11 @@ class MusicService {
 
   hideUI() {
     //AudioService.disconnect();
-    MediaNotification.hide();
+    try{
+      MediaNotification.hide();
+    }catch(e){
+
+    }
   }
 
   Future<void> fetchAlbums() async {

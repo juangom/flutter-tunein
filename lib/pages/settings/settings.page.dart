@@ -115,7 +115,21 @@ class SettingsPage extends StatelessWidget {
                                 onTap: () async {
                                   changeDiscogThumbnailDownloadQuality(gcontext, _settings[SettingsIds.SET_DISCOG_THUMB_QUALITY]);
                                 },
-                              )
+                              ),
+                              SettingsTile.switchTile(
+                                title: 'Custom notification playback controls',
+                                subtitle:"Show and hide the notification playback controls",
+                                leading: Icon(
+                                    Icons.play_circle_outline,
+                                    color: MyTheme.grey300
+                                ),
+                                switchValue: _settings[SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL]=="true",
+                                onToggle: (bool value) async{
+                                  print("got the value : ${value}");
+
+                                  SettingService.updateSingleSetting(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL, value.toString());
+                                },
+                              ),
                             ],
                           ),
                         ],
