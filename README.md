@@ -32,7 +32,7 @@
 - [ ] Adding UPnP, DLNA v4.0 (DMS, DMP, DMC, maybe DMR), maybe Apple Airplay
     - [x] UPnP
         - [x] Basic Http only casting with stable UI integration
-        - [ ] Full Interface and integration and testing
+        - [x] Full Interface and integration and testing
         - [ ] Full integration with media keys (headphones, wireless earphones, ...)
         - [ ] Implementing private access to files and moving to a HTTPS-only option
     - [ ] DLNA

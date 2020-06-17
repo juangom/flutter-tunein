@@ -117,8 +117,8 @@ class MusicService {
           bgColor: MyTheme.darkBlack);
     }
     Rx.combineLatest2(_playerState$, SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL), (a, b) => MapEntry<MapEntry<PlayerState, Tune>,String>(a,b)).listen((data) async {
+      List<int> SongColors = await themeService.getThemeColors(data.key.value);
       if(data.value=="true"){
-        List<int> SongColors = await themeService.getThemeColors(data.key.value);
         switch (data.key.key) {
 
         ///Playing status means that it is a new song and it needs to load its new content like colors and image
@@ -144,6 +144,17 @@ class MusicService {
             break;
         }
       }else{
+        MediaNotification.show(
+            title: '${data.key.value.title}',
+            author: '${data.key.value.artist}',
+            play: true,
+            image: data.key.value.albumArt,
+            BitmapImage:
+            data.key.value.albumArt == null ? defaultImageBytes : null,
+            titleColor: Color(SongColors[1]),
+            subtitleColor: Color(SongColors[1]).withAlpha(50),
+            iconColor: Color(SongColors[1]),
+            bgColor: Color(SongColors[0]));
         hideUI();
       }
     });
@@ -187,7 +198,7 @@ class MusicService {
     //AudioService.disconnect();
     try{
       MediaNotification.hide();
-    }catch(e){
+    }on PlatformException{
 
     }
   }
