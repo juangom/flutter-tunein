@@ -5,6 +5,7 @@ import 'package:Tunein/components/ArtistCell.dart';
 import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/single/singleArtistPage.dart';
+import 'package:Tunein/services/settingService.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
@@ -27,6 +28,8 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
 
 
   final musicService = locator<MusicService>();
+  final SettingService = locator<settingService>();
+
   BehaviorSubject<Album> currentAlbum= new BehaviorSubject<Album>();
   ContainerTransitionType transitionType = ContainerTransitionType.fade;
 
@@ -34,32 +37,33 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
 
-    final double itemWidth = size.width / 3;
     return Container(
       child:  StreamBuilder(
-        stream: musicService.artists$,
+        stream: Rx.combineLatest2(musicService.artists$, SettingService.getOrCreateSingleSettingStream(SettingsIds.SET_ALBUM_LIST_PAGE), (a, b) => MapEntry<List<Artist>, String>(a,b)),
         builder: (BuildContext context,
-            AsyncSnapshot<List<Artist>> snapshot) {
+            AsyncSnapshot<MapEntry<List<Artist>,String>> snapshot) {
           if (!snapshot.hasData) {
             return Container();
           }
-          if(snapshot.data.length==0){
+          if(snapshot.data.key.length==0){
             return Container();
           }
-          final _artists = snapshot.data;
+          final _artists = snapshot.data.key;
+          Map<LIST_PAGE_SettingsIds, String> UISettings = SettingService.DeserializeUISettings(snapshot.data.value);
+          int itemsPerRow = int.tryParse(UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_GRID_ROW_ITEM_COUNT])??3;
+          int animationDelay = int.tryParse(UISettings[LIST_PAGE_SettingsIds.ARTISTS_PAGE_BOX_FADE_IN_DURATION])??150;
+          final double itemWidth = size.width / itemsPerRow;
           return GridView.builder(
             padding: EdgeInsets.all(0),
             itemCount: _artists.length,
-            cacheExtent: size.height/3,
-            addAutomaticKeepAlives: false,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 3,
-              crossAxisSpacing: 3,
+              crossAxisCount: itemsPerRow,
+              mainAxisSpacing: itemsPerRow.toDouble(),
+              crossAxisSpacing: itemsPerRow.toDouble(),
               childAspectRatio: (itemWidth / (itemWidth + 50)),
             ),
             itemBuilder: (BuildContext context, int index) {
-
+              int newIndex = (index%itemsPerRow)+(itemsPerRow-1);
               return OpenContainer(
                 closedColor: Colors.transparent,
                 openColor: Colors.transparent,
@@ -80,9 +84,11 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
                     },
                     child: ArtistGridCell(
                       _artists[index],
-                      125,
+                      125/itemsPerRow*3,
                       80,
                       choices: artistCardContextMenulist,
+                      animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
+                      useAnimation: animationDelay!=0,
                       onContextSelect: (choice){
                         switch(choice.id){
                           case 1: {
