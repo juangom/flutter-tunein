@@ -1,4 +1,5 @@
 import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/http/httpRequests.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
@@ -17,6 +18,7 @@ import 'package:get_it/get_it.dart';
 GetIt locator = new GetIt();
 
 void setupLocator() {
+  locator.registerSingleton(fileService());
   locator.registerSingleton(PlatformService());
   locator.registerSingleton(musicServiceIsolate());
   locator.registerSingleton(CastService());
