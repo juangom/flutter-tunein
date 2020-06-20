@@ -210,13 +210,13 @@ class settingService{
   getDefaultListPageSetting(LIST_PAGE_SettingsIds setting){
     switch(setting){
       case LIST_PAGE_SettingsIds.ALBUMS_PAGE_BOX_FADE_IN_DURATION:
-        return "150";
+        return "300";
         break;
       case LIST_PAGE_SettingsIds.ALBUMS_PAGE_GRID_ROW_ITEM_COUNT:
         return "3";
         break;
       case LIST_PAGE_SettingsIds.ARTISTS_PAGE_BOX_FADE_IN_DURATION:
-        return "150";
+        return "300";
         break;
       case LIST_PAGE_SettingsIds.ARTISTS_PAGE_GRID_ROW_ITEM_COUNT:
         return "3";

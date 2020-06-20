@@ -31,7 +31,7 @@ class ArtistGridCell extends StatelessWidget {
     int numberOfSongsPresentForThisArtist =countSongsInAlbums(artist.albums);
     Widget  shallowWidget;
     shallowWidget= Container(height: imageHeight+40, color: MyTheme.darkgrey.withOpacity(.01),);
-    int animationDelayComputed = useAnimation?((600+(animationDelay??0)).isNegative?0:(600+(animationDelay??0))):0;
+    int animationDelayComputed = useAnimation?((animationDelay??0).isNegative?0:(animationDelay??0)):0;
 
     return StreamBuilder(
       stream: Future.delayed(Duration(milliseconds: 200), ()=>true).asStream(),
