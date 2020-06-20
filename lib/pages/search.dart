@@ -195,7 +195,25 @@ class _SearchPageState extends State<SearchPage> {
                                 child: Container(
                                   margin: EdgeInsets.only(right: 8),
                                   child: AlbumGridCell(
-                                      _albums[index],125,80
+                                      _albums[index],120,80,
+                                      useAnimation: false,
+                                      choices: albumCardContextMenulist,
+                                      onContextSelect: (choice){
+                                        switch(choice.id){
+                                          case 1: {
+                                            musicService.playEntireAlbum(_albums[index]);
+                                            break;
+                                          }
+                                          case 2:{
+                                            musicService.shuffleEntireAlbum(_albums[index]);
+                                            break;
+                                          }
+                                        }
+                                      },
+                                      Screensize: screenSize,
+                                      onContextCancel: (option){
+                                        print("cenceled");
+                                      }
                                   ),
                                 ),
                                 onTap: (){
