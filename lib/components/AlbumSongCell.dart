@@ -70,7 +70,7 @@ class AlbumGridCell extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
+                            padding: const EdgeInsets.only(bottom: 2, left: 2),
                             child: Text(
                               album.title!=null?album.title:"Unknown Title",
                               overflow: TextOverflow.ellipsis,
@@ -87,17 +87,20 @@ class AlbumGridCell extends StatelessWidget {
                             children: <Widget>[
                               Expanded(
                                 flex:9,
-                                child: Text(
-                                  album.artist!=null?album.artist:"Unknown Artist",
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.left,
-                                  strutStyle: StrutStyle(
-                                      height: 0.8,
-                                      forceStrutHeight: true
-                                  ),
-                                  style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7)
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 2),
+                                  child: Text(
+                                    album.artist!=null?album.artist:"Unknown Artist",
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.left,
+                                    strutStyle: StrutStyle(
+                                        height: 0.8,
+                                        forceStrutHeight: true
+                                    ),
+                                    style: TextStyle(
+                                        fontSize: 12.5,
+                                        color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7)
+                                    ),
                                   ),
                                 ),
                               ),

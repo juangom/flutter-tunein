@@ -6,8 +6,8 @@ class PageService {
 // Sub PAGEVIEW
   BehaviorSubject<double> _pageIndex$;
   BehaviorSubject<double> get pageIndex$ => _pageIndex$;
-  PageController _pageController;
-  PageController get pageViewController => _pageController;
+  var _pageController;
+  get pageViewController => _pageController;
 
   // HEADER NAVIGATION BAR
   ScrollController _headerController;
@@ -22,8 +22,9 @@ class PageService {
   List<double> get cumulativeNavSizes => _cumulativeNavSizes;
 
   final int id;
-
-  PageService(this.id) {
+  final double viewPort;
+  final Controller;
+  PageService(this.id,{double this.viewPort=1,  this.Controller}) {
 
     _initPageView();
     _initHeaderNavBar();
@@ -64,7 +65,7 @@ class PageService {
 
   _initPageView() {
     _pageIndex$ = BehaviorSubject<double>.seeded(0);
-    _pageController = PageController();
+    _pageController = this.Controller??PageController(viewportFraction: viewPort);
   }
 
   _initHeaderNavBar() {

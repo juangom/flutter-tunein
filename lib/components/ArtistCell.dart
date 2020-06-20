@@ -40,8 +40,9 @@ class ArtistGridCell extends StatelessWidget {
             reverseDuration: Duration(milliseconds: animationDelayComputed),
             duration: Duration(milliseconds: animationDelayComputed),
             switchInCurve: Curves.easeInToLinear,
-            child: !snapshot.hasData?shallowWidget:Stack(
-              children: <Widget>[Container(
+            child: !snapshot.hasData?shallowWidget:Padding(
+              padding: EdgeInsets.only(),
+              child:Container(
                   decoration: BoxDecoration(
                       color: (songColors!=null?new Color(songColors[0]).withAlpha(100):MyTheme.darkBlack).withOpacity(.7),
                       backgroundBlendMode: BlendMode.colorBurn
@@ -55,18 +56,21 @@ class ArtistGridCell extends StatelessWidget {
                   height: imageHeight+2,
                   colorBlendMode: BlendMode.darken,
                 ),*/
-                      FadeInImage(
-                        placeholder: AssetImage('images/artist.jpg'),
-                        fadeInDuration: Duration(milliseconds: 300),
-                        fadeOutDuration: Duration(milliseconds: 100),
-                        height: imageHeight+2,
-                        repeat: ImageRepeat.noRepeat,
-                        fit: artist.coverArt != null?BoxFit.fill:BoxFit.cover,
-                        image: artist.coverArt != null
-                            ? FileImage(
-                          new File(artist.coverArt),
-                        )
-                            : AssetImage('images/artist.jpg'),
+                      Container(
+                        child: FadeInImage(
+                          placeholder: AssetImage('images/artist.jpg'),
+                          fadeInDuration: Duration(milliseconds: 300),
+                          fadeOutDuration: Duration(milliseconds: 100),
+                          height: imageHeight+2,
+                          repeat: ImageRepeat.noRepeat,
+                          fit: artist.coverArt != null?BoxFit.fill:BoxFit.cover,
+                          image: artist.coverArt != null
+                              ? FileImage(
+                            new File(artist.coverArt),
+                          )
+                              : AssetImage('images/artist.jpg'),
+                        ),
+                        constraints: BoxConstraints.expand(height: imageHeight+2),
                       ),
                       Expanded(
                         child: Container(
@@ -150,7 +154,7 @@ class ArtistGridCell extends StatelessWidget {
                         ),
                       )
                     ],
-                  ))],
+                  ))
             ));
       },
     );

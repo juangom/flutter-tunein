@@ -327,6 +327,24 @@ class SingleArtistPage extends StatelessWidget {
                             //Material widget is the easiest and the one i am using in this app
                             child: AlbumGridCell(artist.albums[index],135,80,
                               animationDelay: (50*newIndex) - (index<6?((6-index)*160):0),
+                              useAnimation:true,
+                              choices: albumCardContextMenulist,
+                              onContextSelect: (choice){
+                                switch(choice.id){
+                                  case 1: {
+                                    musicService.playEntireAlbum(artist.albums[index]);
+                                    break;
+                                  }
+                                  case 2:{
+                                    musicService.shuffleEntireAlbum(artist.albums[index]);
+                                    break;
+                                  }
+                                }
+                              },
+                              Screensize: size,
+                              onContextCancel: (option){
+                                print("cenceled");
+                              },
                             ),
                             color: Colors.transparent,
                           ),
