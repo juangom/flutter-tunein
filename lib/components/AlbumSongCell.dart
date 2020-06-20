@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:Tunein/components/threeDotPopupMenu.dart';
+import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +12,18 @@ import 'dart:math';
 class AlbumGridCell extends StatelessWidget {
   AlbumGridCell(this.album, this.imageHeight, this.panelHeight,{
     this.animationDelay,
-    this.useAnimation=false
+    this.useAnimation=false,
+    this.choices,
+    this.onContextSelect,
+    this.onContextCancel,
+    this.Screensize,
+    this.StaticContextMenuFromBottom
   });
+  final void Function(ContextMenuOptions) onContextSelect;
+  final void Function(ContextMenuOptions) onContextCancel;
+  List<ContextMenuOptions> choices;
+  final Size Screensize;
+  final double StaticContextMenuFromBottom;
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
   @required
@@ -53,11 +65,12 @@ class AlbumGridCell extends StatelessWidget {
                       width: double.infinity,
                       color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey,
                       child: Column(
-                        mainAxisSize: MainAxisSize.max,
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(bottom: 2),
                             child: Text(
                               album.title!=null?album.title:"Unknown Title",
                               overflow: TextOverflow.ellipsis,
@@ -67,18 +80,38 @@ class AlbumGridCell extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Text(
-                            album.artist!=null?album.artist:"Unknown Artist",
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            strutStyle: StrutStyle(
-                                height: 0.8,
-                                forceStrutHeight: true
-                            ),
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7)
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                flex:9,
+                                child: Text(
+                                  album.artist!=null?album.artist:"Unknown Artist",
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.left,
+                                  strutStyle: StrutStyle(
+                                      height: 0.8,
+                                      forceStrutHeight: true
+                                  ),
+                                  style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7)
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child:  choices!=null?ThreeDotPopupMenu(
+                                  IconColor: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7)  ,
+                                  choices: choices,
+                                  onContextSelect: onContextSelect,
+                                  screenSize: Screensize,
+                                  staticOffsetFromBottom: StaticContextMenuFromBottom,
+                                ):Container(),
+                              )
+                            ],
                           ),
                         ],
                       ),

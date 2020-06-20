@@ -48,6 +48,20 @@ final artistCardContextMenulist=[
   ),
 ];
 
+///The context menu for the regular Album card found in the albums page
+final albumCardContextMenulist=[
+  ContextMenuOptions(
+    id: 1,
+    title: "Play Album",
+    icon: Icons.play_circle_outline,
+  ),
+  ContextMenuOptions(
+    id: 2,
+    title: "Shuffle",
+    icon: Icons.shuffle,
+  ),
+];
+
 ///The context menu for the regular playlist card foudn in the playlists page
 final playlistCardContextMenulist=[
   ContextMenuOptions(

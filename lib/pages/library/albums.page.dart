@@ -4,6 +4,7 @@ import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
 import 'package:Tunein/services/locator.dart';
@@ -69,6 +70,23 @@ class _AlbumsPageState extends State<AlbumsPage> {
                     child: AlbumGridCell(_albums[index],135/itemsPerRow*3,80,
                     animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
                     useAnimation: !(animationDelay==0),
+                      choices: albumCardContextMenulist,
+                      onContextSelect: (choice){
+                        switch(choice.id){
+                          case 1: {
+                            musicService.playEntireAlbum(_albums[index]);
+                            break;
+                          }
+                          case 2:{
+                            musicService.shuffleEntireAlbum(_albums[index]);
+                            break;
+                          }
+                        }
+                      },
+                      Screensize: size,
+                      onContextCancel: (option){
+                        print("cenceled");
+                      },
                     ),
                   );
                 },

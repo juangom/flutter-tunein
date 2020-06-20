@@ -700,6 +700,24 @@ class MusicService {
     return finalList;
   }
 
+  ///Specific album Context Menu Play Options
+  ///
+
+  void playEntireAlbum(Album album){
+    updatePlaylist(album.songs);
+    pauseMusic(playerState$.value.value);
+    playMusic(album.songs[0]);
+  }
+
+  void shuffleEntireAlbum(Album album){
+    pauseMusic(playerState$.value.value);
+    updatePlaylist(album.songs);
+    updatePlayback(Playback.shuffle);
+    playMusic(playlist$.value.value[0]);
+  }
+
+
+
   void playMostPlayedOfAlbum(Album album, {shuffle=false}){
     List<Tune> finalList=getMostPlayedOfAlbum(album);
     if(finalList.length>0){
