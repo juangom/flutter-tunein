@@ -219,6 +219,7 @@ class _EditPlaylistState extends State<EditPlaylist> {
                                           "",
                                           null,
                                           [],
+                                          null,
                                           null
                                       ),
                                       choices: null,

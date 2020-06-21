@@ -21,7 +21,7 @@ class musicServiceIsolate {
   static BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
     MapEntry(
       PlayerState.stopped,
-      Tune(null, " ", " ", " ", null, null, null, [], null),
+      Tune(null, " ", " ", " ", null, null, null, [], null, null),
     ),
   );
 

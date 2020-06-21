@@ -83,7 +83,7 @@ class MusicService {
 
 
   MusicService() {
-    _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null);
+    _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null, null);
     _initStreams();
    // _initAudioPlayer();
   }
@@ -253,7 +253,7 @@ class MusicService {
         artists["${album.artist}"].albums.add(album);
       } else {
         artists["${album.artist}"] =
-            new Artist(currentIndex, album.artist, null);
+            new Artist(currentIndex, album.artist, null, null);
         artists["${album.artist}"].albums.add(album);
         currentIndex++;
       }

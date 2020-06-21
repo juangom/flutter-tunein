@@ -226,6 +226,7 @@ class Nano {
           albumArt,
           [],
           int.parse(_metaData[i][4]),
+          _metaData[i][6]
       );
       tunes.add(tune);
     }
@@ -243,10 +244,11 @@ class Tune {
   String uri;
   String albumArt;
   int numberInAlbum;
+  String genre;
   List<int> colors;
 
   Tune(this.id, this.title, this.artist, this.album, this.duration, this.uri,
-      this.albumArt, this.colors, this.numberInAlbum);
+      this.albumArt, this.colors, this.numberInAlbum, this.genre);
   Tune.fromMap(Map m) {
     id = m["id"];
     artist = m["artist"];
@@ -261,6 +263,7 @@ class Tune {
       colorList.add(int.tryParse(colorElem.toString()));
     });
     colors = colorList;
+    genre= m["genre"];
   }
 
   Map toMap(){
@@ -274,6 +277,7 @@ class Tune {
     _map["albumArt"] = this.albumArt;
     _map["colors"] = this.colors;
     _map["numberInAlbum"] = this.numberInAlbum;
+    _map["genre"] = this.genre;
     return _map;
   }
 }
@@ -331,7 +335,8 @@ class Artist {
   List<Album> albums=[];
   List<int> colors=List<int>();
   Map<String,String> apiData=Map<String,String>();
-  Artist(this.id, this.name, this.coverArt);
+  String genre;
+  Artist(this.id, this.name, this.coverArt, this.genre);
 
   Artist.fromMap(Map m) {
     id= m["id"];
@@ -348,6 +353,7 @@ class Artist {
       colorList.add(int.tryParse(colorElem.toString()));
     });
     colors=colorList;
+    genre= m["genre"];
   }
 
 
@@ -365,6 +371,7 @@ class Artist {
     _map["apiData"] = artist.apiData;
     _map["coverArt"] = artist.coverArt;
     _map["colors"] = artist.colors;
+    _map["genre"] = artist.genre;
     return _map;
   }
 
