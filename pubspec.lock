@@ -492,7 +492,7 @@ packages:
       path: "."
       ref: master
       resolved-ref: "970da6f909770247ed95206d9d3e860741910a96"
-      url: "/Users/kadhem/Documents/flutter_projects/FlutterToast"
+      url: "https://github.com/moda20/FlutterToast"
     source: git
     version: "0.1.4"
   typed_data:

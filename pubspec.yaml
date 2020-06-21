@@ -58,7 +58,7 @@ dependencies:
   preload_page_view: ^0.1.4
   toast:
     git:
-      url: /Users/kadhem/Documents/flutter_projects/FlutterToast
+      url: https://github.com/moda20/FlutterToast
       ref: master
 dev_dependencies:
   flutter_test:
