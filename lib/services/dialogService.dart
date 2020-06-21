@@ -9,6 +9,7 @@ import 'locator.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:flushbar/flushbar.dart';
+import 'package:toast/toast.dart';
 
 final layoutService = locator<LayoutService>();
 final castService = locator<CastService>();
@@ -30,18 +31,16 @@ class DialogService{
       ..show();
   }
 
-  static showToast(context, {String message, Color color, Widget content}){
-    layoutService.scaffoldKey.currentState.showSnackBar(
-      new SnackBar(
-        content: content!=null?
-        content:
-        Text(
-            message,
-            style: TextStyle(
-              color: color!=null?color:Colors.white
-            ),
-        ),
-      )
+  static showToast(context, {String message, Color color, Color backgroundColor}){
+    Toast.show(message, context,
+      textStyle:  TextStyle(
+        color: color??MyTheme.grey300
+      ),
+      duration: 2,
+      gravity: 0,
+      backgroundRadius : 2,
+      backgroundColor: backgroundColor??MyTheme.bgBottomBar.withOpacity(0.7),
+      rootNavigator: true,
     );
   }
 
@@ -298,6 +297,32 @@ class DialogService{
           );
         });
 
+  }
+
+
+  static Future<bool> showPersistentDialog(context, {String message, Color titleColor, Color messageColor ,String title, Widget content}){
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            title: Text(
+              title,
+              style: TextStyle(
+                  color: titleColor!=null?titleColor:Colors.white70
+              ),
+            ),
+            content: content??Text(
+              message!=null?message:"Alert",
+              style: TextStyle(
+                  color: messageColor!=null?messageColor:Colors.white
+              ),
+            ),
+            actions: <Widget>[
+            ],
+          );
+        });
   }
 }
 

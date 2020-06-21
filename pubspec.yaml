@@ -56,6 +56,10 @@ dependencies:
       ref: master
   dart_ping: ^1.0.0
   preload_page_view: ^0.1.4
+  toast:
+    git:
+      url: /Users/kadhem/Documents/flutter_projects/FlutterToast
+      ref: master
 dev_dependencies:
   flutter_test:
     sdk: flutter

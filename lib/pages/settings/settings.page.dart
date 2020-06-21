@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:Tunein/components/pagenavheader.dart';
 import 'package:Tunein/globals.dart';
+import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/dialogService.dart';
+import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -13,6 +16,8 @@ class SettingsPage extends StatelessWidget {
 
   final SettingService = locator<settingService>();
   final layoutService = locator<LayoutService>();
+  final FileService = locator<fileService>();
+  final musicService = locator<MusicService>();
 
 
 
@@ -85,7 +90,44 @@ class SettingsPage extends StatelessWidget {
                                   }
                                 },
                               ),
-
+                              SettingsTile(
+                                title: 'Delete artist thumbnails',
+                                subtitle: "Delete all downloaded artist thumbnails",
+                                leading: Icon(
+                                  Icons.broken_image,
+                                  color: MyTheme.grey300,
+                                ),
+                                trailing: Material(
+                                  color: MyTheme.bgBottomBar,
+                                  elevation: 12,
+                                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                                  child: IconButton(
+                                    color: MyTheme.darkgrey,
+                                    icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(Icons.delete_sweep, color: MyTheme.darkRed, size: 20)
+                                      ],
+                                    ),
+                                    onPressed: (){
+                                      Future.delayed(Duration(milliseconds: 200), ()async{
+                                        bool confirm = await DialogService.showConfirmDialog(context,
+                                            title: "Confirm DELETING all thumbnails",
+                                          cancelButtonText: "Cancel",
+                                          confirmButtonText: "Delete All",
+                                          message: "You are about to delete all downloaded artist thumbnails",
+                                          titleColor: MyTheme.darkRed,
+                                          messageColor: MyTheme.grey300
+                                        );
+                                        if(confirm!=null && confirm==true){
+                                          int deletedNumber = await deleteAllArtistsThumbnail(context);
+                                          DialogService.showToast(context,message: "Deleted ${deletedNumber} Thumbs", color: MyTheme.darkRed, backgroundColor: MyTheme.darkBlack.withOpacity(.7));
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                              )
                             ],
                           ),
                           SettingsSection(
@@ -561,6 +603,22 @@ class SettingsPage extends StatelessWidget {
     }else{
       return null;
     }
+  }
+
+
+  Future<int> deleteAllArtistsThumbnail(context) async{
+    List<Artist> currentArtistList = musicService.artists$.value;
+    List<String> UriList = currentArtistList.map((e) => (e.coverArt)).toList();
+    DialogService.showPersistentDialog(context, title: "Deleting Files ...");
+    UriList.forEach((element) async{
+      await FileService.deleteFile(element);
+    });
+    musicService.artists$.add(currentArtistList.map((e) {
+      e.coverArt=null;
+      return e;
+    }).toList());
+    Navigator.of(context, rootNavigator: true).pop(null);
+    return UriList.where((element) => (element!=null)).toList().length;
   }
 
 
