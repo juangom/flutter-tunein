@@ -336,40 +336,31 @@ class SingleAlbumPage extends StatelessWidget {
                                       /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
                                       /// instead of the listofSongsToBeDeleted TODO
                                       List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
-
                                       if(songsToBeDeleted!=null){
                                         if(songsToBeDeleted.length!=0){
                                           List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
                                           newPlaylsit.songs.removeWhere((elem){
                                             return idList.contains(elem.id);
                                           });
+                                          musicService.addPlaylist(newPlaylsit).then(
+                                                  (data){
+                                                DialogService.showToast(context,
+                                                    backgroundColor: MyTheme.darkBlack,
+                                                    color: MyTheme.darkRed,
+                                                    message: "Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved"
+                                                );
+                                              }
+                                          );
+                                        }else{
+                                          DialogService.showToast(context,
+                                              backgroundColor: MyTheme.darkBlack,
+                                              color: MyTheme.darkRed,
+                                              message: "Chosen playlist is Empty"
+                                          );
                                         }
-                                        musicService.addPlaylist(newPlaylsit).then(
-                                                (data){
-                                              DialogService.showFlushbar(context,
-                                                  leftIcon: Icon(Icons.check_circle,
-                                                    color: Color(album.songs[0].colors[0]).withAlpha(255),
-                                                    size: 27,
-                                                  ),
-                                                  showDuration: Duration(milliseconds: 1500),
-                                                  color: Color(album.songs[0].colors[2]),
-                                                  messageText: Text("Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved",
-                                                    style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Color(album.songs[0].colors[0])
-                                                    ),
-                                                  ),
-                                                  titleText: Text("Playlist Saved",
-                                                    style: TextStyle(
-                                                        fontSize: 17,
-                                                        fontWeight: FontWeight.w900,
-                                                        color: Color(album.songs[0].colors[0])
-                                                    ),
-                                                  )
-                                              );
-                                            }
-                                        );
+
+                                      }else{
+                                        print("NO SONGS FOUND");
                                       }
                                     },
                                   );
@@ -778,6 +769,44 @@ class SingleAlbumPage extends StatelessWidget {
                                       bottomTitle: "Most Played",
                                       onPlayPressed: (){
                                         musicService.playMostPlayedOfAlbum(album);
+                                      },
+                                      onSavePressed: () async{
+                                        Playlist newPlaylsit = Playlist(
+                                            "Most played of ${album.title}",
+                                            musicService.getMostPlayedOfAlbum(album),
+                                            PlayerState.stopped,
+                                            null
+                                        );
+                                        /// This is a temporary way fo handling until we incorporate the name changing in playlists
+                                        /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
+                                        /// instead of the listofSongsToBeDeleted TODO
+                                        List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
+                                        if(songsToBeDeleted!=null){
+                                          if(songsToBeDeleted.length!=0){
+                                            List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
+                                            newPlaylsit.songs.removeWhere((elem){
+                                              return idList.contains(elem.id);
+                                            });
+                                            musicService.addPlaylist(newPlaylsit).then(
+                                                    (data){
+                                                  DialogService.showToast(context,
+                                                      backgroundColor: MyTheme.darkBlack,
+                                                      color: MyTheme.darkRed,
+                                                      message: "Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved"
+                                                  );
+                                                }
+                                            );
+                                          }else{
+                                            DialogService.showToast(context,
+                                                backgroundColor: MyTheme.darkBlack,
+                                                color: MyTheme.darkRed,
+                                                message: "Chosen playlist is Empty"
+                                            );
+                                          }
+
+                                        }else{
+                                          print("NO SONGS FOUND");
+                                        }
                                       },
                                     );
                                   },

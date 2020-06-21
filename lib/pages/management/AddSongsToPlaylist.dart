@@ -107,12 +107,18 @@ class _AddSongsToPlaylistState extends State<AddSongsToPlaylist> {
 
 
   void showSuccessNotifier(Tune song, {message,title}){
-    Dialog.DialogService.showFlushbar(
+    /*Dialog.DialogService.showFlushbar(
         layoutService.scaffoldKey.currentContext
         ,
         message: message==null?"Song Added":message,
         title: title==null?"${song.title}... added to ${widget.playlist.name}":title,
         color: MyTheme.darkBlack
+    );*/
+
+    Dialog.DialogService.showToast(context,
+      message: message==null?"${song.title} added to ${widget.playlist.name}":message,
+      color: MyTheme.darkRed,
+      backgroundColor: MyTheme.darkBlack
     );
   }
 
