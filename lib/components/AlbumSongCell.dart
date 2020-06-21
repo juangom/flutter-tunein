@@ -78,6 +78,10 @@ class AlbumGridCell extends StatelessWidget {
                                 fontSize: 13.5,
                                 color: (songColors!=null?new Color(songColors[1]):Colors.white70).withOpacity(.7),
                               ),
+                                strutStyle: StrutStyle(
+                                    height: 0.95,
+                                    forceStrutHeight: true
+                                )
                             ),
                           ),
                           Row(
