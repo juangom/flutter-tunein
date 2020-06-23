@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 final Map<int, List<MapEntry<String, GlobalKey>>> headerItems = {
   0: [
     MapEntry(
+      "Home",
+      GlobalKey(),
+    ),
+    MapEntry(
       "Tracks",
       GlobalKey(),
     ),

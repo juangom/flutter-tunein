@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum MetricIds{
   MET_GLOBAL_PLAY_TIME,
   MET_GLOBAL_SONG_PLAY_TIME,
+  MET_GLOBAL_ARTIST_PLAY_TIME,
   MET_GLOBAL_LAST_PLAYED_SONGS,
   MET_GLOBAL_LAST_PLAYED_PLAYLIST,
   MET_GLOBAL_PLAYLIST_PLAY_TIME
@@ -85,6 +86,21 @@ class MusicMetricsService {
     }
   }
 
+
+  void incrementPlayTimeOnSingleArtist(Artist artist, Duration durationToAdd) async{
+    if(artist!=null && durationToAdd!=null){
+      Map<String,dynamic> PlayedTimeOnAllArtists = getCurrentMemoryMetric(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME);
+      if(PlayedTimeOnAllArtists[artist.id]!=null){
+        int numericValueOfSong = int.parse(PlayedTimeOnAllArtists[artist.id]);
+        numericValueOfSong+=durationToAdd.inSeconds;
+        PlayedTimeOnAllArtists[artist.id.toString()]=numericValueOfSong.toString();
+        updateSingleSetting(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
+      }else{
+        PlayedTimeOnAllArtists[artist.id.toString()]= durationToAdd.inSeconds.toString();
+        updateSingleSetting(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
+      }
+    }
+  }
 
   void incrementGlobalPlayTime(Duration durationToAdd) async{
     if(durationToAdd!=null){
@@ -183,6 +199,9 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return Map<String,String>();
         break;
+      case MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME:
+        return Map<String,String>();
+        break;
       case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
         return Map<String,String>();
         break;
@@ -205,6 +224,9 @@ class MusicMetricsService {
         return String;
         break;
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
+        return String;
+        break;
+      case MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME:
         return String;
         break;
       case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
@@ -234,6 +256,9 @@ class MusicMetricsService {
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
         return json.decode(value);
         break;
+      case MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME:
+        return json.decode(value);
+        break;
       case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:
         return json.decode(value);
         break;
@@ -259,6 +284,9 @@ class MusicMetricsService {
         return value.toString();
         break;
       case MetricIds.MET_GLOBAL_SONG_PLAY_TIME:
+        return json.encode(value);
+        break;
+      case MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME:
         return json.encode(value);
         break;
       case MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME:

@@ -3,6 +3,7 @@ import 'package:Tunein/globals.dart';
 import 'package:Tunein/pages/library/albums.page.dart';
 import 'package:Tunein/pages/library/artists.page.dart';
 import 'package:Tunein/pages/library/tracks.page.dart';
+import 'package:Tunein/pages/single/LandingPage.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class LibraryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var children = [
+      LandingPage(),
       TracksPage(),
       ArtistsPage(),
       AlbumsPage(controller: layoutService.albumListPageController),
