@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 class MyScrollbar extends StatefulWidget {
   final ScrollController controller;
   final Color color;
-  MyScrollbar({Key key, this.controller,this.color}) : super(key: key);
+  bool showFromTheStart;
+  bool neverHide;
+  MyScrollbar({Key key, this.controller,this.color, this.showFromTheStart=false, this.neverHide=false}) : super(key: key);
   _MyScrollbarState createState() => _MyScrollbarState();
 }
 
@@ -14,6 +16,8 @@ class _MyScrollbarState extends State<MyScrollbar> {
   double thumbHeight = 50;
   RenderBox boxAfterRender;
   double thumbPos = 0;
+  bool showFromTheStart=false;
+  bool neverHide = false;
   bool _offstage = true;
   bool _closing = false;
 
@@ -33,7 +37,7 @@ class _MyScrollbarState extends State<MyScrollbar> {
 
     Future.delayed(Duration(milliseconds: 1500), () {
       mounted?setState(() {
-        _offstage = true;
+        (neverHide==null || !neverHide)?_offstage = true:_offstage=false;
         _closing = false;
       }):null;
     });
@@ -47,6 +51,11 @@ class _MyScrollbarState extends State<MyScrollbar> {
       double height = boxAfterRender.size.height;
       _updateThumbPos((height - thumbHeight) * p);
     });
+    this.showFromTheStart=widget.showFromTheStart;
+    this.neverHide=widget.neverHide;
+    if(showFromTheStart){
+      _offstage=false;
+    }
     super.initState();
   }
 

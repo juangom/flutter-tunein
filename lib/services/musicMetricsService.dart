@@ -24,13 +24,77 @@ class MusicMetricsService {
 
   BehaviorSubject<Map<MetricIds, dynamic>> get metrics => _metrics;
 
+  List<MapEntry<MetricIds, BehaviorSubject<dynamic>>> activeSingleSettingListeners =List();
+  Map<MetricIds, dynamic> activeSingleSettingOldValues = Map();
+
+
+
   MusicMetricsService(){
     _initStreams();
   }
 
   _initStreams(){
     _metrics = BehaviorSubject<Map<MetricIds,dynamic>>.seeded(Map());
+    MetricIds.values.forEach((element) {
+      addSinglSettingStream(element);
+    });
+    _startSingleSettingStreams();
   }
+
+
+
+  _startSingleSettingStreams(){
+    _metrics.listen((value) {
+      activeSingleSettingListeners.forEach((activeListenerMap) {
+        if(activeSingleSettingOldValues[activeListenerMap.key]!=null){
+          if(value[activeListenerMap.key] !=activeSingleSettingOldValues[activeListenerMap.key]){
+            activeListenerMap.value.add(value[activeListenerMap.key]);
+            activeSingleSettingOldValues[activeListenerMap.key] = value[activeListenerMap.key];
+          }
+        }else{
+          activeListenerMap.value.add(value[activeListenerMap.key]);
+          activeSingleSettingOldValues[activeListenerMap.key] = value[activeListenerMap.key];
+        }
+
+      });
+    });
+  }
+
+  MapEntry<MetricIds, BehaviorSubject<dynamic>> addSinglSettingStream(MetricIds setting){
+    MapEntry<MetricIds, BehaviorSubject<dynamic>> newStream = MapEntry(setting, new BehaviorSubject<dynamic>.seeded(null));
+    activeSingleSettingListeners.add(newStream);
+    return newStream;
+  }
+
+  deleteSingSettingStream(MetricIds setting){
+    activeSingleSettingListeners.where((element) => element.key==setting).toList().forEach((activeListener) {
+      !activeListener.value.isClosed?activeListener.value.close():null;
+    });
+    activeSingleSettingListeners.removeWhere((element) => element.key==setting);
+  }
+
+  BehaviorSubject<dynamic> getOrCreateSingleSettingStream(MetricIds setting){
+    MapEntry<MetricIds, BehaviorSubject<dynamic>> existingStream = activeSingleSettingListeners.firstWhere((element) => element.key==setting,orElse: (){
+      return null;
+    });
+    if(existingStream!=null && existingStream.value!=null && !existingStream.value.isClosed){
+      return existingStream.value;
+    }else{
+      return addSinglSettingStream(setting).value;
+    }
+  }
+
+  BehaviorSubject<Map<MetricIds,dynamic>> createSettingStreamOfASettingId(MetricIds setting){
+    return _metrics.distinct((prev,next)  {
+      if(prev[setting]!=next[setting]){
+        return true;
+      }else{
+        return false;
+      }
+    });
+  }
+  
+
 
 
   setLastPlayedPlaylist(Playlist playlist){

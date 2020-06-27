@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:Tunein/components/pagenavheader.dart';
 import 'package:Tunein/globals.dart';
+import 'package:Tunein/pages/metrics/metrics.page.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/fileService.dart';
@@ -279,6 +280,7 @@ class SettingsPage extends StatelessWidget {
 
                   },
                 ),
+                MetricsPage(),
                 Center(
                   child: Container(
                     child: Text(

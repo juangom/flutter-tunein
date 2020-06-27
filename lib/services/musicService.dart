@@ -416,6 +416,7 @@ class MusicService {
     if(playerstate!=null){
       if(playerstate.value!=null && playerstate.value.id!=null){
         metricService.incrementPlayTimeOnSingleSong(playerstate.value, position$.value);
+        metricService.incrementPlayTimeOnSingleArtist(artists$.value.where((element) => element.name==playerstate.value.artist).toList()[0], position$.value);
         //Setting the playlist Time
         if(_currentPlayingPlaylist$.value.value!=null && _currentPlayingPlaylist$.value.value.songs.indexWhere((elem){
           return elem.id==playerstate.value.id;
