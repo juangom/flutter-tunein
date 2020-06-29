@@ -13,20 +13,18 @@ class PreferredPicks extends StatelessWidget {
 
   final String bottomTitle;
   final String imageUri;
+  final Widget backgroundWidget;
   final List<int> colors;
-  VoidCallback onSavePressed;
-  VoidCallback onPlayPressed;
+  final MapEntry<int,int> blurPower;
+  final Color blurColor;
+  final MapEntry<double, double> textPosition;
 
-
-  PreferredPicks({this.bottomTitle, this.imageUri, this.colors,
-    this.onSavePressed, this.onPlayPressed});
+  PreferredPicks({this.bottomTitle, this.imageUri, this.colors, this.backgroundWidget, this.blurPower,this.blurColor, this.textPosition});
 
   @override
   Widget build(BuildContext context) {
     Color shadowColor = ((colors!=null && colors.length!=0)?new Color(colors[0]):Color(themeService.defaultColors[0])).withOpacity(.7);
     return Container(
-      height: 60,
-      width: 60,
       margin: EdgeInsets.symmetric(horizontal: 5),
       child: Container(
         decoration: BoxDecoration(
@@ -38,7 +36,7 @@ class PreferredPicks extends StatelessWidget {
           overflow: Overflow.clip,
           children: <Widget>[
             Container(
-              child: ConstrainedBox(
+              child: backgroundWidget??ConstrainedBox(
                 child: imageUri == null ? Image.asset("images/artist.jpg",fit: BoxFit.cover) : Image(
                   image: FileImage(File(imageUri)),
                   fit: BoxFit.cover,
@@ -56,10 +54,10 @@ class PreferredPicks extends StatelessWidget {
             Container(
                 child: ClipRect(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 3),
+                    filter: ImageFilter.blur(sigmaX: blurPower!=null?blurPower.key:2, sigmaY: blurPower!=null?blurPower.value:3),
                     child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100.withOpacity(0.2),
+                          color: blurColor??Colors.grey.shade100.withOpacity(0.2),
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                           border: Border.all(width: .3, color: MyTheme.bgBottomBar),
                         )
@@ -98,8 +96,8 @@ class PreferredPicks extends StatelessWidget {
                     ]
                 ),
               ),
-              bottom: 5,
-              left: 5,
+              bottom: textPosition!=null?textPosition.key:5,
+              left: textPosition!=null?textPosition.value:5,
             ),
           ],
         ),

@@ -34,7 +34,7 @@ class LibraryPage extends StatelessWidget {
               return AnimatedSwitcher(
                 duration: Duration(milliseconds: 300),
                 child: snapshot.hasData?PreloadPageView.builder(
-                  itemCount: 3,
+                  itemCount: 4,
                   itemBuilder: (BuildContext context, int position){
                     return children[position];
                   },

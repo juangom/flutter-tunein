@@ -9,7 +9,7 @@ class fileService{
 
 
 
-  Future getFileFromURI(String uri, {bool mustExist}) async{
+  Future<File> getFileFromURI(String uri, {bool mustExist}) async{
     if(uri==null) return null;
     File newFile = File(uri);
     if(mustExist){
