@@ -6,6 +6,8 @@ import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:upnp/upnp.dart' as upnp;
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key}) : super(key: key);
@@ -24,6 +27,8 @@ class _SearchPageState extends State<SearchPage> {
 
   final musicService = locator<MusicService>();
   final themeService = locator<ThemeService>();
+  final castService = locator<CastService>();
+
   ScrollController controller = new ScrollController();
 
   BehaviorSubject<MapEntry<List<Tune>,List<Album>>> searchResultSongs =  BehaviorSubject<MapEntry<List<Tune>,List<Album>>>();
@@ -282,7 +287,7 @@ class _SearchPageState extends State<SearchPage> {
                             break;
                         }
                       },
-                      onContextOptionSelect: (choice, song){
+                      onContextOptionSelect: (choice, song) async{
                         switch(choice.id){
                           case 1: {
                             musicService.playOne(song);
@@ -298,6 +303,24 @@ class _SearchPageState extends State<SearchPage> {
                           }
                           case 4:{
                             musicService.playAlbum(song);
+                            break;
+                          }
+                          case 5:{
+                            if(castService.currentDeviceToBeUsed.value==null){
+                              upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                              if(result!=null){
+                                castService.setDeviceToBeUsed(result);
+                              }
+                            }
+                            musicService.castOrPlay(song, SingleCast: true);
+                            break;
+                          }
+                          case 6:{
+                            upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                            if(result!=null){
+                              musicService.castOrPlay(song, SingleCast: true, device: result);
+                            }
+                            break;
                           }
                         }
                       },

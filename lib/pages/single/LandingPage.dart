@@ -1,13 +1,32 @@
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
+import 'package:Tunein/components/cards/AnimatedDialog.dart';
 import 'package:Tunein/components/cards/PreferedPicks.dart';
+import 'package:Tunein/components/cards/expandableItems.dart';
+import 'package:Tunein/components/genericSongList.dart';
 import 'package:Tunein/components/itemListDevider.dart';
+import 'package:Tunein/components/trackListDeck.dart';
+import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
+import 'package:Tunein/models/playback.dart';
+import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/plugins/upnp.dart';
+import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/dialogService.dart';
+import 'package:Tunein/services/fileService.dart';
+import 'package:flutter/rendering.dart';
+import 'package:popup_menu/popup_menu.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:upnp/upnp.dart' as upnp;
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/utils/ConversionUtils.dart';
+import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,11 +46,47 @@ class _LandingPageState extends State<LandingPage> {
 
   final metricService = locator<MusicMetricsService>();
   final musicService = locator<MusicService>();
+  final castService = locator<CastService>();
+  final FileService = locator<fileService>();
+
+  Map<String,TrackListDeckItemState> deckItemState;
+  Map<String,Key> deckItemKeys;
+  Map<String, BehaviorSubject> deckItemStateStream;
+  Map<String, PopupMenu> deckItemMenu;
 
 
-  Map<String,dynamic> getMostPlayedSongs(){
+  @override
+  void initState() {
+    deckItemState={
+      "play":TrackListDeckItemState(),
+      "save": TrackListDeckItemState(),
+      "shuffle": TrackListDeckItemState(),
 
-    Map<String,dynamic> newValue = metricService.metrics.value[MetricIds.MET_GLOBAL_SONG_PLAY_TIME];
+    };
+    deckItemKeys={
+      "save":GlobalKey(),
+      "play": GlobalKey(),
+      "shuffle": GlobalKey(),
+    };
+
+    deckItemStateStream={
+      "save": BehaviorSubject<Map<String,dynamic>>()
+    };
+
+    deckItemMenu={
+      "save":null,
+      "play": null,
+      "shuffle": null,
+    };
+
+  }
+
+  Map<String,dynamic> getMostPlayedSongs(Map<String,dynamic> metricValues){
+
+    Map<String,dynamic> newValue = metricValues??metricService.metrics.value[MetricIds.MET_GLOBAL_SONG_PLAY_TIME];
+    if(newValue.length==0){
+      return null;
+    }
     var sortedKeys = newValue.keys.toList(growable:false)
       ..sort((k1, k2) => int.parse(newValue[k2]).compareTo(int.parse(newValue[k1])));
     Map<String,String> sortedMap = new Map
@@ -55,16 +110,19 @@ class _LandingPageState extends State<LandingPage> {
         var sortedPresenceKeys = newValue.keys.toList(growable:false)
           ..sort((v1, v2) => newValue[v2].compareTo(newValue[v1]));
         Map<String,int> sortedPresenceMap = new Map
-            .fromIterable(sortedPresenceKeys, key: (k) => k, value: (k) => newValue[k]);
+            .fromIterable(sortedPresenceKeys, key: (k) => k, value: (k) => int.parse(newValue[k]));
 
         //Picking the artist with the lowest priority without having too many songs from same artist
         int indexOfArtistWithPriority =0;
         String nameOfArtistsToPickFrom = sortedPresenceMap.keys.toList()[indexOfArtistWithPriority];
-        while(sortedPresenceMap[nameOfArtistsToPickFrom]>2){
+        while(sortedPresenceMap[nameOfArtistsToPickFrom]<2 && indexOfArtistWithPriority< sortedPresenceMap.keys.toList().length){
           indexOfArtistWithPriority++;
           nameOfArtistsToPickFrom = sortedPresenceMap.keys.toList()[indexOfArtistWithPriority];
         }
-        Artist artistToPickFrom = musicService.artists$.value.firstWhere((element) => element.name==nameOfArtistsToPickFrom);
+        Artist artistToPickFrom = musicService.artists$.value.firstWhere((element) => element.name==nameOfArtistsToPickFrom, orElse: ()=>null);
+        if(artistToPickFrom==null){
+          continue;
+        }
         //MathUtils should be created for this kind of functions
         int getRandomFromRange(int min, int max){
           Random rnd;
@@ -87,12 +145,16 @@ class _LandingPageState extends State<LandingPage> {
 
     return {
       "artistsPresence" : artistsAndTheirPresenceInMostPlayed,
-      "mostPlayedSongs" : newSongMap.keys,
+      "mostPlayedSongs" : newSongMap.keys.toList(),
     };
   }
 
   List<Album> getTopAlbum(Map<String,dynamic> GlobalSongPlayTime){
+
     Map<String,dynamic> newValue = GlobalSongPlayTime??metricService.metrics.value[MetricIds.MET_GLOBAL_SONG_PLAY_TIME];
+    if(GlobalSongPlayTime.length==0){
+      return null;
+    }
     var sortedKeys = newValue.keys.toList(growable:false)
       ..sort((k1, k2) => int.parse(newValue[k2]).compareTo(int.parse(newValue[k1])));
     Map<String,String> sortedMap = new Map
@@ -143,15 +205,8 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    Map<String,dynamic> mostPlayed = getMostPlayedSongs();
-    print(mostPlayed);
-    Map<String,int> artistPresence = mostPlayed["artistsPresence"];
-    List<Artist> artistToPutToWidgetBackground = artistPresence.keys.toList().sublist(0,4).map((e) {
-      return musicService.artists$.value.firstWhere((element) => element.name==e);
-    }).toList();
-    Future<List<List<int>>> backgroundimagesForMostPlayedSongs = Future.wait(artistToPutToWidgetBackground.map((e) async{
-      return await ConversionUtils.FileUriTo8Bit(e.coverArt);
-    }).toList());
+
+    Size screensize = MediaQuery.of(context).size;
     Future<List<int>> Asset8bitList = Future.sync(() async{
       ByteData dibd = await rootBundle.load("images/artist.jpg");
       List<int> defaultImageBytes = dibd.buffer.asUint8List();
@@ -174,49 +229,285 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: Container(
-                    height:150,
-                    child: ListView.builder(
-                      itemBuilder: (context, index){
-                        return Material(
-                            child: StreamBuilder(
-                              stream: backgroundimagesForMostPlayedSongs.asStream(),
-                              builder: (context, AsyncSnapshot<List<List<int>>> snapshot){
-                                return AnimatedSwitcher(
-                                  duration: Duration(milliseconds: 200),
-                                  switchInCurve: Curves.easeInToLinear,
-                                  child: !snapshot.hasData?Container(
-                                    child: PreferredPicks(
-                                      bottomTitle: "Most Played",
-                                      colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                    ),
-                                  ):GestureDetector(
-                                    child: Container(
-                                      margin: EdgeInsets.only(right: 8),
-                                      child: PreferredPicks(
-                                        bottomTitle: "Most Played",
-                                        colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                        backgroundWidget: getCombinedImages(snapshot.data, standardHeight: 150, standardWidth: 200, maxWidth: 200),
-                                      ),
-                                    ),
-                                    onTap: (){
-
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                            color: Colors.transparent
+                  child: StreamBuilder(
+                    stream: metricService.getOrCreateSingleSettingStream(MetricIds.MET_GLOBAL_SONG_PLAY_TIME),
+                    builder: (context, AsyncSnapshot<dynamic> msnapshot){
+                      if(!msnapshot.hasData){
+                        print("DATA IS HERE ${msnapshot.data}");
+                        return Container(
+                          child: PreferredPicks(
+                            bottomTitle: "Most Played",
+                            colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                          ),
                         );
-                      },
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 1,
-                      shrinkWrap: false,
-                      itemExtent: 200,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      cacheExtent: 122,
-                    ),
-                    padding: EdgeInsets.all(10),
+                      }
+                      Map<String,dynamic> mostPlayed = getMostPlayedSongs(msnapshot.data);
+                      if(mostPlayed==null){
+                        return Container(
+                          margin: EdgeInsets.only(right: 8),
+                          child: Container(
+                            color: MyTheme.darkBlack,
+                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                            child: Center(
+                              child: Text("No Data Found",
+                                style: TextStyle(
+                                   color: MyTheme.grey300,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 25
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      Map<String,int> artistPresence = mostPlayed["artistsPresence"];
+                      List<Tune> mostPlayedSongs = mostPlayed["mostPlayedSongs"];
+                      List<Artist> artistToPutToWidgetBackground = artistPresence.keys.toList().sublist(0,4).map((e) {
+                        return musicService.artists$.value.firstWhere((element) => element.name==e);
+                      }).toList();
+                      Future<List<List<int>>> backgroundimagesForMostPlayedSongs = Future.wait(artistToPutToWidgetBackground.map((e) async{
+                        return await ConversionUtils.FileUriTo8Bit(e.coverArt);
+                      }).toList());
+                      return Container(
+                        height:150,
+                        child: ListView.builder(
+                          itemBuilder: (context, index){
+                            return Material(
+                                child: StreamBuilder(
+                                  stream: artistToPutToWidgetBackground.length!=0?backgroundimagesForMostPlayedSongs.asStream():Future.wait([Asset8bitList]).asStream(),
+                                  builder: (context, AsyncSnapshot<List<List<int>>> snapshot){
+                                    GlobalKey MostPlayedKey = new GlobalKey();
+                                    return AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 200),
+                                      switchInCurve: Curves.easeInToLinear,
+                                      child: !snapshot.hasData?Container(
+                                        child: PreferredPicks(
+                                          bottomTitle: "Most Played",
+                                          colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                                        ),
+                                      ):GestureDetector(
+                                        child: Container(
+                                          margin: EdgeInsets.only(right: 8),
+                                          child: RepaintBoundary(
+                                            child: PreferredPicks(
+                                              bottomTitle: "Most Played",
+                                              colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                                              backgroundWidget: getCombinedImages(snapshot.data, standardHeight: 150, standardWidth: 200, maxWidth: 200),
+                                            ),
+                                            key: MostPlayedKey,
+                                          ),
+                                        ),
+                                        onTap: (){
+                                          showDialog(context: context,
+                                              builder: (_){
+                                                return Container(
+                                                  child: AnimatedDialog(
+                                                    dialogContent: Center(
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: <Widget>[
+                                                          Container(
+                                                            height: screensize.height*0.2,
+                                                            width: screensize.width*0.85,
+                                                            child: PreferredPicks(
+                                                              bottomTitle: "Most Played Songs' List",
+                                                              colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                                                              backgroundWidget: getCombinedImages(snapshot.data, standardHeight: screensize.height*0.2, standardWidth: screensize.width*0.85, maxWidth: screensize.width*0.85),
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            color: MyTheme.darkBlack,
+                                                            height: 62,
+                                                            width: screensize.width*0.85,
+                                                            margin: EdgeInsets.only(bottom: 5),
+                                                            child: TrackListDeck(
+                                                              items: [
+                                                                TrackListDeckItem(
+                                                                  initialState: deckItemState["play"],
+                                                                  globalWidgetKey: deckItemKeys["play"],
+                                                                  title: "Play All",
+                                                                  subtitle:"Play All Tracks",
+                                                                  icon: Icon(
+                                                                    Icons.play_arrow,
+                                                                  ),
+                                                                  onTap: (){
+                                                                    musicService.updatePlaylist(mostPlayedSongs);
+                                                                    musicService.playMusic(mostPlayedSongs[0]);
+                                                                  },
+                                                                ),
+                                                                TrackListDeckItem(
+                                                                  initialState: deckItemState["shuffle"],
+                                                                  globalWidgetKey: deckItemKeys["shuffle"],
+                                                                  title: "Shuffle",
+                                                                  subtitle:"Shuffle All Tracks",
+                                                                  icon: Icon(
+                                                                    Icons.shuffle,
+                                                                  ),
+                                                                  onTap: (){
+                                                                    musicService.updatePlaylist(mostPlayedSongs);
+                                                                    musicService.updatePlayback(Playback.shuffle);
+                                                                    musicService.stopMusic();
+                                                                    musicService.playMusic(musicService.playlist$.value.value[0]);
+                                                                  },
+                                                                ),
+                                                                TrackListDeckItem(
+                                                                  initialState: deckItemState["save"],
+                                                                  globalWidgetKey: deckItemKeys["save"],
+                                                                  stateStream: deckItemStateStream["save"],
+                                                                  title: "Save",
+                                                                  subtitle:"Save As Playlist",
+                                                                  iconColor: MyTheme.grey300,
+                                                                  withBadge: false,
+                                                                  icon: Icon(
+                                                                    Icons.save,
+                                                                  ),
+                                                                  onTap: () async{
+                                                                   bool result = await  DialogService.showConfirmDialog(context,
+                                                                      message: "Save the most played songs as a playlist",
+                                                                      title: "Save as a Playlist"
+                                                                    );
+                                                                    if(result){
+                                                                      deckItemStateStream["save"].add(
+                                                                          {
+                                                                            "withBadge":true,
+                                                                            "badgeContent": Icon(
+                                                                              Icons.hourglass_empty,
+                                                                              color: MyTheme.darkRed,
+                                                                               size: 17,
+                                                                            ),
+                                                                            "badgeColor":Colors.transparent,
+                                                                            "iconColor":null,
+                                                                            "icon":null,
+                                                                            "title":"Saving"
+                                                                          }
+                                                                      );
+                                                                      Uint8List bytesList = await ConversionUtils.fromWidgetGlobalKeyToImageByteList(MostPlayedKey);
+                                                                      Uri fileURI = await FileService.saveBytesToFile(bytesList);
+                                                                      Playlist newPlaylist = new Playlist(
+                                                                        "Most Played ${DateTime.now().toIso8601String()}",
+                                                                        mostPlayedSongs,
+                                                                        PlayerState.stopped,
+                                                                        fileURI.path
+                                                                      );
+
+                                                                      musicService.addPlaylist(newPlaylist).then(
+                                                                          (value){
+                                                                            deckItemStateStream["save"].add(
+                                                                                {
+                                                                                  "withBadge":false,
+                                                                                  "badgeContent": null,
+                                                                                  "badgeColor":null,
+                                                                                  "iconColor":MyTheme.darkRed,
+                                                                                  "icon":null,
+                                                                                  "title":"Saved !"
+                                                                                }
+                                                                            );
+
+                                                                            Future.delayed(Duration(milliseconds: 1000), (){
+                                                                              deckItemStateStream["save"].add(
+                                                                                  {
+                                                                                    "withBadge":false,
+                                                                                    "badgeContent": null,
+                                                                                    "badgeColor":null,
+                                                                                    "iconColor":MyTheme.grey300,
+                                                                                    "icon":Icon(
+                                                                                      Icons.save,
+                                                                                    ),
+                                                                                    "title":"Save"
+                                                                                  }
+                                                                              );
+                                                                            });
+                                                                          }
+                                                                      );
+                                                                    }
+                                                                    return null;
+                                                                  },
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                                            ),
+                                                            height: screensize.height*0.5,
+                                                            width: screensize.width*0.85,
+                                                            child: GenericSongList(
+                                                              songs: mostPlayedSongs,
+                                                              screenSize: screensize,
+                                                              staticOffsetFromBottom: 100.0,
+                                                              bgColor: null,
+                                                              contextMenuOptions: (song){
+                                                                return songCardContextMenulist;
+                                                              },
+                                                              onContextOptionSelect: (choice,tune) async{
+                                                                switch(choice.id){
+                                                                  case 1: {
+                                                                    musicService.playOne(tune);
+                                                                    break;
+                                                                  }
+                                                                  case 2:{
+                                                                    musicService.startWithAndShuffleQueue(tune, mostPlayedSongs);
+                                                                    break;
+                                                                  }
+                                                                  case 3:{
+                                                                    musicService.startWithAndShuffleAlbum(tune);
+                                                                    break;
+                                                                  }
+                                                                  case 4:{
+                                                                    musicService.playAlbum(tune);
+                                                                    break;
+                                                                  }
+                                                                  case 5:{
+                                                                    if(castService.currentDeviceToBeUsed.value==null){
+                                                                      upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                                                      if(result!=null){
+                                                                        castService.setDeviceToBeUsed(result);
+                                                                      }
+                                                                    }
+                                                                    musicService.castOrPlay(tune, SingleCast: true);
+                                                                    break;
+                                                                  }
+                                                                  case 6:{
+                                                                    upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                                                    if(result!=null){
+                                                                      musicService.castOrPlay(tune, SingleCast: true, device: result);
+                                                                    }
+                                                                    break;
+                                                                  }
+                                                                }
+                                                              },
+                                                              onSongCardTap: (song,state,isSelectedSong){
+                                                                musicService.updatePlaylist([song]);
+                                                                musicService.playOrPause(song);
+                                                              },
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                                color: Colors.transparent
+                            );
+                          },
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 1,
+                          shrinkWrap: false,
+                          itemExtent: 200,
+                          physics: AlwaysScrollableScrollPhysics(),
+                          cacheExtent: 122,
+                        ),
+                        padding: EdgeInsets.all(10),
+                      );
+                    },
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -231,7 +522,23 @@ class _LandingPageState extends State<LandingPage> {
                       List<Album> topAlbums;
                       if(msnapshot.hasData){
                         topAlbums = getTopAlbum(msnapshot.data);
+                        if(topAlbums==null){
+                          return Container(
+                            color: MyTheme.darkBlack,
+                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                            child: Center(
+                              child: Text("No Data Found",
+                                style: TextStyle(
+                                    color: MyTheme.grey300,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 25
+                                ),
+                              ),
+                            ),
+                          );
+                        }
                       }
+
                       return AnimatedSwitcher(
                         duration: Duration(milliseconds: 200),
                         child: msnapshot.hasData?Container(
@@ -243,7 +550,7 @@ class _LandingPageState extends State<LandingPage> {
                                   stream: topAlbums[index].albumArt!=null?ConversionUtils.FileUriTo8Bit(topAlbums[index].albumArt).asStream():Asset8bitList.asStream(),
                                   builder: (context, AsyncSnapshot<List<int>> snapshot){
                                     if(snapshot.hasError){
-                                      print(snapshot.error);
+
                                       return PreferredPicks(
                                         bottomTitle: "",
                                         colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],

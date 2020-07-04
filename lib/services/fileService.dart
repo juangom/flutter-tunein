@@ -2,9 +2,13 @@
 
 
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:typed_data';
 
+import 'package:Tunein/services/locator.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:rxdart/rxdart.dart';
 class fileService{
 
 
@@ -62,6 +66,29 @@ class fileService{
     }
   }
 
+
+  Future<dynamic> saveBytesToFile(Uint8List FileBytes) async {
+    ReceivePort tempPort = ReceivePort();
+    var MusicServiceIsolate = locator<musicServiceIsolate>();
+    MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<List>(
+        sender: tempPort.sendPort,
+        command: "writeImage",
+        message: FileBytes
+    ));
+
+
+    BehaviorSubject<dynamic> stream = new BehaviorSubject<dynamic>();
+    tempPort.forEach((fileURI){
+      if(fileURI!="OK"){
+        print("file got from the isolate : ${fileURI}");
+        stream.add(fileURI);
+        tempPort.close();
+      }else{
+        //wait
+      }
+    });
+    return stream.first;
+  }
 
 
 

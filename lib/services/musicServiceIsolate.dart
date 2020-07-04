@@ -296,6 +296,19 @@ class musicServiceIsolate {
           }
           break;
         }
+
+        case "writeImage":{
+          if(incomingMessage[1]!=null){
+            writeImage(null,incomingMessage[1]).then(
+                    (data){
+                      print(data.path);
+                  (incomingMessage[2] as SendPort).send(data.uri);
+                }
+            );
+          }
+          break;
+        }
+
         case "playMusic":{
           if(incomingMessage[1]!=null){
             audioReceiverService.playSong(incomingMessage[1]).then((data)=>(incomingMessage[2] as SendPort).send(data));
@@ -411,6 +424,9 @@ class musicServiceIsolate {
 
   static Future<File> writeImage(var hash, List<int> image) async {
     String path = await getLocalPath();
+    if(hash==null){
+      hash = sha1.convert(image).toString();
+    }
     File imagefile = File('$path/$hash');
     return imagefile.writeAsBytes(image);
   }

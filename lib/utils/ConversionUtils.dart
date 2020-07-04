@@ -2,9 +2,13 @@
 
 
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
 
 class ConversionUtils{
 
@@ -34,5 +38,16 @@ class ConversionUtils{
     }else{
      return await FileService.readFile(uri,readAsBytes: true);
     }
+  }
+
+
+  static Future<Uint8List> fromWidgetGlobalKeyToImageByteList(GlobalKey widgetlobalKey) async{
+    assert(widgetlobalKey!=null,"You can't pass a null global key");
+    RenderRepaintBoundary boundary = widgetlobalKey.currentContext.findRenderObject();
+    ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    ByteData byteData =
+    await image.toByteData(format: ui.ImageByteFormat.png);
+    Uint8List pngBytes = byteData.buffer.asUint8List();
+    return pngBytes;
   }
 }
