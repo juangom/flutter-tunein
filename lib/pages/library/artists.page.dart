@@ -6,6 +6,7 @@ import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/services/uiScaleService.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
@@ -36,7 +37,7 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-
+    double artistGridCellHeight = uiScaleService.ArtistGridCellHeight(size);
     return Container(
       child:  StreamBuilder(
         stream: Rx.combineLatest2(musicService.artists$, SettingService.getOrCreateSingleSettingStream(SettingsIds.SET_ALBUM_LIST_PAGE), (a, b) => MapEntry<List<Artist>, String>(a,b)),
@@ -84,8 +85,8 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
                     },
                     child: ArtistGridCell(
                       _artists[index],
-                      125/itemsPerRow*3,
-                      80,
+                      ((artistGridCellHeight*0.75)/itemsPerRow)*3,
+                      artistGridCellHeight*0.25,
                       choices: artistCardContextMenulist,
                       animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
                       useAnimation: animationDelay!=0,

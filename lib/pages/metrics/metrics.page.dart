@@ -17,7 +17,7 @@ class MetricsPage extends StatelessWidget {
 
   final metricService = locator<MusicMetricsService>();
   final musicService = locator<MusicService>();
-
+  ExpandableController  expandController = ExpandableController();
 
   Widget getDataByMetric(MetricIds id, dynamic value){
     switch(id){
@@ -27,7 +27,6 @@ class MetricsPage extends StatelessWidget {
         return GenericItem(
           leading: Icon(
             Icons.timer,
-            size: 40,
             color: MyTheme.grey300,
           ),
           title: "Global time play",
@@ -56,83 +55,86 @@ class MetricsPage extends StatelessWidget {
           }
           previousState=expandController.expanded;
         });
-        return ExpandablePanel(
-          header: GenericItem(
-            leading: Icon(
-                Icons.queue_music,
-              size: 40,
-              color: MyTheme.grey300,
-            ),
-            title: "Global song time play",
-            subTitle: "Tap to open",
-          ),
-          collapsed: Container(),
-          controller: expandController,
-          expanded: Container(
-            height: 200,
-            padding: EdgeInsets.only(left: 15),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                Expanded(
-                  child: ListView.builder(
-                    controller: itemListController,
-                    itemBuilder: (context, index){
-                      Duration songDuration = Duration(seconds: finalMap[finalMapSongs[index]]);
-                      return Material(
-                          child: GestureDetector(
-                            child: Container(
-                              margin: EdgeInsets.only(right: 8),
-                              child: GenericItem(
-                                  height: 40,
-                                  leading: SizedBox(
-                                    height: 40,
-                                    width: 40,
-                                    child: FadeInImage(
-                                      placeholder: AssetImage('images/track.png'),
-                                      fadeInDuration: Duration(milliseconds: 200),
-                                      fadeOutDuration: Duration(milliseconds: 100),
-                                      image: finalMapSongs[index].albumArt != null
-                                          ? FileImage(
-                                        new File(finalMapSongs[index].albumArt),
-                                      )
-                                          : AssetImage('images/track.png'),
-                                    ),
-                                  ),
-                                  title: "${finalMapSongs[index].title}",
-                                  subTitle: "${ConversionUtils.DurationToFancyText(songDuration)}"
-                              ),
-                            ),
-                            onTap: (){
-
-                            },
-                          ),
-                          color: Colors.transparent
-                      );
-                    },
-                    scrollDirection: Axis.vertical,
-                    itemCount: finalMap.length,
-                    shrinkWrap: false,
-                    itemExtent: 62,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    cacheExtent: 400,
-                  ),
+        return ExpandableNotifier(
+          child: ScrollOnExpand(
+            child: ExpandablePanel(
+              header: GenericItem(
+                leading: Icon(
+                  Icons.queue_music,
+                  color: MyTheme.grey300,
                 ),
-                MyScrollbar(
-                  controller: itemListController,
-                  color: null,
-                  showFromTheStart:finalMap.length*62>200,
-                )
-              ],
+                title: "Global song time play",
+                subTitle: "Tap to open",
+              ),
+              collapsed: Container(),
+              expanded: Container(
+                height: 200,
+                padding: EdgeInsets.only(left: 15),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    Expanded(
+                      child: ListView.builder(
+                        controller: itemListController,
+                        itemBuilder: (context, index){
+                          Duration songDuration = Duration(seconds: finalMap[finalMapSongs[index]]);
+                          return Material(
+                              child: GestureDetector(
+                                child: Container(
+                                  margin: EdgeInsets.only(right: 8),
+                                  child: GenericItem(
+                                      height: 40,
+                                      leading: SizedBox(
+                                        height: 40,
+                                        width: 40,
+                                        child: FadeInImage(
+                                          placeholder: AssetImage('images/track.png'),
+                                          fadeInDuration: Duration(milliseconds: 200),
+                                          fadeOutDuration: Duration(milliseconds: 100),
+                                          image: finalMapSongs[index].albumArt != null
+                                              ? FileImage(
+                                            new File(finalMapSongs[index].albumArt),
+                                          )
+                                              : AssetImage('images/track.png'),
+                                        ),
+                                      ),
+                                      title: "${finalMapSongs[index].title}",
+                                      subTitle: "${ConversionUtils.DurationToFancyText(songDuration)}"
+                                  ),
+                                ),
+                                onTap: (){
+
+                                },
+                              ),
+                              color: Colors.transparent
+                          );
+                        },
+                        scrollDirection: Axis.vertical,
+                        itemCount: finalMap.length,
+                        shrinkWrap: false,
+                        itemExtent: 62,
+                        physics: AlwaysScrollableScrollPhysics(),
+                        cacheExtent: 400,
+                      ),
+                    ),
+                    MyScrollbar(
+                      controller: itemListController,
+                      color: null,
+                      showFromTheStart:finalMap.length*62>200,
+                    )
+                  ],
+                ),
+              ),
+              theme: ExpandableThemeData(
+                animationDuration: Duration(milliseconds: 200),
+                iconColor: MyTheme.darkRed,
+                tapHeaderToExpand: true,
+                iconSize: 35,
+                iconPadding: EdgeInsets.all(8),
+              ),
             ),
           ),
-          theme: ExpandableThemeData(
-            animationDuration: Duration(milliseconds: 200),
-            iconColor: MyTheme.darkRed,
-            tapHeaderToExpand: true,
-            iconSize: 35,
-            iconPadding: EdgeInsets.all(8),
-          ),
+          controller: expandController,
         );
         break;
       case MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME:
@@ -155,81 +157,86 @@ class MetricsPage extends StatelessWidget {
           }
           previousState=expandController.expanded;
         });
-        return ExpandablePanel(
-          header: GenericItem(
-            leading: Icon(
-              Icons.insert_chart,
-              size: 40,
-              color: MyTheme.grey300,
-            ),
-            title: "Global Artist time play",
-            subTitle: "Tap to open",
-          ),
-          collapsed: Container(),
-          controller: expandController,
-          expanded: Container(
-            height: 200,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                Expanded(
-                  child: ListView.builder(
-                    controller: itemListController,
-                    itemBuilder: (context, index){
-                      Duration songDuration = Duration(seconds: finalMap[finalMapArtists[index]]);
-                      return Material(
-                          child: GestureDetector(
-                            child: Container(
-                              margin: EdgeInsets.only(right: 8),
-                              child: GenericItem(
-                                  leading: SizedBox(
-                                    height: 40,
-                                    width: 40,
-                                    child: FadeInImage(
-                                      placeholder: AssetImage('images/track.png'),
-                                      fadeInDuration: Duration(milliseconds: 200),
-                                      fadeOutDuration: Duration(milliseconds: 100),
-                                      image: finalMapArtists[index].coverArt != null
-                                          ? FileImage(
-                                        new File(finalMapArtists[index].coverArt),
-                                      )
-                                          : AssetImage('images/track.png'),
+        return ExpandableNotifier(
+          child: ScrollOnExpand(
+            scrollOnExpand: true,
+            scrollOnCollapse: true,
+            child: ExpandablePanel(
+                header: GenericItem(
+                  leading: Icon(
+                    Icons.insert_chart,
+                    color: MyTheme.grey300,
+                  ),
+                  title: "Global Artist time play",
+                  subTitle: "Tap to open",
+                ),
+                collapsed: Container(),
+                expanded: Container(
+                  height: 200,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Expanded(
+                        child: ListView.builder(
+                          controller: itemListController,
+                          itemBuilder: (context, index){
+                            Duration songDuration = Duration(seconds: finalMap[finalMapArtists[index]]);
+                            return Material(
+                                child: GestureDetector(
+                                  child: Container(
+                                    margin: EdgeInsets.only(right: 8),
+                                    child: GenericItem(
+                                        leading: SizedBox(
+                                          height: 40,
+                                          width: 40,
+                                          child: FadeInImage(
+                                            placeholder: AssetImage('images/track.png'),
+                                            fadeInDuration: Duration(milliseconds: 200),
+                                            fadeOutDuration: Duration(milliseconds: 100),
+                                            image: finalMapArtists[index].coverArt != null
+                                                ? FileImage(
+                                              new File(finalMapArtists[index].coverArt),
+                                            )
+                                                : AssetImage('images/track.png'),
+                                          ),
+                                        ),
+                                        title: "${finalMapArtists[index].name}",
+                                        subTitle: "${ConversionUtils.DurationToFancyText(songDuration)}"
                                     ),
                                   ),
-                                  title: "${finalMapArtists[index].name}",
-                                  subTitle: "${ConversionUtils.DurationToFancyText(songDuration)}"
-                              ),
-                            ),
-                            onTap: (){
+                                  onTap: (){
 
-                            },
-                          ),
-                          color: Colors.transparent
-                      );
-                    },
-                    scrollDirection: Axis.vertical,
-                    itemCount: finalMap.length,
-                    shrinkWrap: false,
-                    itemExtent: 62,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    cacheExtent: 400,
+                                  },
+                                ),
+                                color: Colors.transparent
+                            );
+                          },
+                          scrollDirection: Axis.vertical,
+                          itemCount: finalMap.length,
+                          shrinkWrap: false,
+                          itemExtent: 62,
+                          physics: AlwaysScrollableScrollPhysics(),
+                          cacheExtent: 400,
+                        ),
+                      ),
+                      MyScrollbar(
+                        controller: itemListController,
+                        color: null,
+                        showFromTheStart:finalMap.length*62>200,
+                      )
+                    ],
                   ),
                 ),
-                MyScrollbar(
-                  controller: itemListController,
-                  color: null,
-                  showFromTheStart:finalMap.length*62>200,
+                theme: ExpandableThemeData(
+                  animationDuration: Duration(milliseconds: 200),
+                  iconColor: MyTheme.darkRed,
+                  tapHeaderToExpand: true,
+                  iconSize: 35,
+                  iconPadding: EdgeInsets.all(8),
                 )
-              ],
             ),
           ),
-          theme: ExpandableThemeData(
-            animationDuration: Duration(milliseconds: 200),
-            iconColor: MyTheme.darkRed,
-            tapHeaderToExpand: true,
-            iconSize: 35,
-            iconPadding: EdgeInsets.all(8),
-          )
+          controller: expandController,
         );
         break;
       case MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS:
@@ -248,8 +255,11 @@ class MetricsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ScrollController controller = ScrollController();
     return Container(
       color: MyTheme.darkBlack,
+      height: MediaQuery.of(context).size.height -160,
+
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -258,6 +268,7 @@ class MetricsPage extends StatelessWidget {
           ),
           Flexible(
             child: CustomScrollView(
+              controller: controller,
               slivers: <Widget>[
                 SliverToBoxAdapter(
                   child: ItemListDevider(DeviderTitle: "Playing Metrics",

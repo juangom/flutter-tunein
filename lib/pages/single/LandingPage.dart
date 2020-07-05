@@ -235,6 +235,7 @@ class _LandingPageState extends State<LandingPage> {
                       if(!msnapshot.hasData){
                         print("DATA IS HERE ${msnapshot.data}");
                         return Container(
+                          height:150,
                           child: PreferredPicks(
                             bottomTitle: "Most Played",
                             colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],

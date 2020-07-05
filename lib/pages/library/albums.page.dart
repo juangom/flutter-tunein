@@ -4,6 +4,7 @@ import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/gridcell.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/services/uiScaleService.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:Tunein/components/albumCard.dart';
@@ -30,7 +31,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-
+    double albumGridCellHeight = uiScaleService.AlbumsGridCellHeight(size);
 
     return Container(
       child:  StreamBuilder(
@@ -67,9 +68,11 @@ class _AlbumsPageState extends State<AlbumsPage> {
                     onTap: () {
                       goToAlbumSongsList(_albums[index]);
                     },
-                    child: AlbumGridCell(_albums[index],135/itemsPerRow*3,80,
-                    animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
-                    useAnimation: !(animationDelay==0),
+                    child: AlbumGridCell(_albums[index],
+                      ((albumGridCellHeight*0.8)/itemsPerRow)*3,
+                      albumGridCellHeight*0.20,
+                      animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
+                      useAnimation: !(animationDelay==0),
                       choices: albumCardContextMenulist,
                       onContextSelect: (choice){
                         switch(choice.id){

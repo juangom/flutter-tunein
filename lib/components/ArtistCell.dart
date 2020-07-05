@@ -74,6 +74,7 @@ class ArtistGridCell extends StatelessWidget {
                       ),
                       Expanded(
                         child: Container(
+                          height: panelHeight,
                           padding: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
                           width: double.infinity,
                           color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey.withAlpha(70),
