@@ -267,6 +267,9 @@ class _LandingPageState extends State<LandingPage> {
                         return musicService.artists$.value.firstWhere((element) => element.name==e);
                       }).toList();
                       Future<List<List<int>>> backgroundimagesForMostPlayedSongs = Future.wait(artistToPutToWidgetBackground.map((e) async{
+                        if(e.coverArt==null){
+                          return await Asset8bitList;
+                        }
                         return await ConversionUtils.FileUriTo8Bit(e.coverArt);
                       }).toList());
                       return Container(

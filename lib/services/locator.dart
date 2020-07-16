@@ -1,3 +1,4 @@
+import 'package:Tunein/plugins/NotificationControlService.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/http/httpRequests.dart';
@@ -21,6 +22,7 @@ void setupLocator() {
   locator.registerSingleton(fileService());
   locator.registerSingleton(PlatformService());
   locator.registerSingleton(musicServiceIsolate());
+  locator.registerSingleton(notificationControlService());
   locator.registerSingleton(CastService());
   locator.registerSingleton(MusicMetricsService());
   locator.registerSingleton(ThemeService());

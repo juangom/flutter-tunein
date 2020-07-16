@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/AudioReceiverService.dart';
@@ -8,6 +9,7 @@ import 'package:Tunein/plugins/nano.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:media_notification/media_notification.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:path/path.dart';
@@ -352,6 +354,92 @@ class musicServiceIsolate {
           }
           break;
         }
+        case "showNotification":{
+          if(incomingMessage[1]!=null){
+            Map<String, dynamic> convertedMap = json.decode(incomingMessage[1]);
+            show(
+              author: convertedMap["author"]??"",
+              bgColor: convertedMap["bgColor"]!=null?Color(int.tryParse(convertedMap["bgColor"])):Colors.white,
+              BitmapImage: convertedMap["BitmapImage"]!=null?Uint8List.fromList((convertedMap["BitmapImage"] as List).map((e) => int.tryParse(e.toString())).toList()):null,
+              iconColor: convertedMap["iconColor"]!=null?Color(int.tryParse(convertedMap["iconColor"])):Colors.white,
+              image: convertedMap["image"],
+              play: convertedMap["play"]??false,
+              subtitleColor: convertedMap["subtitleColor"]!=null?Color(int.tryParse(convertedMap["subtitleColor"])):Colors.white,
+              title: convertedMap["title"],
+              titleColor: convertedMap["titleColor"]!=null?Color(int.tryParse(convertedMap["titleColor"])):Colors.white,
+              callback: (data){
+                (incomingMessage[2] as SendPort).send(data);
+              }
+            );
+          }
+          break;
+        }
+        case "hideNotification":{
+          if(incomingMessage[1]!=null){
+            hide().then((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "subscribeToNext":{
+          if(incomingMessage[1]!=null){
+            subscribeToNextButton((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "subscribeToPrev":{
+          if(incomingMessage[1]!=null){
+            subscribeToPrevButton((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "subscribeToPlay":{
+          if(incomingMessage[1]!=null){
+            subscribeToPlayButton((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "subscribeToPause":{
+          if(incomingMessage[1]!=null){
+            subscribeToPauseButton((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "subscribeToSelect":{
+          if(incomingMessage[1]!=null){
+            subscribeToSelectButton((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "setTo":{
+          if(incomingMessage[1]!=null){
+            setNotificationTo(incomingMessage[1]=="true", (value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "setStatusIcon":{
+          if(incomingMessage[1]!=null){
+            setNotificationStatusIcon(incomingMessage[1], (value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "setTitle":{
+          if(incomingMessage[1]!=null){
+            setNotificationTitle(incomingMessage[1], (value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "setSubtitle":{
+          if(incomingMessage[1]!=null){
+            setNotificationSubTitle(incomingMessage[1], (value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+        case "togglePlaypauseButton":{
+          if(incomingMessage[1]!=null){
+            toggleNotificationPlayPause((value) => (incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
       }
     });
   }
@@ -533,6 +621,103 @@ class musicServiceIsolate {
       print(e.stack);
     }
 
+  }
+
+
+  // Notification Methods
+
+  static show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bgColor, Function(dynamic) callback}) async{
+    MediaNotification.show(
+        title: title??"title",
+        author: author??"author",
+        play: play??true,
+        image: image,
+        BitmapImage:
+        image == null ? BitmapImage : null,
+        titleColor: titleColor,
+        subtitleColor: subtitleColor,
+        iconColor: iconColor,
+        bgColor:bgColor).then((s){
+          callback!=null?callback(s):null;
+    });
+  }
+
+  static Future hide(){
+    try{
+      return MediaNotification.hide();
+    }on PlatformException{
+      //
+    }
+  }
+
+  static subscribeToPlayButton(Function(dynamic) callback) async{
+    MediaNotification.setListener('play', (){
+      callback(true);
+    });
+  }
+
+  static subscribeToNextButton(Function(dynamic) callback) async{
+    MediaNotification.setListener('next', (){
+      callback(true);
+    });
+  }
+
+  static subscribeToPrevButton(Function(dynamic) callback) async{
+    MediaNotification.setListener('prev', (){
+      callback(true);
+    });
+  }
+
+  static subscribeToSelectButton(Function(dynamic) callback) async{
+    MediaNotification.setListener('select', (){
+      callback(true);
+    });
+  }
+
+  static subscribeToPauseButton(Function(dynamic) callback) async{
+    MediaNotification.setListener('pause', (){
+      callback(true);
+    });
+  }
+
+  static setNotificationTo(bool value, Function(dynamic) callback) async {
+    MediaNotification.setTo(value).then(
+        (data){
+          callback(data);
+        }
+    );
+  }
+
+  static setNotificationTitle(String value, Function(dynamic) callback) async{
+    MediaNotification.setTitle(value).then(
+            (data){
+          callback(data);
+        }
+    );
+  }
+
+  static setNotificationSubTitle(String value, Function(dynamic) callback) async{
+    MediaNotification.setSubtitle(value).then(
+            (data){
+          callback(data);
+        }
+    );
+  }
+
+  static setNotificationStatusIcon(String value, Function(dynamic) callback) async{
+    MediaNotification.setStatusIcon(value).then(
+            (data){
+          callback(data);
+        }
+    );
+  }
+
+  static toggleNotificationPlayPause(Function(dynamic) callback) async{
+    MediaNotification.togglePlayPause().then(
+            (data){
+          callback(data);
+        }
+    );
   }
 
   void _initStreams() {

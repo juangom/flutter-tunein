@@ -4,6 +4,7 @@ import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/collection/collection.page.dart';
 import 'package:Tunein/pages/library/library.page.dart';
 import 'package:Tunein/pages/settings/settings.page.dart';
+import 'package:Tunein/plugins/NotificationControlService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
@@ -30,19 +31,20 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   final layoutService = locator<LayoutService>();
   final SettingService = locator<settingService>();
   final MusicServiceIsolate = locator<musicServiceIsolate>();
+  final NotificationService = locator<notificationControlService>();
   final _androidAppRetain = MethodChannel("android_app_retain");
 
   final StreamController<StartupState> _startupStatus =
       StreamController<StartupState>();
   @override
   void initState() {
-    musicService.showUI();
     MusicServiceIsolate.callerCreateIsolate().then((value){
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
         print("the returned value is ${retunedValue}");
         MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
           print("isolate with plugins initiated");
           musicService.manualAudioPlayerInit();
+          musicService.showUI();
           loadFiles();
         });
       });
@@ -156,17 +158,19 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           ByteData dibd = await rootBundle.load("images/cover.png");
           List<int> defaultImageBytes = dibd.buffer.asUint8List();
           if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
-            MediaNotification.show(
-                title: '${musicService.playerState$.value.value.title}',
-                author: '${musicService.playerState$.value.value.artist}',
+            Tune songToshowONNotification = musicService.playerState$.value.value;
+            NotificationService.show(
+                title: '${songToshowONNotification.title}',
+                author: '${songToshowONNotification.artist}',
                 play: false,
-                image: musicService.playerState$.value.value.albumArt,
+                image: songToshowONNotification.albumArt,
                 BitmapImage:
-                musicService.playerState$.value.value.albumArt == null ? defaultImageBytes : null,
-                titleColor: Color(musicService.playerState$.value.value.colors[1]),
-                subtitleColor: Color(musicService.playerState$.value.value.colors[1]).withAlpha(50),
-                iconColor: Color(musicService.playerState$.value.value.colors[1]),
-                bgColor: Color(musicService.playerState$.value.value.colors[0]));
+                songToshowONNotification.albumArt == null ? defaultImageBytes : null,
+                titleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
+                subtitleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]).withAlpha(50): MyTheme.grey300,
+                iconColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
+                bgColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[0]): MyTheme.grey300
+            );
           }
         }
         metricsLoaded.cancel();

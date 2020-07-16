@@ -6,6 +6,7 @@ import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/AudioPluginService.dart';
+import 'package:Tunein/plugins/NotificationControlService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/http/requests.dart';
@@ -51,6 +52,7 @@ class MusicService {
   BehaviorSubject<List<Tune>> _favorites$;
   BehaviorSubject<bool> _isAudioSeeking$;
   AudioPluginService _audioPlayer;
+  notificationControlService _notificationService;
   Nano _nano;
   Tune _defaultSong;
 
@@ -105,7 +107,7 @@ class MusicService {
     List<int> defaultImageBytes = dibd.buffer.asUint8List();
     if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
       //AudioService.connect();
-      MediaNotification.show(
+      _notificationService.show(
           title: 'No song',
           author: 'no Author',
           play: false,
@@ -124,7 +126,7 @@ class MusicService {
         ///Playing status means that it is a new song and it needs to load its new content like colors and image
         ///in other cases it will be just stopping the player or pausing it requiring no change in content data
           case PlayerState.playing:
-            MediaNotification.show(
+            _notificationService.show(
                 title: '${data.key.value.title}',
                 author: '${data.key.value.artist}',
                 play: true,
@@ -137,14 +139,14 @@ class MusicService {
                 bgColor: Color(SongColors[0]));
             break;
           case PlayerState.paused:
-            MediaNotification.setTo(false);
+            _notificationService.setNotificationTo(false);
             break;
           case PlayerState.stopped:
-            MediaNotification.setTo(false);
+            _notificationService.setNotificationTo(false);
             break;
         }
       }else{
-        MediaNotification.show(
+        _notificationService.show(
             title: '${data.key.value.title}',
             author: '${data.key.value.artist}',
             play: true,
@@ -158,46 +160,56 @@ class MusicService {
         hideUI();
       }
     });
-    MediaNotification.setListener('play', () {
-      if (_playerState$.value.value != null) {
-        print("playing shoud slart");
+    _notificationService.subscribeToPlayButton().listen((value)  {
+      if(value!=null){
+        if (_playerState$.value.value != null) {
+          print("playing shoud slart");
+          print("${_playerState$.value.key}");
+          playMusic(_playerState$.value.value);
+        }
+      }
+    });
+
+    _notificationService.subscribeToPauseButton().listen((value) {
+      if(value!=null){
+        if (_playerState$.value.value != null) {
+          print("pausing shoud slart");
+          print("${_playerState$.value.key}");
+          pauseMusic(_playerState$.value.value);
+        }
+      }
+    });
+
+    _notificationService.subscribeToNextButton().listen((value) {
+      if(value!=null){
+        print("next shoud slart");
         print("${_playerState$.value.key}");
-        playMusic(_playerState$.value.value);
+        if (_playerState$.value.value != null) {
+          playNextSong();
+        }
       }
     });
 
-    MediaNotification.setListener('pause', () {
-      if (_playerState$.value.value != null) {
-        print("pausing shoud slart");
-        print("${_playerState$.value.key}");
-        pauseMusic(_playerState$.value.value);
+    _notificationService.subscribeToPrevButton().listen((value) {
+      if(value!=null){
+        if (_playerState$.value.value != null) {
+          print("${_playerState$.value.key}");
+          playPreviousSong();
+        }
       }
     });
 
-    MediaNotification.setListener('next', () {
-      print("next shoud slart");
-      print("${_playerState$.value.key}");
-      if (_playerState$.value.value != null) {
-        playNextSong();
+    _notificationService.subscribeToSelectButton().listen((value) {
+      if(value!=null){
+        print("selectedd");
       }
-    });
-
-    MediaNotification.setListener('prev', () {
-      if (_playerState$.value.value != null) {
-        print("${_playerState$.value.key}");
-        playPreviousSong();
-      }
-    });
-
-    MediaNotification.setListener('select', () {
-      print("selectedd");
     });
   }
 
   hideUI() {
     //AudioService.disconnect();
     try{
-      MediaNotification.hide();
+      _notificationService.hide();
     }on PlatformException{
 
     }
@@ -1244,6 +1256,7 @@ class MusicService {
 
   void _initAudioPlayer() {
     _audioPlayer = AudioPluginService();
+    _notificationService = locator<notificationControlService>();
     _audioPositionSub =
         _audioPlayer.subscribeToPositionChanges().listen((Duration duration) {
       final bool _isAudioSeeking = _isAudioSeeking$.value;
@@ -1263,7 +1276,6 @@ class MusicService {
          _onSongComplete();
        }
        if (state == AudioPlayerState.PAUSED) {
-         //MediaNotification.setTo(false);
          print("state coming form audipoPlayer:  ${state}");
          updatePlayerState(PlayerState.paused, _playerState$.value.value);
        }
