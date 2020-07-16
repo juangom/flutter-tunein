@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,10 +24,15 @@ class QueueService {
   Duration queueInterval=Duration(minutes: 1);
   Timer currentRunner;
   List<QueueItem> AlreadyExecutedItems=[];
-
+  VoidCallback onQueueEndCallback;
 
   QueueService(){
     _initStream();
+  }
+
+  /// Sets a callback that would be called when the queue finishes on it's own ( all items have been processed )
+  void setOnQueueEnd(VoidCallback callback){
+    this.onQueueEndCallback=callback;
   }
 
   bool addItemsToQueue(QueueItem item){
@@ -154,6 +160,9 @@ class QueueService {
      currentQueueState = QueueState.ONGOING;
      if(queue.length<=currentIndexProcess+1){
        stopQueue();
+       if(onQueueEndCallback!=null){
+         onQueueEndCallback();
+       }
        return;
      }
      if(queue[currentIndexProcess].execute !=null){

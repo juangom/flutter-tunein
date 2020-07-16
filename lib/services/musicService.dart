@@ -1012,6 +1012,9 @@ class MusicService {
             ));
           }
         });
+        queueService.setOnQueueEnd((){
+          SettingsService.updateSingleSetting(SettingsIds.SET_ARTIST_THUMB_UPDATE, "false");
+        });
         return queueService.startQueue();
       }else{
         print("artist list is empty");
