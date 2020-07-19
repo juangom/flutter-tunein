@@ -304,6 +304,7 @@ class DialogService{
     return showDialog(
         context: context,
         barrierDismissible: false,
+        useRootNavigator: true,
         builder: (_) {
           return AlertDialog(
             backgroundColor: MyTheme.darkBlack,

@@ -39,7 +39,7 @@ class NowPlayingSlider extends StatelessWidget {
         final Duration _currentDuration = snapshot.data.key;
         final Tune _currentSong = snapshot.data.value.value;
         final int _millseconds = _currentDuration.inMilliseconds;
-        final int _songDurationInMilliseconds = _currentSong.duration;
+        final int _songDurationInMilliseconds = _currentSong!=null?_currentSong.duration:0;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(

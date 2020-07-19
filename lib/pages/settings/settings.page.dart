@@ -24,6 +24,7 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext gcontext) {
+    Size screenSize = MediaQuery.of(gcontext).size;
     return Material(
       color: MyTheme.darkBlack,
       child: Column(
@@ -123,6 +124,77 @@ class SettingsPage extends StatelessWidget {
                                         if(confirm!=null && confirm==true){
                                           int deletedNumber = await deleteAllArtistsThumbnail(context);
                                           DialogService.showToast(context,message: "Deleted ${deletedNumber} Thumbs", color: MyTheme.darkRed, backgroundColor: MyTheme.darkBlack.withOpacity(.7));
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                              SettingsTile(
+                                title: 'Rescan Library',
+                                subtitle: "Rescan Library for new and old songs",
+                                leading: Icon(
+                                  Icons.library_music,
+                                  color: MyTheme.grey300,
+                                ),
+                                trailing: Material(
+                                  color: MyTheme.bgBottomBar,
+                                  elevation: 12,
+                                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                                  child: IconButton(
+                                    color: MyTheme.darkgrey,
+                                    icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(Icons.settings_overscan, color: MyTheme.darkRed, size: 20)
+                                      ],
+                                    ),
+                                    onPressed: (){
+                                      Future.delayed(Duration(milliseconds: 200), ()async{
+                                        DialogService.showPersistentDialog(context,
+                                          title: "Rescan Music Library",
+                                          titleColor: MyTheme.grey300,
+                                          content: Container(
+
+                                            child: Center(
+                                              heightFactor: 1,
+                                              widthFactor: 1,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  CircularProgressIndicator(
+                                                    strokeWidth: 3.5,
+                                                    valueColor: AlwaysStoppedAnimation(MyTheme.darkRed),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(top: 5),
+                                                    child: Text("Scanning Library",
+                                                      style: TextStyle(
+                                                          color: MyTheme.grey300,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.w700
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        );
+                                        int resultedNewSongs = await musicService.rescanLibrary(context);
+                                        Navigator.of(context, rootNavigator: true).pop();
+                                        if(resultedNewSongs==0){
+                                          DialogService.showToast(context,
+                                              message: "No new songs found",
+                                              color: MyTheme.darkRed,
+                                              backgroundColor: MyTheme.darkBlack
+                                          );
+                                        }else{
+                                          DialogService.showToast(context,
+                                              message: "${resultedNewSongs} new songs found",
+                                              color: MyTheme.darkRed,
+                                              backgroundColor: MyTheme.darkBlack
+                                          );
                                         }
                                       });
                                     },

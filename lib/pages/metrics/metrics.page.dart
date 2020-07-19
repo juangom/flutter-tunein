@@ -46,6 +46,7 @@ class MetricsPage extends StatelessWidget {
           return MapEntry(newKey, int.tryParse(value));
         });
         List<Tune> finalMapSongs = finalMap.keys.toList();
+        finalMapSongs.removeWhere((element) => element==null);
         ScrollController itemListController =ScrollController();
         ExpandableController  expandController = ExpandableController();
         bool previousState = false;
@@ -110,7 +111,7 @@ class MetricsPage extends StatelessWidget {
                           );
                         },
                         scrollDirection: Axis.vertical,
-                        itemCount: finalMap.length,
+                        itemCount: finalMapSongs.length,
                         shrinkWrap: false,
                         itemExtent: 62,
                         physics: AlwaysScrollableScrollPhysics(),

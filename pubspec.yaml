@@ -62,6 +62,7 @@ dependencies:
       url: https://github.com/moda20/FlutterToast
       ref: master
   expandable: ^4.1.4
+  ext_storage: ^1.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

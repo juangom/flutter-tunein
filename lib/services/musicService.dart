@@ -9,6 +9,7 @@ import 'package:Tunein/plugins/AudioPluginService.dart';
 import 'package:Tunein/plugins/NotificationControlService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
+import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
@@ -27,6 +28,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:upnp/upnp.dart';
 import 'dart:convert';
 import 'locator.dart';
+import 'package:collection/collection.dart';
+
 final themeService = locator<ThemeService>();
 final MusicServiceIsolate = locator<musicServiceIsolate>();
 final RequestSettings = locator<Requests>();
@@ -278,6 +281,138 @@ class MusicService {
     _artists$.add(newAlbumList);
   }
 
+  Future<int> rescanLibrary(context) async{
+
+    MapEntry<PlayerState, Tune> oldPlayerState = playerState$.value;
+
+    //Fetching songs on the device
+
+    var data = await _nano.fetchSongs();
+    List<String> newURIList = data.map((e)=>e.uri).toList();
+    Function eq = const UnorderedIterableEquality().equals;
+    List<Tune> oldSongsList = songs$.value;
+    List<String> oldUriList = oldSongsList.map((e) => e.uri).toList();
+    List<Album> oldAlbums = albums$.value;
+    List<Artist> oldArtists = artists$.value;
+    if(!eq(newURIList, songs$.value.map((e) => e.uri).toList())){
+      List<String> differenceSet = newURIList.toSet().difference(oldUriList.toSet()).toList();
+      List<Tune> differenceSongs = data.where((song)=>differenceSet.contains(song.uri)).toList();
+      if(differenceSet.length>0){
+        data.map((songsElem) async{
+          if(differenceSet.contains(songsElem.uri)) {
+            songsElem.colors = await themeService.getThemeColors(songsElem);
+          }
+        });
+        print("The different songs number is ${differenceSet.length}");
+        var newAlbumMap = new Map<String, Map<String,Album>>();
+        //var NewSongMap = groupBy(differenceSongs, (obj) => obj.artist);
+        differenceSongs.forEach((element) {
+          if(newAlbumMap[element.artist]!=null){
+            if(newAlbumMap[element.artist][element.album]!=null){
+              newAlbumMap[element.artist][element.album].songs.add(element);
+            }else{
+              newAlbumMap[element.artist][element.album] = new Album.fromMap({
+                "id": oldAlbums.length,
+                "artist": element.artist,
+                "title": element.album,
+                "albumArt": element.albumArt,
+                "songs": [element.toMap()],
+              });
+            }
+          }else{
+            newAlbumMap[element.artist] = {
+              "${element.album}": new Album.fromMap({
+                "id": oldAlbums.length,
+                "artist": element.artist,
+                "title": element.album,
+                "albumArt": element.albumArt,
+                "songs": [element.toMap()],
+              })
+            };
+          }
+        });
+        print("The different songs produces ${newAlbumMap.length} new Artists");
+
+        Map<String,Artist> newOldArtistMap = oldArtists.asMap().map((key, value){
+          return MapEntry(value.name,value);
+        });
+        Map<String,Album> newOldAlbumMap = oldAlbums.asMap().map((key, value){
+          return MapEntry(value.title,value);
+        });
+        newAlbumMap.keys.forEach((artistName) {
+          //If the new artist already is part of the stored artists
+          if(newOldArtistMap[artistName]!=null){
+            //for each of their albums
+            newAlbumMap[artistName].keys.forEach((newAlbumName) {
+              //get the album with that name from the old list of stored albums
+              Album tempAlbum = newOldArtistMap[artistName].albums.asMap().map((key, value) => MapEntry(value.title,value))[newAlbumName];
+              //if the album is found it means we have new songs to add to that album
+              if(tempAlbum != null){
+                tempAlbum.songs.addAll(newAlbumMap[artistName][newAlbumName].songs);
+                //We also add the nexSongs to the existing album
+                newOldAlbumMap[newAlbumName].songs.addAll(newAlbumMap[artistName][newAlbumName].songs);
+                //Sorting the new Album
+                newOldAlbumMap[newAlbumName].songs.sort((a,b){
+                  if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
+                  if(a.numberInAlbum < b.numberInAlbum) return -1;
+                  else return 1;
+                });
+              }else{
+                //If the album is not found it means the artist needs a new Album
+                newOldArtistMap[artistName].albums.asMap().map((key, value) => MapEntry(value.title,value))[newAlbumName] = newAlbumMap[artistName][newAlbumName];
+                //Sorting the newAlbum
+                newAlbumMap[artistName][newAlbumName].songs.sort((a,b){
+                  if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
+                  if(a.numberInAlbum < b.numberInAlbum) return -1;
+                  else return 1;
+                });
+                newOldAlbumMap[newAlbumName] = newAlbumMap[artistName][newAlbumName];
+              }
+            });
+          }else{
+            //If the artist is not part of the old stored artists
+            //We add the new artist with the albums from the newAlbumMap
+            newOldArtistMap[artistName]= Artist.fromMap({
+              "id":newOldArtistMap.length,
+              "name":artistName,
+              "coverArt":null,
+              "albums": newAlbumMap[artistName].values.map((e)=>e.toMap(e)).toList(),
+              "apiData":{},
+              "colors": [],
+              "genre":null
+            });
+            //We just add the new albums to the album Map
+            newAlbumMap[artistName].values.forEach((element) {
+              //Sorting the album before adding it
+              element.songs.sort((a,b){
+                if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
+                if(a.numberInAlbum < b.numberInAlbum) return -1;
+                else return 1;
+              });
+              newOldAlbumMap[element.title] = element;
+            });
+          }
+        });
+
+        //Adding the new Songs to the old set
+        oldSongsList.addAll(differenceSongs);
+
+        songs$.add(oldSongsList);
+        albums$.add(newOldAlbumMap.values.toList());
+        artists$.add(newOldArtistMap.values.toList());
+
+        //Saving files (Songs files)
+        await saveFiles();
+        //Saving Artists
+        await saveArtists();
+        return differenceSongs.length;
+      }else{
+        return 0;
+      }
+    }else{
+      return 0;
+    }
+  }
 
   ///This will initialize the playing stream like position and playerState
   ///

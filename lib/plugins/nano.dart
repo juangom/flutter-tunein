@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:ext_storage/ext_storage.dart';
 class Nano {
 
   final MusicServiceIsolate = locator<musicServiceIsolate>();
@@ -104,13 +105,13 @@ class Nano {
   }
 
   Future<void> getMusicFiles() async {
-    Directory ext = await getExternalStorageDirectory();
-    await readExtDir(ext);
+    //Directory ext = await getExternalStorageDirectory();
+    String ext = await ExtStorage.getExternalStorageDirectory();
+    await readExtDir(Directory(ext));
     String sdPath = await getSdCardPath();
     if (sdPath == null) {
       print("NO SDCARD ON THIS DEVICE");
     } else {
-      print(sdPath);
       String sdCardDir = Directory(sdPath).parent.parent.parent.parent.path;
       await readExtDir(Directory(sdCardDir));
     }

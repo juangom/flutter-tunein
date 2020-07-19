@@ -99,6 +99,7 @@ class _LandingPageState extends State<LandingPage> {
 
     Map<String, int> artistsAndTheirPresenceInMostPlayed =Map();
     newSongMap.keys.toList().forEach((element) {
+      if(element!=null)
       artistsAndTheirPresenceInMostPlayed[element.artist]=artistsAndTheirPresenceInMostPlayed[element.artist]!=null?artistsAndTheirPresenceInMostPlayed[element.artist]++:1;
     });
     if(newSongMap.length<10){
@@ -143,9 +144,13 @@ class _LandingPageState extends State<LandingPage> {
       }
     }
 
+    //Deleting null objects if found
+    List<Tune> mostPlayedSongsToReturn = newSongMap.keys.toList();
+    mostPlayedSongsToReturn.removeWhere((element) => element==null);
+
     return {
       "artistsPresence" : artistsAndTheirPresenceInMostPlayed,
-      "mostPlayedSongs" : newSongMap.keys.toList(),
+      "mostPlayedSongs" : mostPlayedSongsToReturn,
     };
   }
 
@@ -165,10 +170,14 @@ class _LandingPageState extends State<LandingPage> {
       return MapEntry(newKey, int.tryParse(value));
     });
     List<Album> topAlbums = newSongMap.keys.map((e) {
+      if(e==null) return null;
       return musicService.albums$.value.firstWhere((element) => element.title==e.album);
     }).toList();
 
     topAlbums = topAlbums.toSet().toList();
+    print("album Length == ${topAlbums.length}");
+    topAlbums.removeWhere((element) => element==null);
+    print("album Length == ${topAlbums.length}");
     return topAlbums;
   }
 
@@ -263,6 +272,7 @@ class _LandingPageState extends State<LandingPage> {
                       }
                       Map<String,int> artistPresence = mostPlayed["artistsPresence"];
                       List<Tune> mostPlayedSongs = mostPlayed["mostPlayedSongs"];
+                      mostPlayedSongs = mostPlayedSongs.sublist(0,9);
                       List<Artist> artistToPutToWidgetBackground = artistPresence.keys.toList().sublist(0,4).map((e) {
                         return musicService.artists$.value.firstWhere((element) => element.name==e);
                       }).toList();
