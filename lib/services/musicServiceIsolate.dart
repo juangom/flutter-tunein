@@ -568,7 +568,6 @@ class musicServiceIsolate {
       if (a.title == null || b.title == null) return 1;
       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
     });
-    print("albums length : ${newAlbumList.length}");
     callback(newAlbumList);
   }
 

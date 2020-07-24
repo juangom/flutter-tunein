@@ -19,7 +19,8 @@ class PreferredPicks extends StatelessWidget {
   final Color blurColor;
   final MapEntry<double, double> textPosition;
   final Key key;
-  PreferredPicks({this.bottomTitle, this.imageUri, this.colors, this.backgroundWidget, this.blurPower,this.blurColor, this.textPosition, this.key}): super(key: key);
+  final Radius borderRadius;
+  PreferredPicks({this.bottomTitle, this.imageUri, this.colors, this.backgroundWidget, this.blurPower,this.blurColor, this.textPosition, this.key, this.borderRadius}): super(key: key);
 
 
 
@@ -34,7 +35,7 @@ class PreferredPicks extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
             border: Border.all(width: .3, color: MyTheme.bgBottomBar),
           ),
           child: Stack(
@@ -52,7 +53,7 @@ class PreferredPicks extends StatelessWidget {
                 clipBehavior: Clip.antiAliasWithSaveLayer,
                 decoration: BoxDecoration(
                   color: Colors.transparent,
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
                   border: Border.all(width: .3, color: MyTheme.bgBottomBar),
                 ),
               ),
@@ -63,7 +64,7 @@ class PreferredPicks extends StatelessWidget {
                       child: Container(
                           decoration: BoxDecoration(
                             color: blurColor??Colors.grey.shade100.withOpacity(0.2),
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
                             border: Border.all(width: .3, color: MyTheme.bgBottomBar),
                           )
                       ),
@@ -110,7 +111,7 @@ class PreferredPicks extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
         border: Border.all(width: .3, color: MyTheme.bgBottomBar),
       ),
     );

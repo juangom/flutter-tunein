@@ -161,7 +161,6 @@ class BottomPanel extends StatelessWidget {
                             stream: musicService.playerState$,
                             builder: (context, AsyncSnapshot<MapEntry<PlayerState, Tune>> snapshot){
                               PlayerState newStat = snapshot.data.key;
-                              print("newStat ${newStat}");
                               return PlayPauseButtonWidget(newStat, colors, (PlayerState state){
                                 if(state==PlayerState.playing){
                                   //will run pause
@@ -251,7 +250,6 @@ class PlayPauseButtonWidget extends StatefulWidget {
   final Function(PlayerState) onTap;
 
   PlayPauseButtonWidget(this._state, this.colors, this.onTap){
-    print("stat from constructor ${this._state}");
   }
 
   @override
@@ -270,7 +268,6 @@ class _PlayPauseButtonState extends State<PlayPauseButtonWidget> {
     _state = widget._state;
     colors=widget.colors;
     onTap=widget.onTap;
-    print("stat from initState : ${_state}");
   }
 
   @override

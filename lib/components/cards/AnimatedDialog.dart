@@ -11,7 +11,8 @@ class AnimatedDialog extends StatefulWidget {
   GlobalKey traversingWidgetGlobalKey;
   double maxHeight;
   double maxWidth;
-  AnimatedDialog({this.dialogContent, this.traversingWidget, this.maxHeight, this.maxWidth});
+  Animation<double> inputAnimation;
+  AnimatedDialog({this.dialogContent, this.traversingWidget, this.maxHeight, this.maxWidth, this.inputAnimation});
 
 
 
@@ -24,9 +25,12 @@ class _AnimatedDialogState extends State<AnimatedDialog> with SingleTickerProvid
   /// whenever the hardware is ready to draw a new frame.
   AnimationController _controller;
 
+
+  ///DEPRECATED
+  ///NO INTERNAL TWEEN IS BEING USED HERE, phased for generalDialog transitionBuilder
   /// Since the above object interpolates only between 0 and 1, but we'd rather apply a curve to the current
   /// animation, we're providing a custom [Tween] that allows to build more advanced animations, as seen in [initState()].
-  static final Animatable<double> _sizeTween = Tween<double>(
+  Animatable<double> _sizeTween = Tween<double>(
     begin: 0.0,
     end: 1.0,
   );
@@ -41,11 +45,12 @@ class _AnimatedDialogState extends State<AnimatedDialog> with SingleTickerProvid
   /// Here we initialize the fields described above, and set up the widget to its initial state.
   @override
   initState() {
+    _sizeAnimation = widget.inputAnimation??_sizeAnimation;
     super.initState();
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 10),
     );
 
     /// This curve is controlled by [_controller].
@@ -53,17 +58,26 @@ class _AnimatedDialogState extends State<AnimatedDialog> with SingleTickerProvid
     CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
 
     /// [_sizeAnimation] will interpolate using this curve - [Curves.fastOutSlowIn].
-    _sizeAnimation = _sizeTween.animate(curve);
+   /* _sizeAnimation = _sizeTween.animate(curve);
     _controller.addListener(() {
       setState(() {});
-    });
+    });*/
 
-    _controller.forward();
+    //_controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedDialog oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    _sizeAnimation=oldWidget.inputAnimation;
   }
 
   @override
   dispose() {
-    _controller.reverse();
+    ///DEPRECATED
+    ///NO INTERNAL TWEEN IS BEING USED HERE, phased for generalDialog transitionBuilder
+    //_controller.reverse();
     _controller.dispose();
     super.dispose();
   }

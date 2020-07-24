@@ -144,12 +144,10 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           //doesn't ave the same reference as the same song in the songs lists that is generated when the app boots
           //and that is causing problems with songs.indexOF(song), it has been fixed elsewhere. This might be a further issue.
           musicService.updatePlayerState(PlayerState.paused, lastPlayedSongs[lastPlayedSongs.length-1]);
-          print("lastPlayed songs not zero will set paused");
         }
 
         if(lastPlayedPlaylist!=null){
           musicService.updatePlaylistState(PlayerState.paused, lastPlayedPlaylist);
-          print("playlist songs not zero will set paused");
         }
 
         if(lastPlayedSongs.length!=0){
