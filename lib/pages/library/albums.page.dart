@@ -117,6 +117,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
 
 
   void goToAlbumSongsList(album) async {
+      Size screenSize = MediaQuery.of(context).size;
       List<Tune> returnedSongs = await  Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => SingleAlbumPage(null,

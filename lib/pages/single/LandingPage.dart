@@ -171,7 +171,7 @@ class _LandingPageState extends State<LandingPage> {
     }).toList();
 
     topAlbums = topAlbums.toSet().toList();
-    topAlbums.removeWhere((element) => element==null);
+    topAlbums.removeWhere((element) => element==null || element.title==null);
     return topAlbums;
   }
 

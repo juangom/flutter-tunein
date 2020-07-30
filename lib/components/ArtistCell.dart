@@ -139,7 +139,7 @@ class ArtistGridCell extends StatelessWidget {
                                     ),
                                   ),
                                   Expanded(
-                                    flex: 3,
+                                    flex: 2,
                                     child:  choices!=null?ThreeDotPopupMenu(
                                       IconColor: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7)  ,
                                       choices: choices,

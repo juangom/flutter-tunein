@@ -61,7 +61,7 @@ class AlbumGridCell extends StatelessWidget {
                   child: Container(
                     color: MyTheme.darkgrey,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       width: double.infinity,
                       color: songColors!=null?new Color(songColors[0]).withAlpha(225):MyTheme.darkgrey,
                       child: Column(
@@ -70,7 +70,7 @@ class AlbumGridCell extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 2, left: 2),
+                            padding: const EdgeInsets.only(bottom: 3, left: 2),
                             child: Text(
                               album.title!=null?album.title:"Unknown Title",
                               overflow: TextOverflow.ellipsis,
@@ -109,7 +109,7 @@ class AlbumGridCell extends StatelessWidget {
                                 ),
                               ),
                               Expanded(
-                                flex: 3,
+                                flex: 2,
                                 child:  choices!=null?ThreeDotPopupMenu(
                                   IconColor: (songColors!=null?new Color(songColors[1]):Color(0xffffffff)).withOpacity(.7)  ,
                                   choices: choices,

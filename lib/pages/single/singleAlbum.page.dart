@@ -294,7 +294,9 @@ class SingleAlbumPage extends StatelessWidget {
             ),
             songsFound?Flexible(
               child: Container(
+                height: MediaQuery.of(context).size.height-200-60,
                 child: CustomScrollView(
+                  shrinkWrap: true,
                   scrollDirection: Axis.vertical,
                   slivers: <Widget>[
                     SliverAppBar(
@@ -372,7 +374,7 @@ class SingleAlbumPage extends StatelessWidget {
                       ),
                       automaticallyImplyLeading: false,
                       stretch: true,
-                      stretchTriggerOffset: 166,
+                      stretchTriggerOffset: 100,
                       floating: true,
                     ),
                     SliverPersistentHeader(

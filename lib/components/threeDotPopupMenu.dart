@@ -19,7 +19,6 @@ class ThreeDotPopupMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(4),
       child: GestureDetector(
         child: Material(
           color: Colors.transparent,
