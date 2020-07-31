@@ -310,9 +310,43 @@ class MusicService {
     List<String> oldUriList = oldSongsList.map((e) => e.uri).toList();
     List<Album> oldAlbums = albums$.value;
     List<Artist> oldArtists = artists$.value;
+    List<Artist> artistsToDelete = [];
     if(!eq(newURIList, songs$.value.map((e) => e.uri).toList())){
       List<String> differenceSet = newURIList.toSet().difference(oldUriList.toSet()).toList();
+      List<String> DeleteSongsBasedOnDifference = oldUriList.toSet().difference(newURIList.toSet()).toList();
       List<Tune> differenceSongs = data.where((song)=>differenceSet.contains(song.uri)).toList();
+
+      Map<String,Artist> newOldArtistMap = oldArtists.asMap().map((key, value){
+        return MapEntry(value.name,value);
+      });
+      Map<String,Album> newOldAlbumMap = oldAlbums.asMap().map((key, value){
+        return MapEntry(value.title,value);
+      });
+      List<Tune> songsToDelete = oldSongsList.where((song)=>DeleteSongsBasedOnDifference.contains(song.uri)).toList();
+      if(DeleteSongsBasedOnDifference.length!=0){
+
+        songsToDelete.forEach((element) {
+          //Delete the song from the list
+          oldSongsList.removeWhere((oldSongs) => oldSongs.uri==element.uri);
+          //delete the songs from the albums and the artists albums
+          newOldAlbumMap[element.album].songs.removeWhere((albumSongs) => albumSongs.uri == element.uri);
+          newOldArtistMap[element.artist].albums.firstWhere((artistAlbum) => artistAlbum.title==element.album, orElse: ()=>null)?.songs?.removeWhere((albumSongs) => albumSongs.uri==element.uri);
+          //IF the album is now empty we delete the album from the album list
+          if(newOldAlbumMap[element.album].songs.length==0){
+            newOldAlbumMap.remove(element.album);
+            //We remove the album from the artist
+            newOldArtistMap[element.artist].albums.removeWhere((artistAlbum) => artistAlbum.title==element.album);
+          }
+        });
+        if(DeleteSongsBasedOnDifference.length!=0){
+          //Delete the song from metrics
+          metricService.deleteAllMetricsOfSongs(songsToDelete);
+          if(DeleteSongsBasedOnDifference.contains(_playerState$.value.value.uri)){
+            //refresh the playerState
+            updatePlayerState(_playerState$.value.key, playback$.value.contains(Playback.shuffle)?playlist$.value.value[0]:playlist$.value.key[0]);
+          }
+        }
+      }
       if(differenceSet.length>0){
         data.map((songsElem) async{
           if(differenceSet.contains(songsElem.uri)) {
@@ -349,12 +383,6 @@ class MusicService {
         });
         print("The different songs produces ${newAlbumMap.length} new Artists");
 
-        Map<String,Artist> newOldArtistMap = oldArtists.asMap().map((key, value){
-          return MapEntry(value.name,value);
-        });
-        Map<String,Album> newOldAlbumMap = oldAlbums.asMap().map((key, value){
-          return MapEntry(value.title,value);
-        });
         newAlbumMap.keys.forEach((artistName) {
           //If the new artist already is part of the stored artists
           if(newOldArtistMap[artistName]!=null){
@@ -945,8 +973,8 @@ class MusicService {
     if (_index == 0) {
       prevSongIndex = _playlist.length - 1;
     }
-    Tune nextSong = _playlist[nextSongIndex];
-    Tune prevSong = _playlist[prevSongIndex];
+    Tune nextSong = _playlist[nextSongIndex<0?0:nextSongIndex];
+    Tune prevSong = _playlist[prevSongIndex<0?0:prevSongIndex];
     return MapEntry(nextSong, prevSong);
   }
 

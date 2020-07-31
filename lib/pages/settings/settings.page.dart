@@ -195,6 +195,7 @@ class SettingsPage extends StatelessWidget {
                                               color: MyTheme.darkRed,
                                               backgroundColor: MyTheme.darkBlack
                                           );
+
                                         }
                                       });
                                     },

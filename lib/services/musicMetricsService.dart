@@ -99,11 +99,12 @@ class MusicMetricsService {
 
   setLastPlayedPlaylist(Playlist playlist){
     //A null Last played playlist means that the last song that was played was not part of a playlist
-    updateSingleSetting(MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST,
+    updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_PLAYLIST,
         playlist!=null?Playlist.toMap(playlist):null);
   }
 
 
+  ///Increments the time played for each playlist and the global playlist play time
   incrementPlaylistPlaytimeOnSinglePlaylist(Playlist playlist, Duration durationToAdd)async {
     if(durationToAdd!=null){
       return;
@@ -113,10 +114,10 @@ class MusicMetricsService {
       int numericValueOfSong = int.parse(PlayedTimeOnAllPlaylists[playlist.id]);
       numericValueOfSong+=durationToAdd.inSeconds;
       PlayedTimeOnAllPlaylists[playlist.id]=numericValueOfSong.toString();
-      updateSingleSetting(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
+      updateSingleMetric(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
     }else{
       PlayedTimeOnAllPlaylists[playlist.id]= durationToAdd.inSeconds.toString();
-      updateSingleSetting(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
+      updateSingleMetric(MetricIds.MET_GLOBAL_PLAYLIST_PLAY_TIME, PlayedTimeOnAllPlaylists);
     }
   }
 
@@ -126,7 +127,7 @@ class MusicMetricsService {
       existingList.removeLast();
     }
     existingList.add(song);
-    updateSingleSetting(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, existingList);
+    updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, existingList);
   }
 
 
@@ -135,17 +136,17 @@ class MusicMetricsService {
       String currentGlobalTimeValue= getCurrentMemoryMetric(MetricIds.MET_GLOBAL_PLAY_TIME).toString();
       int numericValueOfGlobalPlayTime = int.parse(currentGlobalTimeValue);
       numericValueOfGlobalPlayTime+= durationToAdd.inSeconds;
-      updateSingleSetting(MetricIds.MET_GLOBAL_PLAY_TIME,numericValueOfGlobalPlayTime);
+      updateSingleMetric(MetricIds.MET_GLOBAL_PLAY_TIME,numericValueOfGlobalPlayTime);
 
       Map<String,dynamic> PlayedTimeOnAllSongs = getCurrentMemoryMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME);
       if(PlayedTimeOnAllSongs[song.id]!=null){
         int numericValueOfSong = int.parse(PlayedTimeOnAllSongs[song.id]);
         numericValueOfSong+=durationToAdd.inSeconds;
         PlayedTimeOnAllSongs[song.id]=numericValueOfSong.toString();
-        updateSingleSetting(MetricIds.MET_GLOBAL_SONG_PLAY_TIME, PlayedTimeOnAllSongs);
+        updateSingleMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME, PlayedTimeOnAllSongs);
       }else{
         PlayedTimeOnAllSongs[song.id]= durationToAdd.inSeconds.toString();
-        updateSingleSetting(MetricIds.MET_GLOBAL_SONG_PLAY_TIME, PlayedTimeOnAllSongs);
+        updateSingleMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME, PlayedTimeOnAllSongs);
       }
     }
   }
@@ -158,10 +159,10 @@ class MusicMetricsService {
         int numericValueOfSong = int.parse(PlayedTimeOnAllArtists[artist.id]);
         numericValueOfSong+=durationToAdd.inSeconds;
         PlayedTimeOnAllArtists[artist.id.toString()]=numericValueOfSong.toString();
-        updateSingleSetting(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
+        updateSingleMetric(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
       }else{
         PlayedTimeOnAllArtists[artist.id.toString()]= durationToAdd.inSeconds.toString();
-        updateSingleSetting(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
+        updateSingleMetric(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, PlayedTimeOnAllArtists);
       }
     }
   }
@@ -171,13 +172,34 @@ class MusicMetricsService {
       String currentGlobalTimeValue= getCurrentMemoryMetric(MetricIds.MET_GLOBAL_PLAY_TIME).toString();
       int numericValueOfGlobalPlayTime = int.parse(currentGlobalTimeValue);
       numericValueOfGlobalPlayTime+= durationToAdd.inSeconds;
-      updateSingleSetting(MetricIds.MET_GLOBAL_PLAY_TIME,
+      updateSingleMetric(MetricIds.MET_GLOBAL_PLAY_TIME,
           numericValueOfGlobalPlayTime);
 
     }
   }
 
 
+  void deleteAllMetricsOfSongs(List<Tune> songs){
+    Map<String, dynamic> globalSongTime =  getCurrentMemoryMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME);
+    List<Tune> lasTPlayedSongs =  getCurrentMemoryMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS);
+    songs.forEach((element) {
+      globalSongTime.remove(element.id);
+      lasTPlayedSongs.removeWhere((lastPlayedSong) => lastPlayedSong.id==element.id);
+    });
+
+    updateSingleMetric(MetricIds.MET_GLOBAL_SONG_PLAY_TIME, globalSongTime);
+    updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, lasTPlayedSongs);
+  }
+
+
+  void deleteAllMetricsOfArtist(List<Artist> artists){
+    Map<String, dynamic> globalArtistTime =  getCurrentMemoryMetric(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME);
+    artists.forEach((element) {
+      globalArtistTime.remove(element.id);
+    });
+
+    updateSingleMetric(MetricIds.MET_GLOBAL_ARTIST_PLAY_TIME, globalArtistTime);
+  }
 
   //Basic Functions
   Future fetchAllMetrics() async{
@@ -197,7 +219,7 @@ class MusicMetricsService {
           }
         }
         if(storedSettingValue==null){
-          metricsMap[setting] = getDefaultSetting(setting);
+          metricsMap[setting] = getDefaultMetric(setting);
         }else{
           metricsMap[setting] = convertFromStorage(setting,storedSettingValue);
         }
@@ -231,7 +253,7 @@ class MusicMetricsService {
 
 
 
-  Future updateSingleSetting(MetricIds metricId, dynamic value) async{
+  Future updateSingleMetric(MetricIds metricId, dynamic value) async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     try{
       Map<MetricIds, dynamic> metricssMap = _metrics.value;
@@ -255,7 +277,7 @@ class MusicMetricsService {
   //Utils
 
   //will return the default setting for each settingID
-  getDefaultSetting(MetricIds metricId){
+  getDefaultMetric(MetricIds metricId){
     switch(metricId){
       case MetricIds.MET_GLOBAL_PLAY_TIME:
         return "0";
