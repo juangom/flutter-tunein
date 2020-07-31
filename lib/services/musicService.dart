@@ -47,6 +47,7 @@ class MusicService {
 
   BehaviorSubject<List<Album>> _albums$;
   BehaviorSubject<List<Artist>> _artists$;
+  BehaviorSubject<Map<String, Artist>> _artistsImages$;
   BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$;
   BehaviorSubject<MapEntry<List<Tune>, List<Tune>>>
       _playlist$; //key is normal, value is shuffle
@@ -64,6 +65,8 @@ class MusicService {
   BehaviorSubject<List<Album>> get albums$ => _albums$;
 
   BehaviorSubject<List<Artist>> get artists$ => _artists$;
+
+  BehaviorSubject<Map<String, Artist>> get artistsImages$ => _artistsImages$;
 
   BehaviorSubject<MapEntry<PlayerState, Tune>> get playerState$ =>
       _playerState$;
@@ -87,6 +90,7 @@ class MusicService {
   StreamSubscription _upnpOnSongCompleteSubscription;
 
 
+
   MusicService() {
     _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null, null);
     _initStreams();
@@ -108,6 +112,8 @@ class MusicService {
   showUI() async {
     ByteData dibd = await rootBundle.load("images/cover.png");
     List<int> defaultImageBytes = dibd.buffer.asUint8List();
+    ByteData artistBundleImage = await rootBundle.load("images/artist.jpg");
+    List<int> defaultBgImageBytes = artistBundleImage.buffer.asUint8List();
     if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
       //AudioService.connect();
       _notificationService.show(
@@ -119,10 +125,14 @@ class MusicService {
           iconColor: Colors.white,
           titleColor: Colors.white,
           subtitleColor: Colors.white.withAlpha(50),
+          bgImage: null,
+          bgBitmapImage: defaultBgImageBytes,
+          bgImageBackgroundColor: MyTheme.darkBlack,
           bgColor: MyTheme.darkBlack);
     }
     Rx.combineLatest2(_playerState$, SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL), (a, b) => MapEntry<MapEntry<PlayerState, Tune>,String>(a,b)).listen((data) async {
       List<int> SongColors = await themeService.getThemeColors(data.key.value);
+      Artist artist = artistsImages$.value!=null?artistsImages$.value[data.key.value.artist]:null;
       if(data.value=="true"){
         switch (data.key.key) {
 
@@ -139,6 +149,9 @@ class MusicService {
                 titleColor: Color(SongColors[1]),
                 subtitleColor: Color(SongColors[1]).withAlpha(50),
                 iconColor: Color(SongColors[1]),
+                bgImage: data.key.value.artist!=null && artist!=null ?artist.coverArt:null,
+                bgBitmapImage: artist.coverArt==null && artist!=null? defaultBgImageBytes:null,
+                bgImageBackgroundColor: (artist!=null && artist.colors!=null && artist.colors.length!=0)?Color(artist.colors[0]):MyTheme.darkBlack,
                 bgColor: Color(SongColors[0]));
             break;
           case PlayerState.paused:
@@ -159,6 +172,9 @@ class MusicService {
             titleColor: Color(SongColors[1]),
             subtitleColor: Color(SongColors[1]).withAlpha(50),
             iconColor: Color(SongColors[1]),
+            bgImage: artist!=null && data.key.value.artist!=null ?artist.coverArt:null,
+            bgBitmapImage: artist!=null && artist.coverArt==null && artist!=null? defaultBgImageBytes:null,
+            bgImageBackgroundColor: (artist!=null && artist.colors!=null && artist.colors.length!=0)?Color(artist.colors[0]):MyTheme.darkBlack,
             bgColor: Color(SongColors[0]));
         hideUI();
       }
@@ -1390,6 +1406,15 @@ class MusicService {
         _defaultSong,
       ),
     );
+    _artistsImages$ = BehaviorSubject<Map<String,Artist>>();
+    //This will update the artistImages set each time the artists set is changed
+    artists$.listen((value) {
+      Map<String, Artist> newImages =new Map();
+      value.forEach((element) {
+        newImages[element.name] = element;
+      });
+      artistsImages$.add(newImages);
+    });
   }
 
   void _initAudioPlayer() {

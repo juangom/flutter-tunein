@@ -367,6 +367,9 @@ class musicServiceIsolate {
               subtitleColor: convertedMap["subtitleColor"]!=null?Color(int.tryParse(convertedMap["subtitleColor"])):Colors.white,
               title: convertedMap["title"],
               titleColor: convertedMap["titleColor"]!=null?Color(int.tryParse(convertedMap["titleColor"])):Colors.white,
+              bgImageBackgroundColor: convertedMap["bgImageBackgroundColor"]!=null?Color(int.tryParse(convertedMap["bgImageBackgroundColor"])):Colors.white,
+              bgBitmapImage: convertedMap["bgBitmapImage"]!=null?Uint8List.fromList((convertedMap["bgBitmapImage"] as List).map((e) => int.tryParse(e.toString())).toList()):null,
+              bgImage: convertedMap["bgImage"],
               callback: (data){
                 (incomingMessage[2] as SendPort).send(data);
               }
@@ -625,7 +628,7 @@ class musicServiceIsolate {
 
   // Notification Methods
 
-  static show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bgColor, Function(dynamic) callback}) async{
+  static show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bgColor, String bgImage, List<int> bgBitmapImage, Color bgImageBackgroundColor, Function(dynamic) callback}) async{
     MediaNotification.show(
         title: title??"title",
         author: author??"author",
@@ -636,6 +639,9 @@ class musicServiceIsolate {
         titleColor: titleColor,
         subtitleColor: subtitleColor,
         iconColor: iconColor,
+        bgImage: bgImage,
+        bgBitmapImage: bgBitmapImage,
+        bgImageBackgroundColor: bgImageBackgroundColor,
         bgColor:bgColor).then((s){
           callback!=null?callback(s):null;
     });

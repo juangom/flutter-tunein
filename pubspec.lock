@@ -7,7 +7,7 @@ packages:
       name: animations
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.1"
+    version: "1.1.2"
   archive:
     dependency: transitive
     description:
@@ -277,7 +277,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: e2d1296e60e40344d1f5c01e0741295d66eba7e3
+      resolved-ref: "3669344cf9d078cac4540342494e311815aa6855"
       url: "https://github.com/moda20/flutter_media_notification"
     source: git
     version: "0.0.5"
@@ -301,7 +301,7 @@ packages:
       name: page_transition
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.5"
+    version: "1.1.6"
   path:
     dependency: transitive
     description:

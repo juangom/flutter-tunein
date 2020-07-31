@@ -28,10 +28,26 @@ class notificationControlService{
     });
   }
 
-  Future show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bgColor}) async{
+  Future show({
+    String title,
+    String author,
+    bool play,
+    String image,
+    List<int> BitmapImage,
+    String bgImage,
+    Color bgImageBackgroundColor,
+    List<int> bgBitmapImage,
+    Color titleColor,
+    Color subtitleColor,
+    Color iconColor,
+    Color bgColor,
+  }) async{
     String messageToSend = json.encode({
       "title":title??"",
       "author":author??"",
+      "bgImage":bgImage,
+      "bgBitmapImage": bgBitmapImage,
+      "bgImageBackgroundColor":bgImageBackgroundColor!=null?bgImageBackgroundColor.value.toString():Colors.white,
       "play":play??false,
       "image":image??null,
       "BitmapImage":BitmapImage??null,

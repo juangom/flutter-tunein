@@ -155,8 +155,11 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           musicService.updatePosition(Duration(milliseconds: 0));
           ByteData dibd = await rootBundle.load("images/cover.png");
           List<int> defaultImageBytes = dibd.buffer.asUint8List();
+          ByteData artistBundleImage = await rootBundle.load("images/artist.jpg");
+          List<int> defaultBgImageBytes = artistBundleImage.buffer.asUint8List();
           if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
             Tune songToshowONNotification = musicService.playerState$.value.value;
+            Artist artist = musicService.artistsImages$.value!=null?musicService.artistsImages$.value[songToshowONNotification.artist]:null;
             NotificationService.show(
                 title: '${songToshowONNotification.title}',
                 author: '${songToshowONNotification.artist}',
@@ -167,6 +170,9 @@ class RootState extends State<Root> with TickerProviderStateMixin {
                 titleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
                 subtitleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]).withAlpha(50): MyTheme.grey300,
                 iconColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
+                bgImage: songToshowONNotification.artist!=null?artist.coverArt:null,
+                bgBitmapImage: artist.coverArt==null? defaultBgImageBytes:null,
+                bgImageBackgroundColor: (artist.colors!=null && artist.colors.length!=0)?Color(artist.colors[0]):MyTheme.darkBlack,
                 bgColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[0]): MyTheme.grey300
             );
           }
