@@ -93,105 +93,112 @@ class SinglePlaylistPage extends StatelessWidget {
                                 children: <Widget>[
                                   Row(
                                     children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 8),
-                                        child: Text(
-                                          (playlist.name == null)
-                                              ? "Unnamed Playlist"
-                                              : playlist.name,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                            fontSize: 17.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: Text(
+                                            (playlist.name == null)
+                                                ? "Unnamed Playlist"
+                                                : playlist.name,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: TextStyle(
+                                              fontSize: 16.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
+                                        flex: 8,
                                       ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          playlist.songs.length!=0?Material(
-                                            color: Colors.transparent,
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(right: 30.0),
-                                                child:InkWell(
-                                                  child: Icon(
-                                                    Icons.add,
-                                                    size: 26,
-                                                    color: MyTheme.darkRed,
-                                                  ),
-                                                  onTap: (){
-                                                    openAddSongsToPlaylistPage(playlist,context);
-                                                  },
-                                                )
-                                            )
-                                            ,
-                                          ):Container(),
-                                          Material(
-                                            child: PopupMenuButton<ContextMenuOptions>(
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  splashColor: MyTheme.darkgrey,
-                                                  radius: 30.0,
-                                                  child: Padding(
-                                                      padding: const EdgeInsets.only(right: 10.0),
-                                                      child:Icon(
-                                                        IconData(0xea7c, fontFamily: 'boxicons'),
-                                                        size: 22,
-                                                        color: Colors.white70,
-                                                      )
+                                      Expanded(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: <Widget>[
+                                            playlist.songs.length!=0?Material(
+                                              color: Colors.transparent,
+                                              child: Padding(
+                                                  padding: const EdgeInsets.only(right: 30.0),
+                                                  child:InkWell(
+                                                    child: Icon(
+                                                      Icons.add,
+                                                      size: 26,
+                                                      color: MyTheme.darkRed,
+                                                    ),
+                                                    onTap: (){
+                                                      openAddSongsToPlaylistPage(playlist,context);
+                                                    },
+                                                  )
+                                              )
+                                              ,
+                                            ):Container(),
+                                            Material(
+                                              child: PopupMenuButton<ContextMenuOptions>(
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: InkWell(
+                                                    splashColor: MyTheme.darkgrey,
+                                                    radius: 30.0,
+                                                    child: Padding(
+                                                        padding: const EdgeInsets.only(right: 10.0),
+                                                        child:Icon(
+                                                          IconData(0xea7c, fontFamily: 'boxicons'),
+                                                          size: 22,
+                                                          color: Colors.white70,
+                                                        )
+                                                    ),
                                                   ),
                                                 ),
+                                                elevation: 3.2,
+                                                onCanceled: () {
+                                                  print('You have not chosen anything');
+                                                },
+                                                tooltip: 'Playing options',
+                                                onSelected: (ContextMenuOptions choice){
+                                                  switch(choice.id){
+                                                    case 1: {
+                                                      openAddSongsToPlaylistPage(playlist,context);
+                                                      break;
+                                                    }
+                                                    case 2: {
+                                                      musicService.updatePlaylist(playlist.songs);
+                                                      musicService.stopMusic();
+                                                      musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
+                                                      musicService.updatePlaylistState(PlayerState.playing,playlist);
+                                                      break;
+                                                    }
+                                                    case 3:{
+                                                      musicService.updatePlaylist(playlist.songs);
+                                                      musicService.updatePlayback(Playback.shuffle);
+                                                      musicService.stopMusic();
+                                                      musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
+                                                      musicService.updatePlaylistState(PlayerState.playing,playlist);
+                                                      break;
+                                                    }
+                                                    case 4:{
+                                                      openEditPlaylistPage(playlist,context);
+                                                      break;
+                                                    }
+                                                    case 5:{
+                                                      deletePlaylist(playlist,context,message: "Confirm deleting the playlist : \"${playlist.name}\"");
+                                                    }
+                                                  }
+                                                },
+                                                itemBuilder: (BuildContext context) {
+                                                  return playlistCardContextMenulist.map((ContextMenuOptions choice) {
+                                                    return PopupMenuItem<ContextMenuOptions>(
+                                                      value: choice,
+                                                      child: Text(choice.title),
+                                                    );
+                                                  }).toList();
+                                                },
                                               ),
-                                              elevation: 3.2,
-                                              onCanceled: () {
-                                                print('You have not chosen anything');
-                                              },
-                                              tooltip: 'Playing options',
-                                              onSelected: (ContextMenuOptions choice){
-                                                switch(choice.id){
-                                                  case 1: {
-                                                    openAddSongsToPlaylistPage(playlist,context);
-                                                    break;
-                                                  }
-                                                  case 2: {
-                                                    musicService.updatePlaylist(playlist.songs);
-                                                    musicService.stopMusic();
-                                                    musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
-                                                    musicService.updatePlaylistState(PlayerState.playing,playlist);
-                                                    break;
-                                                  }
-                                                  case 3:{
-                                                    musicService.updatePlaylist(playlist.songs);
-                                                    musicService.updatePlayback(Playback.shuffle);
-                                                    musicService.stopMusic();
-                                                    musicService.playMusic(playlist.songs[0], isPartOfAPlaylist: true, playlist: playlist);
-                                                    musicService.updatePlaylistState(PlayerState.playing,playlist);
-                                                    break;
-                                                  }
-                                                  case 4:{
-                                                    openEditPlaylistPage(playlist,context);
-                                                    break;
-                                                  }
-                                                  case 5:{
-                                                    deletePlaylist(playlist,context,message: "Confirm deleting the playlist : \"${playlist.name}\"");
-                                                  }
-                                                }
-                                              },
-                                              itemBuilder: (BuildContext context) {
-                                                return playlistCardContextMenulist.map((ContextMenuOptions choice) {
-                                                  return PopupMenuItem<ContextMenuOptions>(
-                                                    value: choice,
-                                                    child: Text(choice.title),
-                                                  );
-                                                }).toList();
-                                              },
-                                            ),
-                                            color: Colors.transparent,
-                                          )
-                                        ],
+                                              color: Colors.transparent,
+                                            )
+                                          ],
+                                        ),
+                                        flex: playlist.songs.length==0?2:4,
                                       )
                                     ],
                                     mainAxisSize: MainAxisSize.max,
@@ -234,9 +241,8 @@ class SinglePlaylistPage extends StatelessWidget {
                                   )
                                 ],
                               ),
-                              padding: EdgeInsets.all(10),
+                              padding: EdgeInsets.only(right: 10, left: 10),
                               alignment: Alignment.center,
-                              height: 100,
                             ),
                           )
                         ],
