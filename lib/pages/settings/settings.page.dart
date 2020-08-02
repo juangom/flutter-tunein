@@ -354,14 +354,18 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
                 MetricsPage(),
-                Center(
-                  child: Container(
+                Container(
+                  width: screenSize.width,
+                  child: Center(
                     child: Text(
                       "SERVERS SETTINGS",
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.visible,
                       style: TextStyle(
-                        fontSize: 40,
-                        color: MyTheme.grey300,
-                        fontWeight: FontWeight.w700
+                          fontSize: 40,
+                          color: MyTheme.grey300,
+                          fontWeight: FontWeight.w700
                       ),
                     ),
                   ),

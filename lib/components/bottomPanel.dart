@@ -81,11 +81,15 @@ class BottomPanel extends StatelessWidget {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(right: 0, left: 5),
-          child: _currentSong.albumArt != null
-              ? Image.file(File(_currentSong.albumArt))
-              : Image.asset("images/track.png"),
+        Container(
+           width: 60,
+          height: 60,
+          child: Padding(
+            padding: EdgeInsets.only(right: 0, left: 5),
+            child: _currentSong.albumArt != null
+                ? Image.file(File(_currentSong.albumArt), fit: BoxFit.contain)
+                : Image.asset("images/track.png"),
+          ),
         ),
         Expanded(
           child: Column(
@@ -130,6 +134,7 @@ class BottomPanel extends StatelessWidget {
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
+                            splashColor: Color(colors[1]),
                             onTap: () {
                               if (_currentSong.uri == null) {
                                 return;
@@ -288,6 +293,7 @@ class _PlayPauseButtonState extends State<PlayPauseButtonWidget> {
     return Material(
       color: Colors.transparent,
       child: IconButton(
+        splashColor: Color(colors[1]),
         onPressed: () {
           if (PlayerState.paused == _state) {
             onTap(_state);

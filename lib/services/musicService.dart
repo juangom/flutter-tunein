@@ -140,8 +140,8 @@ class MusicService {
         ///in other cases it will be just stopping the player or pausing it requiring no change in content data
           case PlayerState.playing:
             _notificationService.show(
-                title: '${data.key.value.title}',
-                author: '${data.key.value.artist}',
+                title: '${data.key.value.title??"Unknown Title"}',
+                author: '${data.key.value.artist??"Unknown Artist"}',
                 play: true,
                 image: data.key.value.albumArt,
                 BitmapImage:
@@ -163,8 +163,8 @@ class MusicService {
         }
       }else{
         _notificationService.show(
-            title: '${data.key.value.title}',
-            author: '${data.key.value.artist}',
+            title: '${data.key.value.title?? "Unknown Title"}',
+            author: '${data.key.value.artist?? "Unknown Artist"}',
             play: true,
             image: data.key.value.albumArt,
             BitmapImage:

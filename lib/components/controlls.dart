@@ -185,6 +185,7 @@ class MusicBoardControls extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               IconButton(
+                splashColor: Color(colors[1]),
                 padding: EdgeInsets.all(5),
                   icon: StreamBuilder(
                     stream: musicService.playback$,
@@ -217,12 +218,17 @@ class MusicBoardControls extends StatelessWidget {
                   }
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                 icon: Icon(
                   IconData(0xeb40, fontFamily: 'boxicons'),
                   color: new Color(colors[1]).withOpacity(.7),
                   size: 35,
                 ),
-                onPressed: () => musicService.playPreviousSong(),
+                onPressed: () {
+                  Future.delayed(Duration(milliseconds: 200),(){
+                    musicService.playPreviousSong();
+                  });
+                },
               ),
               GestureDetector(
                 onLongPress: (){
@@ -237,19 +243,22 @@ class MusicBoardControls extends StatelessWidget {
                   }
                 },
                 child: IconButton(
+                  splashColor: Color(colors[1]),
                     key: playButtonKey,
                     iconSize: 50,
                     onPressed: () {
                       if (currentSong.uri == null) {
                         return;
                       }
-                      if (PlayerState.paused == state) {
-                        this.localState==PlayerState.playing;
-                        musicService.playMusic(currentSong);
-                      } else {
-                        this.localState=PlayerState.paused;
-                        musicService.pauseMusic(currentSong);
-                      }
+                      Future.delayed(Duration(milliseconds: 200),(){
+                        if (PlayerState.paused == state) {
+                          this.localState==PlayerState.playing;
+                          musicService.playMusic(currentSong);
+                        } else {
+                          this.localState=PlayerState.paused;
+                          musicService.pauseMusic(currentSong);
+                        }
+                      });
                     },
                     icon: StreamBuilder(
                       stream: castService.castingState,
@@ -309,14 +318,20 @@ class MusicBoardControls extends StatelessWidget {
                 ),
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                 icon: Icon(
                   IconData(0xeb3f, fontFamily: 'boxicons'),
                   color: new Color(colors[1]).withOpacity(.7),
                   size: 35,
                 ),
-                onPressed: () => musicService.playNextSong(),
+                onPressed: (){
+                  Future.delayed(Duration(milliseconds: 200),(){
+                    musicService.playNextSong();
+                  });
+                },
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                   icon: StreamBuilder(
                     stream: musicService.playback$,
                     builder: (context, AsyncSnapshot<List<Playback>> snapshot){
@@ -342,6 +357,7 @@ class MusicBoardControls extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               IconButton(
+                splashColor: Color(colors[1]),
                 padding: EdgeInsets.all(5),
                   icon: StreamBuilder(
                     stream: musicService.playback$,
@@ -375,12 +391,17 @@ class MusicBoardControls extends StatelessWidget {
                   }
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                 icon: Icon(
                   IconData(0xeb40, fontFamily: 'boxicons'),
                   color: new Color(colors[1]).withOpacity(.7),
                   size: 35,
                 ),
-                onPressed: () => musicService.playPreviousSong(),
+                onPressed: (){
+                  Future.delayed(Duration(milliseconds: 200),(){
+                    musicService.playPreviousSong();
+                  });
+                },
               ),
               GestureDetector(
                 onLongPress: (){
@@ -395,19 +416,23 @@ class MusicBoardControls extends StatelessWidget {
                   }
                 },
                 child: IconButton(
+                  splashColor: Color(colors[1]),
                     key: playButtonKey,
                     iconSize: 50,
                     onPressed: () {
                       if (currentSong.uri == null) {
                         return;
                       }
-                      if (PlayerState.paused == state) {
-                        this.localState==PlayerState.playing;
-                        musicService.playMusic(currentSong);
-                      } else {
-                        this.localState=PlayerState.paused;
-                        musicService.pauseMusic(currentSong);
-                      }
+                      Future.delayed(Duration(milliseconds: 200),(){
+                        if (PlayerState.paused == state) {
+                          this.localState==PlayerState.playing;
+                          musicService.playMusic(currentSong);
+                        } else {
+                          this.localState=PlayerState.paused;
+                          musicService.pauseMusic(currentSong);
+                        }
+                      });
+
                     },
                     icon: StreamBuilder(
                       stream: castService.castingState,
@@ -467,14 +492,20 @@ class MusicBoardControls extends StatelessWidget {
                 ),
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                 icon: Icon(
                   IconData(0xeb3f, fontFamily: 'boxicons'),
                   color: new Color(colors[1]).withOpacity(.7),
                   size: 35,
                 ),
-                onPressed: () => musicService.playNextSong(),
+                onPressed: () {
+                    Future.delayed(Duration(milliseconds: 200),(){
+                        musicService.playNextSong();
+                    });
+                  },
               ),
               IconButton(
+                splashColor: Color(colors[1]),
                   icon: StreamBuilder(
                     stream: musicService.playback$,
                     builder: (context, AsyncSnapshot<List<Playback>> snapshot){

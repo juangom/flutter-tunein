@@ -161,8 +161,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
             Tune songToshowONNotification = musicService.playerState$.value.value;
             Artist artist = musicService.artistsImages$.value!=null?musicService.artistsImages$.value[songToshowONNotification.artist]:null;
             NotificationService.show(
-                title: '${songToshowONNotification.title}',
-                author: '${songToshowONNotification.artist}',
+                title: '${songToshowONNotification.title?? "Unknown Title"}',
+                author: '${songToshowONNotification.artist?? "Unknown Artist"}',
                 play: false,
                 image: songToshowONNotification.albumArt,
                 BitmapImage:
