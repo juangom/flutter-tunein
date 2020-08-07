@@ -150,12 +150,13 @@ class _LandingPageState extends State<LandingPage> {
     };
   }
 
-  List<Album> getTopAlbum(Map<String,dynamic> GlobalSongPlayTime){
+  Map getTopAlbum(Map<String,dynamic> GlobalSongPlayTime){
 
     Map<String,dynamic> newValue = GlobalSongPlayTime??metricService.metrics.value[MetricIds.MET_GLOBAL_SONG_PLAY_TIME];
     if(GlobalSongPlayTime.length==0){
       return null;
     }
+    Map<String,int> playTime = Map();
     var sortedKeys = newValue.keys.toList(growable:false)
       ..sort((k1, k2) => int.parse(newValue[k2]).compareTo(int.parse(newValue[k1])));
     Map<String,String> sortedMap = new Map
@@ -167,12 +168,28 @@ class _LandingPageState extends State<LandingPage> {
     });
     List<Album> topAlbums = newSongMap.keys.map((e) {
       if(e==null) return null;
-      return musicService.albums$.value.firstWhere((element) => element.title==e.album);
+
+      Album albumFound = musicService.albums$.value.firstWhere((element) => element.title==e.album);
+      if(newSongMap[e]!=0){
+        if(playTime[albumFound.id.toString()]==null){
+          playTime[albumFound.id.toString()] = newSongMap[e];
+        }else{
+          playTime[albumFound.id.toString()] +=newSongMap[e];
+        }
+
+      };
+      return albumFound;
     }).toList();
 
     topAlbums = topAlbums.toSet().toList();
     topAlbums.removeWhere((element) => element==null || element.title==null);
-    return topAlbums;
+    Map<String, Duration> playDuration = playTime.map((k1,V1){
+      return MapEntry(k1,Duration(seconds: V1));
+    });
+    return {
+      "topAlbums":topAlbums,
+      "playDuration":playDuration
+    };
   }
 
   /// [standardWidth] is the width of the images being reconstructed from the 8Bit
@@ -288,84 +305,36 @@ class _LandingPageState extends State<LandingPage> {
                     builder: (context, AsyncSnapshot<dynamic> msnapshot){
                       List<Album> topAlbums;
                       if(msnapshot.hasData){
-                        topAlbums = getTopAlbum(msnapshot.data);
+                        topAlbums = getTopAlbum(msnapshot.data)["topAlbums"];
+                        Map PlayDuration = getTopAlbum(msnapshot.data)["playDuration"];
                         if(topAlbums==null){
                           return Container(
+                            height: 190,
                             color: MyTheme.darkBlack,
                             padding: EdgeInsets.only(top: 10, bottom: 10),
                             child: Center(
                               child: Text("No Data Found",
                                 style: TextStyle(
-                                    color: MyTheme.grey300,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 25
+                                    color: MyTheme.grey300.withOpacity(.8),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18
                                 ),
                               ),
                             ),
                           );
                         }
+                        return getTopAlbumsWidget(context, topAlbums, PlayDuration);
+                      }else{
+                        return Container(
+                          child: PreferredPicks(
+                            bottomTitle: "",
+                            colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                          ),
+                          height: 190,
+                        );
                       }
 
-                      return AnimatedSwitcher(
-                        duration: Duration(milliseconds: 200),
-                        child: msnapshot.hasData?Container(
-                        height:190,
-                        child: ListView.builder(
-                          itemBuilder: (context, index){
-                            return Material(
-                                child: StreamBuilder(
-                                  stream: topAlbums[index].albumArt!=null?ConversionUtils.FileUriTo8Bit(topAlbums[index].albumArt).asStream():Asset8bitList.asStream(),
-                                  builder: (context, AsyncSnapshot<List<int>> snapshot){
-                                    if(snapshot.hasError){
 
-                                      return PreferredPicks(
-                                        bottomTitle: "",
-                                        colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                      );
-                                    }
-                                    return AnimatedSwitcher(
-                                      duration: Duration(milliseconds: 200),
-                                      switchInCurve: Curves.easeInToLinear,
-                                      child: !snapshot.hasData?Container(
-                                        child: PreferredPicks(
-                                          bottomTitle: "Most Played",
-                                          colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                        ),
-                                      ):GestureDetector(
-                                        child: Container(
-                                          margin: EdgeInsets.only(right: 8),
-                                          child: Stack(
-                                            children: <Widget>[
-                                              PreferredPicks(
-                                                bottomTitle: "${topAlbums[index].title.split(' ').join('\n')}",
-                                                backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
-                                                colors: topAlbums[index].songs[0].colors.map((e){
-                                                  return Color(e).withOpacity(.5).value;
-                                                }).toList(),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        onTap: (){
-
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                                color: Colors.transparent
-                            );
-                          },
-                          scrollDirection: Axis.horizontal,
-                          itemCount: min(4,topAlbums.length),
-                          shrinkWrap: false,
-                          itemExtent: 122,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          cacheExtent: 122,
-                        ),
-                        padding: EdgeInsets.all(10),
-                      ):Container(height:190),
-                      );
                     },
                   ),
                 ),
@@ -750,6 +719,207 @@ class _LandingPageState extends State<LandingPage> {
     }
   }
 
+  Widget getTopAlbumsWidget(context, List<Album> AlbumSongs, Map<String, Duration> playDuration){
+    if(AlbumSongs !=null && AlbumSongs.length!=0){
+      Size screensize = MediaQuery.of(context).size;
+      Future<List<int>> Asset8bitList = Future.sync(() async{
+        ByteData dibd = await rootBundle.load("images/artist.jpg");
+        List<int> defaultImageBytes = dibd.buffer.asUint8List();
+        return defaultImageBytes;
+      });
+
+      print(playDuration);
+
+      return Material(
+          child: Container(
+            height:190,
+            child: ListView.builder(
+              itemBuilder: (context, index){
+                return Material(
+                    child: StreamBuilder(
+                      stream: AlbumSongs[index].albumArt!=null?ConversionUtils.FileUriTo8Bit(AlbumSongs[index].albumArt).asStream():Asset8bitList.asStream(),
+                      builder: (context, AsyncSnapshot<List<int>> snapshot){
+                        if(snapshot.hasError){
+
+                          return PreferredPicks(
+                            bottomTitle: "",
+                            colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                          );
+                        }
+                        return AnimatedSwitcher(
+                          duration: Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeInToLinear,
+                          child: !snapshot.hasData?Container(
+                            child: PreferredPicks(
+                              bottomTitle: "Most Played",
+                              colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                            ),
+                          ):GestureDetector(
+                            child: Container(
+                              margin: EdgeInsets.only(right: 8),
+                              child: Stack(
+                                children: <Widget>[
+                                  PreferredPicks(
+                                    bottomTitle: "${AlbumSongs[index].title.split(' ').join('\n')}",
+                                    backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
+                                    colors: AlbumSongs[index].songs[0].colors.map((e){
+                                      return Color(e).withOpacity(.5).value;
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onTap: (){
+                              print(playDuration[AlbumSongs[index].id.toString()]);
+                              print(AlbumSongs[index].id);
+                              List<int> colors = AlbumSongs[index].songs[0].colors;
+                              showGeneralDialog(
+                                  barrierLabel: "TopAlbums",
+                                  barrierDismissible: true,
+                                  barrierColor: Colors.black.withOpacity(0.5),
+                                  transitionDuration: Duration(milliseconds: 80),
+                                  context: context,
+                                  pageBuilder: (context, anim1, anim2){
+                                    return SinglePicturePopupWidget(
+                                        listOfSongs: AlbumSongs[index].songs,
+                                        onPlaybuttonTap: (){
+                                          musicService.updatePlaylist(AlbumSongs[index].songs);
+                                          musicService.stopMusic();
+                                          musicService.playMusic(AlbumSongs[index].songs[0]);
+                                        },
+                                        onShuffleButtonTap: (){
+                                          musicService.updatePlaylist(AlbumSongs[index].songs);
+                                          musicService.updatePlayback(Playback.shuffle);
+                                          musicService.stopMusic();
+                                          musicService.playMusic(musicService.playlist$.value.value[0]);
+                                        },
+                                        screensize: screensize,
+                                        title: AlbumSongs[index].title,
+                                        subtitle: AlbumSongs[index].artist,
+                                        colors: colors,
+                                        topLeftImage: AlbumSongs[index].albumArt,
+                                        Description: "3333333333",
+                                        underSubtitleTray: Column(
+                                          children: <Widget>[
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      margin: EdgeInsets.only(right: 5),
+                                                      child: Text(
+                                                        AlbumSongs[index].songs.length.toString(),
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Icon(
+                                                      Icons.audiotrack,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    )
+                                                  ],
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(right: 8, left :8),
+                                                  width: 1,
+                                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                ),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      child: Text(
+                                                        "${Duration(milliseconds: ConversionUtils.songListToDuration(AlbumSongs[index].songs).floor()).inMinutes} min",
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      margin: EdgeInsets.only(right: 5),
+                                                    ),
+                                                    Icon(
+                                                      Icons.access_time,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    )
+                                                  ],
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(right: 8, left :8),
+                                                  width: 4,
+                                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                ),
+                                              ],
+                                            ),
+                                            SingleChildScrollView(
+                                                scrollDirection: Axis.horizontal,
+                                                child: Padding(
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.max,
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Icon(
+                                                        Icons.av_timer,
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                      ),
+                                                      Container(
+                                                        child: Text(
+                                                          "${ConversionUtils.DurationToFancyText(playDuration[AlbumSongs[index].id.toString()])} of play time",
+                                                          style: TextStyle(
+                                                            color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                            fontWeight: FontWeight.w700,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        margin: EdgeInsets.only(left: 5),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  padding: EdgeInsets.only(left: 4),
+                                                )
+                                            )
+
+                                          ],
+                                        )
+                                    );
+                                  },
+                                  transitionBuilder: (context, anim1, anim2, child){
+                                    return AnimatedDialog(
+                                      dialogContent: child,
+                                      inputAnimation: anim1,
+                                    );
+                                  }
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    color: Colors.transparent
+                );
+              },
+              scrollDirection: Axis.horizontal,
+              itemCount: min(4,AlbumSongs.length),
+              shrinkWrap: false,
+              itemExtent: 122,
+              physics: AlwaysScrollableScrollPhysics(),
+              cacheExtent: 122,
+            ),
+            padding: EdgeInsets.all(10),
+          ),
+          color: Colors.transparent
+      );
+    }
+    else{
+      return null;
+    }
+  }
 
   MultipleSongTapPopupWidget({
     Size screensize,
@@ -913,6 +1083,208 @@ class _LandingPageState extends State<LandingPage> {
             ),
           )
         ],
+      ),
+    );
+  }
+
+  SinglePicturePopupWidget({
+    Size screensize,
+    Widget TopLeftWidget,
+    String topLeftImage,
+    String title,
+    String subtitle,
+    String Description,
+    Widget underSubtitleTray,
+    bool showPlaybutton=true,
+    bool showShuffleButton=true,
+    VoidCallback onPlaybuttonTap,
+    VoidCallback onShuffleButtonTap,
+    List<int> colors,
+    List<Tune> listOfSongs = const [],
+  }){
+    File imageFile = TopLeftWidget==null?topLeftImage!=null?File.fromUri(Uri.parse(topLeftImage)):null:TopLeftWidget;
+    double popupWidth = screensize.width*0.85;
+    return Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              color: (colors!=null && colors.length!=0)?Color(colors[0]):MyTheme.darkBlack,
+              width: popupWidth,
+              child: Row(
+                children: <Widget>[
+                  Container(
+                      height: 80,
+                      width: 80,
+                      child: TopLeftWidget??(imageFile!=null &&  imageFile.existsSync())?Image.file(imageFile,
+                        fit: BoxFit.fill,
+                      ):Image.asset("images/cover.png",
+                        fit: BoxFit.cover,
+                      )
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(top: 5, left: 5),
+                    width: popupWidth - 80,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Padding(
+                          child: Text(title??"Unknown title",
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            style: TextStyle(
+                                color: colors!=null?Color(colors[1]):MyTheme.grey300,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 17
+                            ),
+                          ),
+                          padding: EdgeInsets.only(bottom: 5),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 5),
+                          child: Text(subtitle??"Unknown Artist",
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+                            style: TextStyle(
+                                color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.8),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15
+                            ),
+                          ),
+                        ),
+                        /*Text(Description??"Unknown Artist",
+                          overflow: TextOverflow.fade,
+                          maxLines: 2,
+                          style: TextStyle(
+                              color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.7),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic
+                          ),
+                        ),*/
+                        underSubtitleTray??Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(right: 5),
+                                  child: Text(
+                                    listOfSongs.length.toString(),
+                                    style: TextStyle(
+                                      color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.audiotrack,
+                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                )
+                              ],
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 8, left :8),
+                              width: 1,
+                              color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Container(
+                                  child: Text(
+                                    "${Duration(milliseconds: ConversionUtils.songListToDuration(listOfSongs).floor()).inMinutes} min",
+                                    style: TextStyle(
+                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  margin: EdgeInsets.only(right: 5),
+                                ),
+                                Icon(
+                                  Icons.access_time,
+                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                )
+                              ],
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 8, left :8),
+                              width: 4,
+                              color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+              ),
+              width: screensize.width*0.85,
+              height: screensize.height*0.5,
+              child: GenericSongList(
+                songs: listOfSongs,
+                screenSize: screensize,
+                staticOffsetFromBottom: 100.0,
+                bgColor: null,
+                contextMenuOptions: (song){
+                  return songCardContextMenulist;
+                },
+                onContextOptionSelect: (choice,tune) async{
+                  switch(choice.id){
+                    case 1: {
+                      musicService.playOne(tune);
+                      break;
+                    }
+                    case 2:{
+                      musicService.startWithAndShuffleQueue(tune, listOfSongs);
+                      break;
+                    }
+                    case 3:{
+                      musicService.startWithAndShuffleAlbum(tune);
+                      break;
+                    }
+                    case 4:{
+                      musicService.playAlbum(tune);
+                      break;
+                    }
+                    case 5:{
+                      if(castService.currentDeviceToBeUsed.value==null){
+                        upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                        if(result!=null){
+                          castService.setDeviceToBeUsed(result);
+                        }
+                      }
+                      musicService.castOrPlay(tune, SingleCast: true);
+                      break;
+                    }
+                    case 6:{
+                      upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                      if(result!=null){
+                        musicService.castOrPlay(tune, SingleCast: true, device: result);
+                      }
+                      break;
+                    }
+                  }
+                },
+                onSongCardTap: (song,state,isSelectedSong){
+                  musicService.updatePlaylist([song]);
+                  musicService.playOrPause(song);
+                },
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

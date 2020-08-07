@@ -16,6 +16,7 @@ import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
+import 'package:Tunein/utils/ConversionUtils.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -918,13 +919,7 @@ class SingleAlbumPage extends StatelessWidget {
   }
 
   double sumDurationsofAlbum(Album album) {
-    double FinalDuration = 0;
-
-    album.songs.forEach((elem) {
-      FinalDuration += elem.duration;
-    });
-
-    return FinalDuration;
+    return ConversionUtils.songListToDuration(album.songs);
   }
 
   Future<List<Tune>> openEditPlaylistBeforeSaving(context,Playlist playlist) async{

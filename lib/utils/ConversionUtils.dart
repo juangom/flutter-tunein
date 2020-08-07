@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,5 +50,16 @@ class ConversionUtils{
     await image.toByteData(format: ui.ImageByteFormat.png);
     Uint8List pngBytes = byteData.buffer.asUint8List();
     return pngBytes;
+  }
+
+
+  static double songListToDuration(List<Tune> songs){
+    double FinalDuration = 0;
+
+    songs.forEach((elem) {
+      FinalDuration += elem.duration;
+    });
+
+    return FinalDuration;
   }
 }
