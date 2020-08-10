@@ -179,12 +179,12 @@ class Nano {
             break;
           }
         }
-        if (_metaData[i][1] == null) {
-          _metaData[i][1] = "Unknown Artist";
-        }
-        if (_metaData[i][3] == null) {
-          _metaData[i][3] = "Unknown Album";
-        }
+      }
+      if (_metaData[i][1] == null) {
+        _metaData[i][1] = "Unknown Artist";
+      }
+      if (_metaData[i][3] == null) {
+        _metaData[i][3] = "Unknown Album";
       }
       if (_metaData[i][4] != null) {
         Iterable<Match> matches =

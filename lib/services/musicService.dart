@@ -310,7 +310,6 @@ class MusicService {
     List<String> oldUriList = oldSongsList.map((e) => e.uri).toList();
     List<Album> oldAlbums = albums$.value;
     List<Artist> oldArtists = artists$.value;
-    List<Artist> artistsToDelete = [];
     if(!eq(newURIList, songs$.value.map((e) => e.uri).toList())){
       List<String> differenceSet = newURIList.toSet().difference(oldUriList.toSet()).toList();
       List<String> DeleteSongsBasedOnDifference = oldUriList.toSet().difference(newURIList.toSet()).toList();
@@ -348,10 +347,8 @@ class MusicService {
         }
       }
       if(differenceSet.length>0){
-        data.map((songsElem) async{
-          if(differenceSet.contains(songsElem.uri)) {
-            songsElem.colors = await themeService.getThemeColors(songsElem);
-          }
+        differenceSongs.map((songsElem) async{
+          songsElem.colors = await themeService.getThemeColors(songsElem);
         });
         print("The different songs number is ${differenceSet.length}");
         var newAlbumMap = new Map<String, Map<String,Album>>();

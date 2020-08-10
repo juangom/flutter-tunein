@@ -305,9 +305,8 @@ class _LandingPageState extends State<LandingPage> {
                     builder: (context, AsyncSnapshot<dynamic> msnapshot){
                       List<Album> topAlbums;
                       if(msnapshot.hasData){
-                        topAlbums = getTopAlbum(msnapshot.data)["topAlbums"];
-                        Map PlayDuration = getTopAlbum(msnapshot.data)["playDuration"];
-                        if(topAlbums==null){
+                        Map albumData = getTopAlbum(msnapshot.data);
+                        if(albumData==null){
                           return Container(
                             height: 190,
                             color: MyTheme.darkBlack,
@@ -322,8 +321,28 @@ class _LandingPageState extends State<LandingPage> {
                               ),
                             ),
                           );
+                        }else{
+                          topAlbums = albumData["topAlbums"];
+                          Map PlayDuration = albumData["playDuration"];
+                          if(topAlbums==null){
+                            return Container(
+                              height: 190,
+                              color: MyTheme.darkBlack,
+                              padding: EdgeInsets.only(top: 10, bottom: 10),
+                              child: Center(
+                                child: Text("No Data Found",
+                                  style: TextStyle(
+                                      color: MyTheme.grey300.withOpacity(.8),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return getTopAlbumsWidget(context, topAlbums, PlayDuration);
                         }
-                        return getTopAlbumsWidget(context, topAlbums, PlayDuration);
+
                       }else{
                         return Container(
                           child: PreferredPicks(
