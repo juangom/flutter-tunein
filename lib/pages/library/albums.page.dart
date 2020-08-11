@@ -103,7 +103,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                   }
 
                   final _album = snapshot.data;
-                  return SingleAlbumPage(null, album: _album);
+                  return SingleAlbumPage(null, album: _album, heightToSubstract: 60);
                 },
               ),
             ],
@@ -121,7 +121,8 @@ class _AlbumsPageState extends State<AlbumsPage> {
       List<Tune> returnedSongs = await  Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => SingleAlbumPage(null,
-              album:album
+              album:album,
+            heightToSubstract: 60,
           ),
         ),
       );

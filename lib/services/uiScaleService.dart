@@ -14,4 +14,8 @@ class uiScaleService{
   static AlbumsGridCellHeight(Size screenSize){
     return min<double>(screenSize.height/4,155);
   }
+
+  static AlbumArtistInfoPage(Size screenSize){
+    return min<double>(screenSize.height/3.5,200);
+  }
 }

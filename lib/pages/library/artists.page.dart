@@ -74,7 +74,7 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
                 transitionDuration: Duration(milliseconds: 90),
                 transitionType: transitionType,
                 openBuilder: (BuildContext context, VoidCallback _) {
-                  return SingleArtistPage( _artists[index]);
+                  return SingleArtistPage( _artists[index], heightToSubstract: 60,);
                 },
                 tappable: false,
                 closedBuilder: (BuildContext context, VoidCallback openContainer){
@@ -123,7 +123,7 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
   void goToSingleArtistPage(Artist artist){
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SingleArtistPage(artist),
+        builder: (context) => SingleArtistPage(artist, heightToSubstract: 60,),
       ),
     );
   }
