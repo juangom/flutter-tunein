@@ -52,16 +52,16 @@ class BottomPanel extends StatelessWidget {
 
         final PlayerState _state = snapshot.data.key;
         final String _artists = getArtists(_currentSong);
-
+        List<int> currentColors = (_currentSong.colors != null && _currentSong.colors.length!=0)?_currentSong.colors:themeService.defaultColors;
         return AnimatedContainer(
             duration: Duration(milliseconds: 500),
             curve: Curves.decelerate,
-            color: Color(_currentSong.colors[0]),
+            color: Color(currentColors[0]),
             height: double.infinity,
             width: double.infinity,
             alignment: Alignment.bottomCenter,
             child: getBottomPanelLayout(
-                _state, _currentSong, _artists, _currentSong.colors));
+                _state, _currentSong, _artists, currentColors));
       },
     );
   }

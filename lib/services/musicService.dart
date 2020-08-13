@@ -347,7 +347,7 @@ class MusicService {
         }
       }
       if(differenceSet.length>0){
-        differenceSongs.map((songsElem) async{
+        await Future.forEach(differenceSongs, (songsElem) async{
           songsElem.colors = await themeService.getThemeColors(songsElem);
         });
         print("The different songs number is ${differenceSet.length}");
@@ -751,6 +751,23 @@ class MusicService {
     final List<Tune> _playlist =
         _isShuffle ? _playlist$.value.value : _playlist$.value.key;
     return _playlist.indexWhere((elem)=>elem.id==song.id);
+  }
+
+  Future<Map> getSongInformation(Tune song) async{
+    Map<String,dynamic> finalMap = new Map();
+
+    finalMap["title"] = song.title;
+    finalMap["artist"] = song.artist;
+    finalMap["art"] = song.albumArt;
+    finalMap["duration"] = Duration(milliseconds: song.duration);
+    finalMap["album"] = song.album;
+    finalMap["numberOfAlbum"] = song.numberInAlbum;
+    finalMap["genre"] = song.genre;
+    finalMap["path"] = song.uri;
+    finalMap["Album"] = albums$.value.firstWhere((element) => element.title==song.album,orElse: ()=>null);
+    finalMap["playlist"] = _playlists$.value.where((element) => element.songs.map((e) => e.title).toList().contains(song.title)).toList();
+
+    return finalMap;
   }
 
   /// specific song card actions

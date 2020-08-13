@@ -33,6 +33,11 @@ final songCardContextMenulist=[
     title: "Cast to new Device",
     icon: Icons.cast,
   ),
+  ContextMenuOptions(
+    id: 7,
+    title: "File information",
+    icon: Icons.info_outline,
+  ),
 ];
 ///The context menu for the regular artist card found in the artists page
 final artistCardContextMenulist=[

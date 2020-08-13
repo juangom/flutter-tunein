@@ -10,6 +10,7 @@ import 'package:Tunein/components/cards/PreferedPicks.dart';
 import 'package:Tunein/components/cards/expandableItems.dart';
 import 'package:Tunein/components/genericSongList.dart';
 import 'package:Tunein/components/itemListDevider.dart';
+import 'package:Tunein/components/songInfoWidget.dart';
 import 'package:Tunein/components/trackListDeck.dart';
 import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
@@ -1093,6 +1094,13 @@ class _LandingPageState extends State<LandingPage> {
                     }
                     break;
                   }
+                  case 7: {
+                    DialogService.showAlertDialog(context,
+                        title: "Song Information",
+                        content: SongInfoWidget(null, song: tune),
+                        padding: EdgeInsets.only(top: 10)
+                    );
+                  }
                 }
               },
               onSongCardTap: (song,state,isSelectedSong){
@@ -1293,6 +1301,13 @@ class _LandingPageState extends State<LandingPage> {
                         musicService.castOrPlay(tune, SingleCast: true, device: result);
                       }
                       break;
+                    }
+                    case 7: {
+                      DialogService.showAlertDialog(context,
+                          title: "Song Information",
+                          content: SongInfoWidget(null, song: tune),
+                          padding: EdgeInsets.only(top: 10)
+                      );
                     }
                   }
                 },

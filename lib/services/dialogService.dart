@@ -105,7 +105,7 @@ class DialogService{
           );
         });
   }
-  static Future<bool> showAlertDialog(context, {String message, Color titleColor, Color messageColor ,String title}){
+  static Future<bool> showAlertDialog(context, {String message, Color titleColor, Color messageColor ,String title, Widget content, EdgeInsets padding}){
     return showDialog(
         context: context,
         builder: (_) {
@@ -117,12 +117,13 @@ class DialogService{
                   color: titleColor!=null?titleColor:Colors.white70
               ),
             ),
-            content: Text(
+            content: content??Text(
               message!=null?message:"Alert",
               style: TextStyle(
                 color: messageColor!=null?messageColor:Colors.white
               ),
             ),
+            contentPadding: padding,
             actions: <Widget>[
               FlatButton(
                 child: Text(
@@ -140,7 +141,7 @@ class DialogService{
         });
   }
 
-  static Future<upnp.Device> openDevicePickingDialog(context, List<upnp.Device> devices){
+  static Future<upnp.Device> openDevicePickingDialog(context, List<upnp.Device> devices,{ Widget content}){
     Widget devicesNotSent;
     Widget ShallowWidget = Container(
       height: MediaQuery.of(context).size.height,
@@ -246,7 +247,7 @@ class DialogService{
                   color: Colors.white70
               ),
             ),
-            content: Container(
+            content: content??Container(
               height: MediaQuery.of(context).size.height/2.5,
               width: MediaQuery.of(context).size.width/1.2,
               child: devices==null?devicesNotSent:devices.length!=0?ListView.builder(

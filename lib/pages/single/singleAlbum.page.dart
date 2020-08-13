@@ -8,6 +8,7 @@ import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
 import 'package:Tunein/components/selectableTile.dart';
+import 'package:Tunein/components/songInfoWidget.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
@@ -361,7 +362,13 @@ class SingleAlbumPage extends StatelessWidget {
                               }
                               break;
                             }
-
+                            case 7: {
+                              DialogService.showAlertDialog(context,
+                                  title: "Song Information",
+                                  content: SongInfoWidget(null, song: album.songs[newIndex]),
+                                  padding: EdgeInsets.only(top: 10)
+                              );
+                            }
                           }
                         },
                         onContextCancel: (choice){

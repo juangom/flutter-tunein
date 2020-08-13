@@ -1,6 +1,7 @@
 import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/genericSongList.dart';
 import 'package:Tunein/components/itemListDevider.dart';
+import 'package:Tunein/components/songInfoWidget.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/ContextMenuOption.dart';
 import 'package:Tunein/models/playerstate.dart';
@@ -321,6 +322,13 @@ class _SearchPageState extends State<SearchPage> {
                               musicService.castOrPlay(song, SingleCast: true, device: result);
                             }
                             break;
+                          }
+                          case 7: {
+                            DialogService.showAlertDialog(context,
+                                title: "Song Information",
+                                content: SongInfoWidget(null, song: song),
+                                padding: EdgeInsets.only(top: 10)
+                            );
                           }
                         }
                       },

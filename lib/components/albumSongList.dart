@@ -7,6 +7,7 @@
 import 'package:Tunein/components/card.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
+import 'package:Tunein/components/songInfoWidget.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
@@ -127,6 +128,13 @@ class _AlbumSongListState extends State<AlbumSongList> {
                                     musicService.castOrPlay(widget.album.songs[newIndex], SingleCast: true, device: result);
                                   }
                                   break;
+                                }
+                                case 7: {
+                                  DialogService.showAlertDialog(context,
+                                      title: "Song Information",
+                                      content: SongInfoWidget(null, song: widget.album.songs[newIndex]),
+                                      padding: EdgeInsets.only(top: 10)
+                                  );
                                 }
                               }
                             },

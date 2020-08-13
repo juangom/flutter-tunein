@@ -53,7 +53,7 @@ class _SelectableTileState extends State<SelectableTile> {
     imageUri=widget.imageUri;
     title= widget.title;
     onTap=widget.onTap;
-    isSelected=widget.isSelected;
+    isSelected=widget.isSelected??false;
     placeHolderAssetUri= widget.placeHolderAssetUri;
     initialBackgroundColor=widget.initialBackgroundColor;
     initialTextColor=widget.initialTextColor;

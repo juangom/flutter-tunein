@@ -153,7 +153,7 @@ class _PlayingPageState extends State<PlayingPage>
         }
         widget.getTuneWhenReady.add(_currentSong);
         MapEntry<PlayerState, Playlist> currentPlaylist = musicService.currentPlayingPlaylist$.value;
-        final List<int> colors = _currentSong.colors;
+        final List<int> colors = (_currentSong.colors!=null && _currentSong.colors.length!=0)?_currentSong.colors:themeService.defaultColors;
         MapEntry<Tune, Tune> songs = musicService.getNextPrevSong(_currentSong);
 
         if (_currentSong == null || songs == null) {
