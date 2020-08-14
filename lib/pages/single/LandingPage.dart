@@ -170,7 +170,7 @@ class _LandingPageState extends State<LandingPage> {
     List<Album> topAlbums = newSongMap.keys.map((e) {
       if(e==null) return null;
 
-      Album albumFound = musicService.albums$.value.firstWhere((element) => element.title==e.album);
+      Album albumFound = musicService.albums$.value.firstWhere((element) => (element.title==e.album && element.artist==e.artist));
       if(newSongMap[e]!=0){
         if(playTime[albumFound.id.toString()]==null){
           playTime[albumFound.id.toString()] = newSongMap[e];
