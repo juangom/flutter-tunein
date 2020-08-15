@@ -63,6 +63,7 @@ dependencies:
       ref: master
   expandable: ^4.1.4
   ext_storage: ^1.0.3
+  flutter_inner_drawer: "^0.5.7+2"
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -75,7 +75,6 @@ class AudioPluginService{
     BehaviorSubject<AudioPlayerState> returnedSubject= new BehaviorSubject<AudioPlayerState>.seeded(null);
     tempPort.forEach((data){
       if(data!=null && data!="OK"){
-        print(data);
         returnedSubject.add(_deserializeAudioPlayerStateEnum(data));
       }
     });
@@ -94,7 +93,6 @@ class AudioPluginService{
     BehaviorSubject<PlayBackKeys> returnedSubject= new BehaviorSubject<PlayBackKeys>.seeded(null);
     tempPort.forEach((data){
       if(data!=null && data!="OK"){
-        print(data);
         returnedSubject.add(_deserializePlaybackKeysEnum(data));
       }
     });

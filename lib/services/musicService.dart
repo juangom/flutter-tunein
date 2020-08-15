@@ -525,7 +525,6 @@ class MusicService {
       Duration lastDuration;
       _upnpOnSongCompleteSubscription = Rx.combineLatest2(castService.castingPlayerState, castService.currentPosition, (a,b)=>MapEntry<PlayerState,Duration>(a,b))
           .listen(( data){
-            //print(data);
         if(data!=null){
           if(data.key!=null && data.value!=null){
 
@@ -706,7 +705,6 @@ class MusicService {
       command: "UPlayerstate"
     );
     MusicServiceIsolate.sendCrossIsolateMessage(newMessage).then((data){
-      print(data);
     });*/
     if(!(_playerState$.value.key== state && playerState$.value.value.id == song.id)){
       _playerState$.add(MapEntry(state, song));
@@ -1229,7 +1227,6 @@ class MusicService {
     }
 
     if(data !=null && data["images"]!=null && data["images"].length!=0){
-      //print(data["images"]);
       List<dynamic> dataImages = (data["images"]);
       Map imagetOUserMap = dataImages.firstWhere((item){
         return item["type"]=="primary";
@@ -1475,13 +1472,11 @@ class MusicService {
     //This will synchronize the playing states of
     _audioStateChangeSub =
         _audioPlayer.subscribeToStateChanges().listen((AudioPlayerState state) {
-          print("state from the sub is ${state}");
      if(castService.castingState.value==CastState.NOT_CASTING){
        if (state == AudioPlayerState.COMPLETED) {
          _onSongComplete();
        }
        if (state == AudioPlayerState.PAUSED) {
-         print("state coming form audipoPlayer:  ${state}");
          updatePlayerState(PlayerState.paused, _playerState$.value.value);
        }
      }else{

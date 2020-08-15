@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'package:Tunein/components/drawer/sideDrawer.dart';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/pages/collection/collection.page.dart';
 import 'package:Tunein/pages/library/library.page.dart';
@@ -12,6 +13,7 @@ import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/services/sideDrawerService.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +34,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   final SettingService = locator<settingService>();
   final MusicServiceIsolate = locator<musicServiceIsolate>();
   final NotificationService = locator<notificationControlService>();
+  final drawerService = locator<SideDrawerService>();
+
   final _androidAppRetain = MethodChannel("android_app_retain");
 
   final StreamController<StartupState> _startupStatus =
@@ -182,6 +186,107 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     });
   }
 
+  Widget getDrawer(){
+    return SideDrawerComponent(
+      layoutService.sideDrawerKey,
+        Scaffold(
+          key: layoutService.scaffoldKey,
+          bottomNavigationBar: BottomNavBar(),
+          backgroundColor: MyTheme.darkBlack,
+          body: StreamBuilder<StartupState>(
+            stream: _startupStatus.stream,
+            builder:
+                (BuildContext context, AsyncSnapshot<StartupState> snapshot) {
+              if (!snapshot.hasData) {
+                return Container();
+              }
+              if (snapshot.data == StartupState.Busy) {
+                return Container(
+                  constraints: BoxConstraints.expand(),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        CircularProgressIndicator(
+                          strokeWidth: 5.0,
+                        ),
+                        Text(
+                            "Scanning Your Library ...",
+                            style: TextStyle(
+                                color: MyTheme.darkRed,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16.0,
+                                height: 2.0
+                            )
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return Theme(
+                data: Theme.of(context).copyWith(accentColor: MyTheme.darkRed),
+                child: Padding(
+                  padding: MediaQuery.of(context).padding,
+                  child: Column(
+                    children: <Widget>[
+                      Expanded(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                Expanded(
+                                  child: PageView(
+                                    controller:
+                                    layoutService.globalPageController,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    children: [
+                                      LibraryPage(),
+                                      CollectionPage(),
+                                      SettingsPage()
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              child: Container(
+                                alignment: Alignment.center,
+                                color: MyTheme.darkBlack,
+                                height: 50,
+                                width: 53,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      drawerService.toggle();
+                                    },
+                                    child: Icon(
+                                      IconData(0xeae9, fontFamily: 'boxicons'),
+                                      size: 22,
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        )
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -212,97 +317,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           }
         }
       },
-      child: Scaffold(
-        key: layoutService.scaffoldKey,
-        bottomNavigationBar: BottomNavBar(),
-        backgroundColor: MyTheme.darkBlack,
-        body: StreamBuilder<StartupState>(
-          stream: _startupStatus.stream,
-          builder:
-              (BuildContext context, AsyncSnapshot<StartupState> snapshot) {
-            if (!snapshot.hasData) {
-              return Container();
-            }
-            if (snapshot.data == StartupState.Busy) {
-              return Container(
-                constraints: BoxConstraints.expand(),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      CircularProgressIndicator(
-                        strokeWidth: 5.0,
-                      ),
-                      Text(
-                        "Scanning Your Library ...",
-                        style: TextStyle(
-                          color: MyTheme.darkRed,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16.0,
-                          height: 2.0
-                        )
-                      )
-                    ],
-                  ),
-                ),
-              );
-            }
-            return Theme(
-              data: Theme.of(context).copyWith(accentColor: MyTheme.darkRed),
-              child: Padding(
-                padding: MediaQuery.of(context).padding,
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: <Widget>[
-                              Expanded(
-                                child: PageView(
-                                  controller:
-                                      layoutService.globalPageController,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: [
-                                    LibraryPage(),
-                                    CollectionPage(),
-                                    SettingsPage()
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Positioned(
-                            top: 0,
-                            left: 0,
-                            child: Container(
-                              alignment: Alignment.center,
-                              color: MyTheme.darkBlack,
-                              height: 50,
-                              width: 53,
-                              child: InkWell(
-                                onTap: () {},
-                                child: Icon(
-                                  IconData(0xeae9, fontFamily: 'boxicons'),
-                                  size: 22,
-                                  color: Colors.white54,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+      child: getDrawer(),
     );
   }
 }

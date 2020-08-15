@@ -210,7 +210,6 @@ class CastService {
 
       List<Device> deviceList =[];
       await  tempPort.forEach((data){
-        print(data);
         if(data!="OK"){
           tempPort.close();
           deviceList =data;

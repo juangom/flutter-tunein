@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inner_drawer/inner_drawer.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:Tunein/services/pageService.dart';
@@ -31,6 +32,11 @@ class LayoutService {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   GlobalKey<ScaffoldState> get scaffoldKey => _scaffoldKey;
+
+  final GlobalKey<InnerDrawerState> _sideDrawerKey = GlobalKey<InnerDrawerState>();
+
+  GlobalKey<InnerDrawerState> get sideDrawerKey => _sideDrawerKey;
+
 
   LayoutService() {
     _initGlobalPageView();

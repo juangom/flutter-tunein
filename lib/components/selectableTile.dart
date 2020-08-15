@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 class SelectableTile extends StatefulWidget {
   final String imageUri;
+  Widget leadingWidget;
   final String title;
   String subtitle;
   Color initialSubtitleColor;
@@ -21,11 +22,11 @@ class SelectableTile extends StatefulWidget {
   Color selectedTextColor;
   Color selectedBackgroundColor;
   String type="normal";
-  SelectableTile({@required this.imageUri, @required this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
-    this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor});
+  SelectableTile({this.imageUri, this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
+    this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor, this.leadingWidget});
 
-  SelectableTile.mediumWithSubtitle({@required this.imageUri, @required this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
-    this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor, this.subtitle, this.initialSubtitleColor, this.selectedSubtitleColor}){
+  SelectableTile.mediumWithSubtitle({this.imageUri, this.title, this.onTap, this.isSelected, this.placeHolderAssetUri,
+    this.initialBackgroundColor, this.selectedBackgroundColor, this.selectedTextColor, this.initialTextColor, this.subtitle, this.initialSubtitleColor, this.selectedSubtitleColor, this.leadingWidget}){
     this.type="mediumsub";
   }
 
@@ -46,6 +47,7 @@ class _SelectableTileState extends State<SelectableTile> {
   String subtitle;
   Color initialSubtitleColor;
   Color selectedSubtitleColor;
+  Widget leadingWidget;
   @override
   void initState() {
     // TODO: implement initState
@@ -62,6 +64,7 @@ class _SelectableTileState extends State<SelectableTile> {
     subtitle=widget.subtitle;
     initialSubtitleColor=widget.initialSubtitleColor;
     selectedSubtitleColor=widget.selectedSubtitleColor;
+    leadingWidget=widget.leadingWidget;
   }
   @override
   Widget build(BuildContext context) {
@@ -102,7 +105,7 @@ class _SelectableTileState extends State<SelectableTile> {
                 child: SizedBox(
                   height: 50,
                   width: 50,
-                  child: FadeInImage(
+                  child: leadingWidget??FadeInImage(
                     placeholder: AssetImage(placeHolderAssetUri??'images/track.png'),
                     fadeInDuration: Duration(milliseconds: 200),
                     fadeOutDuration: Duration(milliseconds: 100),
@@ -189,7 +192,7 @@ class _SelectableTileState extends State<SelectableTile> {
                 child: SizedBox(
                   height: 30,
                   width: 30,
-                  child: FadeInImage(
+                  child: leadingWidget??FadeInImage(
                     placeholder: AssetImage(placeHolderAssetUri??'images/track.png'),
                     fadeInDuration: Duration(milliseconds: 200),
                     fadeOutDuration: Duration(milliseconds: 100),

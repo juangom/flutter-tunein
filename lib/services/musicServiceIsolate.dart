@@ -303,7 +303,6 @@ class musicServiceIsolate {
           if(incomingMessage[1]!=null){
             writeImage(null,incomingMessage[1]).then(
                     (data){
-                      print(data.path);
                   (incomingMessage[2] as SendPort).send(data.uri);
                 }
             );
@@ -493,7 +492,6 @@ class musicServiceIsolate {
     isolateTempPort.listen((dataSenT) async{
       if(dataSenT!=null){
         MethodChannel platform = MethodChannel('android_app_retain');
-        print(data.value);
         var metaValue = await platform
             .invokeMethod("getMetaData", <String, dynamic>{'filepath': data.value});
         data.key.sendPort.send(metaValue);

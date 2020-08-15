@@ -12,6 +12,7 @@ import 'package:Tunein/services/musicServiceIsolate.dart';
 import 'package:Tunein/services/platformService.dart';
 import 'package:Tunein/services/queueService.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/services/sideDrawerService.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:get_it/get_it.dart';
 
@@ -31,6 +32,7 @@ void setupLocator() {
   locator.registerSingleton(MusicService());
 
   locator.registerSingleton(LayoutService());
+  locator.registerSingleton(SideDrawerService());
 
   locator.registerSingleton(languageService());
   locator.registerSingleton(httpRequests());

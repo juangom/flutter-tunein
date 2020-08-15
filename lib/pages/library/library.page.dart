@@ -39,7 +39,7 @@ class LibraryPage extends StatelessWidget {
                     return children[position];
                   },
                   onPageChanged: (int position) {
-
+                      //print("position from the pagePloader: ${position}");
                   },
                   preloadPagesCount: 3,
                   controller: layoutService.pageServices[0].pageViewController,

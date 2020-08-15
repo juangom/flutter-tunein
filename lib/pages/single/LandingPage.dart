@@ -748,7 +748,6 @@ class _LandingPageState extends State<LandingPage> {
         return defaultImageBytes;
       });
 
-      print(playDuration);
 
       return Material(
           child: Container(
@@ -790,7 +789,6 @@ class _LandingPageState extends State<LandingPage> {
                               ),
                             ),
                             onTap: (){
-                              print(playDuration[AlbumSongs[index].id.toString()]);
                               print(AlbumSongs[index].id);
                               List<int> colors = AlbumSongs[index].songs[0].colors;
                               showGeneralDialog(
