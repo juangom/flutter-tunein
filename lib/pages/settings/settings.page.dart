@@ -98,7 +98,8 @@ class SettingsPage extends StatelessWidget {
                                       if(result!=null && result){
                                         musicService.getArtistDataAndSaveIt().then((value) {
                                           DialogService.showToast(context,
-                                            message: "Artist thumbnail update started"
+                                            message: "Artist thumbnail update started",
+                                            color: MyTheme.darkRed
                                           );
                                         });
                                       }

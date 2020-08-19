@@ -78,23 +78,26 @@ class SingleArtistPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Row(
-                              mainAxisSize: MainAxisSize.max,
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Text(
-                                    (artist.name == null)
-                                        ? "Unknon Artist"
-                                        : artist.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                    style: TextStyle(
-                                      fontSize: 17.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white,
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text(
+                                      (artist.name == null)
+                                          ? "Unknon Artist"
+                                          : artist.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      style: TextStyle(
+                                        fontSize: 17.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: bgColor!=null?Color(bgColor[2]).withAlpha(200):Colors.white,
+                                      ),
                                     ),
                                   ),
+                                  flex: 8,
                                 ),
                                 Material(
                                   child: PopupMenuButton<ContextMenuOptions>(
