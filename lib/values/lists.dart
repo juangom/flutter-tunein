@@ -28,6 +28,9 @@ final Map<int, List<MapEntry<String, GlobalKey>>> headerItems = {
     MapEntry("Interface", GlobalKey()),
     MapEntry("Metrics", GlobalKey()),
     MapEntry("Servers", GlobalKey())
+  ],
+  3:[
+    MapEntry("About", GlobalKey()),
   ]
 };
 

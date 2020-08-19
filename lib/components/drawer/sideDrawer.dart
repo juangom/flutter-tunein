@@ -8,6 +8,7 @@ import 'package:Tunein/components/selectableTile.dart';
 import 'package:Tunein/components/smallControlls.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/pages/single/AboutPage.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
@@ -158,6 +159,9 @@ class SideDrawerComponent extends StatelessWidget {
                                 size: 28,
                               ),
                               title: "About TuneIn",
+                              onTap: (data){
+                                openAboutPage(context);
+                              },
                             ),
                             SelectableTile(
                               leadingWidget: Icon(
@@ -195,5 +199,15 @@ class SideDrawerComponent extends StatelessWidget {
         );
       },
     );
+  }
+
+
+  openAboutPage(context){
+    Navigator.of(context, rootNavigator: false).push(
+      MaterialPageRoute(
+        builder: (context) => AboutTuneInPage(),
+      ),
+    );
+
   }
 }

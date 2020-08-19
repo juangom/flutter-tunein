@@ -89,6 +89,20 @@ class SettingsPage extends StatelessWidget {
                                     );
                                   }else{
                                     SettingService.updateSingleSetting(SettingsIds.SET_ARTIST_THUMB_UPDATE, value.toString());
+                                    if(value){
+                                      bool result = await DialogService.showConfirmDialog(context,
+                                        message: "Do you want to start the thumbnail update NOW ?",
+                                        title: "Start Thumbnail update",
+                                        confirmButtonText: "Start Now"
+                                      );
+                                      if(result!=null && result){
+                                        musicService.getArtistDataAndSaveIt().then((value) {
+                                          DialogService.showToast(context,
+                                            message: "Artist thumbnail update started"
+                                          );
+                                        });
+                                      }
+                                    }
                                   }
                                 },
                               ),

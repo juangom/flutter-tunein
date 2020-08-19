@@ -47,7 +47,7 @@ class LayoutService {
   }
 
   void _initSubPageViews() {
-    _pageServices = List<PageService>(3);
+    _pageServices = List<PageService>(4);
     for (var i = 0; i < _pageServices.length; i++) {
       _pageServices[i] = PageService(i, Controller: i==0?PreloadPageController():null);
     }
