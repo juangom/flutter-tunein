@@ -357,6 +357,7 @@ class musicServiceIsolate {
           if(incomingMessage[1]!=null){
             Map<String, dynamic> convertedMap = json.decode(incomingMessage[1]);
             show(
+              bigLayoutIconColor: convertedMap["bigLayoutIconColor"],
               author: convertedMap["author"]??"",
               bgColor: convertedMap["bgColor"]!=null?Color(int.tryParse(convertedMap["bgColor"])):Colors.white,
               BitmapImage: convertedMap["BitmapImage"]!=null?Uint8List.fromList((convertedMap["BitmapImage"] as List).map((e) => int.tryParse(e.toString())).toList()):null,
@@ -626,7 +627,7 @@ class musicServiceIsolate {
 
   // Notification Methods
 
-  static show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bgColor, String bgImage, List<int> bgBitmapImage, Color bgImageBackgroundColor, Function(dynamic) callback}) async{
+  static show({String title, String author, bool play, String image, List<int> BitmapImage, Color titleColor, Color subtitleColor, Color iconColor, Color bigLayoutIconColor, Color bgColor, String bgImage, List<int> bgBitmapImage, Color bgImageBackgroundColor, Function(dynamic) callback}) async{
     MediaNotification.show(
         title: title??"title",
         author: author??"author",
@@ -640,6 +641,7 @@ class musicServiceIsolate {
         bgImage: bgImage,
         bgBitmapImage: bgBitmapImage,
         bgImageBackgroundColor: bgImageBackgroundColor,
+        bigLayoutIconColor: bigLayoutIconColor,
         bgColor:bgColor).then((s){
           callback!=null?callback(s):null;
     });

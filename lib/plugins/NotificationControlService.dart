@@ -40,6 +40,7 @@ class notificationControlService{
     Color titleColor,
     Color subtitleColor,
     Color iconColor,
+    Color bigLayoutIconColor,
     Color bgColor,
   }) async{
     String messageToSend = json.encode({
@@ -54,6 +55,7 @@ class notificationControlService{
       "titleColor":titleColor!=null?titleColor?.value.toString():Colors.white,
       "subtitleColor":subtitleColor!=null?subtitleColor?.value.toString():Colors.white,
       "iconColor":iconColor!=null?iconColor?.value.toString():Colors.white,
+      "bigLayoutIconColor":bigLayoutIconColor,
       "bgColor":bgColor!=null?bgColor?.value.toString():Colors.black
     });
     sendNewIsolateCommand(

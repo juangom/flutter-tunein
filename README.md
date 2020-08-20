@@ -58,9 +58,9 @@ Thank you in advance 👍
 | ----------------------------------------- | ----------------------------------------- | ----------------------------------------- | -----------------------------------------|
 | <img src="screenshots/10.png" width="250"> | <img src="screenshots/2.png" width="250"> | <img src="screenshots/3.png" width="250"> | <img src="screenshots/9.png" width="250">|
 
-|              Album song list              |                ALbums List                |             Lockscreen controls           |     Notification Big Layout Controls     |
+|              Album song list              |                ALbums List                |             Home Page                     |     Notification Big Layout Controls     |
 | ----------------------------------------- | ----------------------------------------- | ----------------------------------------- | -----------------------------------------|
-| <img src="screenshots/11.png" width="250"> | <img src="screenshots/6.png" width="250"> | <img src="screenshots/7.png" width="250"> | <img src="screenshots/8.png" width="250">|
+| <img src="screenshots/11.png" width="250"> | <img src="screenshots/6.png" width="250"> | <img src="screenshots/13.png" width="250"> | <img src="screenshots/14.png" width="250">|
 
 ## Support me
 
