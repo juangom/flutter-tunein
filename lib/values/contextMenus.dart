@@ -15,17 +15,17 @@ final songCardContextMenulist=[
   ),
   ContextMenuOptions(
     id: 2,
-    title: "Start with and shuffle queue",
+    title: "Shuffle next queue",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
     id: 3,
-    title: "Start with and shuffle album",
+    title: "Shuffle next album",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
     id: 5,
-    title: "Cast to Current Device",
+    title: "Cast",
     icon: Icons.cast_connected,
   ),
   ContextMenuOptions(
@@ -35,7 +35,7 @@ final songCardContextMenulist=[
   ),
   ContextMenuOptions(
     id: 7,
-    title: "File information",
+    title: "Song information",
     icon: Icons.info_outline,
   ),
 ];
@@ -107,12 +107,12 @@ final playlistSongCardContextMenulist=[
   ),
   ContextMenuOptions(
     id: 2,
-    title: "Start with and shuffle playlist",
+    title: "Shuffle next playlist",
     icon: Icons.shuffle,
   ),
   ContextMenuOptions(
     id: 3,
-    title: "Start with and shuffle album",
+    title: "Shuffle next album",
     icon: Icons.shuffle,
   ),
 ];
