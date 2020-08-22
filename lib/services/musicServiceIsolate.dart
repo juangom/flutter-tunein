@@ -357,7 +357,7 @@ class musicServiceIsolate {
           if(incomingMessage[1]!=null){
             Map<String, dynamic> convertedMap = json.decode(incomingMessage[1]);
             show(
-              bigLayoutIconColor: convertedMap["bigLayoutIconColor"],
+              bigLayoutIconColor: convertedMap["bigLayoutIconColor"]!=null?Color(int.tryParse(convertedMap["bigLayoutIconColor"])):null,
               author: convertedMap["author"]??"",
               bgColor: convertedMap["bgColor"]!=null?Color(int.tryParse(convertedMap["bgColor"])):Colors.white,
               BitmapImage: convertedMap["BitmapImage"]!=null?Uint8List.fromList((convertedMap["BitmapImage"] as List).map((e) => int.tryParse(e.toString())).toList()):null,

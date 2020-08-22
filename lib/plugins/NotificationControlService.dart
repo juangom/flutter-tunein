@@ -55,7 +55,7 @@ class notificationControlService{
       "titleColor":titleColor!=null?titleColor?.value.toString():Colors.white,
       "subtitleColor":subtitleColor!=null?subtitleColor?.value.toString():Colors.white,
       "iconColor":iconColor!=null?iconColor?.value.toString():Colors.white,
-      "bigLayoutIconColor":bigLayoutIconColor,
+      "bigLayoutIconColor":bigLayoutIconColor?.value.toString(),
       "bgColor":bgColor!=null?bgColor?.value.toString():Colors.black
     });
     sendNewIsolateCommand(

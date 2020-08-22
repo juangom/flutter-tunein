@@ -174,6 +174,7 @@ class RootState extends State<Root> with TickerProviderStateMixin {
                 titleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
                 subtitleColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]).withAlpha(50): MyTheme.grey300,
                 iconColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[1]): MyTheme.grey300,
+                bigLayoutIconColor: artist.colors!=null && artist.colors.length!=0?Color(artist.colors[1]):null,
                 bgImage: songToshowONNotification.artist!=null?artist.coverArt:null,
                 bgBitmapImage: artist.coverArt==null? defaultBgImageBytes:null,
                 bgImageBackgroundColor: (artist.colors!=null && artist.colors.length!=0)?Color(artist.colors[0]):MyTheme.darkBlack,

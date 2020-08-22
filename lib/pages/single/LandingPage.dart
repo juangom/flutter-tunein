@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 import 'package:Tunein/components/cards/AnimatedDialog.dart';
 import 'package:Tunein/components/cards/PreferedPicks.dart';
 import 'package:Tunein/components/cards/expandableItems.dart';
+import 'package:Tunein/components/common/ShowWithFadeComponent.dart';
 import 'package:Tunein/components/genericSongList.dart';
 import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/songInfoWidget.dart';
@@ -637,7 +638,7 @@ class _LandingPageState extends State<LandingPage> {
                     showGeneralDialog(
                         barrierLabel: "RandomSongs",
                         barrierDismissible: true,
-                        barrierColor: Colors.black.withOpacity(0.5),
+                        barrierColor: Colors.black.withOpacity(0.7),
                         transitionDuration: Duration(milliseconds: 80),
                         context: context,
                         pageBuilder: (context, anim1, anim2){
@@ -789,13 +790,12 @@ class _LandingPageState extends State<LandingPage> {
                               ),
                             ),
                             onTap: (){
-                              print(AlbumSongs[index].id);
                               List<int> colors = AlbumSongs[index].songs[0].colors;
                               showGeneralDialog(
                                   barrierLabel: "TopAlbums",
                                   barrierDismissible: true,
-                                  barrierColor: Colors.black.withOpacity(0.5),
-                                  transitionDuration: Duration(milliseconds: 80),
+                                  barrierColor: Colors.black.withOpacity(0.7),
+                                  transitionDuration: Duration(milliseconds: 100),
                                   context: context,
                                   pageBuilder: (context, anim1, anim2){
                                     return SinglePicturePopupWidget(
@@ -949,7 +949,8 @@ class _LandingPageState extends State<LandingPage> {
     VoidCallback onSaveButtonTap,
     VoidCallback onShuffleButtonTap,
     List<Tune> listOfSongs = const [],
-    String TopwidgetBottomTitle=""
+    String TopwidgetBottomTitle="",
+
   }){
 
     deckItemState={
@@ -981,11 +982,18 @@ class _LandingPageState extends State<LandingPage> {
           Container(
             height: screensize.height*0.2,
             width: (screensize.width*0.85)+10,
-            child: PreferredPicks(
-              bottomTitle: TopwidgetBottomTitle,
-              colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-              backgroundWidget: TopBackgroundWidget,
-              borderRadius: Radius.zero,
+            child: GestureDetector(
+              child: PreferredPicks(
+                bottomTitle: TopwidgetBottomTitle,
+                colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+                backgroundWidget: TopBackgroundWidget,
+                borderRadius: Radius.zero,
+              ),
+              onPanUpdate: (details){
+                if (details.delta.dy > 10){
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+              },
             ),
           ),
           Container(
@@ -1043,220 +1051,13 @@ class _LandingPageState extends State<LandingPage> {
               ],
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
-            ),
-            height: screensize.height*0.5,
-            width: screensize.width*0.85,
-            child: GenericSongList(
-              songs: listOfSongs,
-              screenSize: screensize,
-              staticOffsetFromBottom: 100.0,
-              bgColor: null,
-              contextMenuOptions: (song){
-                return songCardContextMenulist;
-              },
-              onContextOptionSelect: (choice,tune) async{
-                switch(choice.id){
-                  case 1: {
-                    musicService.playOne(tune);
-                    break;
-                  }
-                  case 2:{
-                    musicService.startWithAndShuffleQueue(tune, listOfSongs);
-                    break;
-                  }
-                  case 3:{
-                    musicService.startWithAndShuffleAlbum(tune);
-                    break;
-                  }
-                  case 4:{
-                    musicService.playAlbum(tune);
-                    break;
-                  }
-                  case 5:{
-                    if(castService.currentDeviceToBeUsed.value==null){
-                      upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
-                      if(result!=null){
-                        castService.setDeviceToBeUsed(result);
-                      }
-                    }
-                    musicService.castOrPlay(tune, SingleCast: true);
-                    break;
-                  }
-                  case 6:{
-                    upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
-                    if(result!=null){
-                      musicService.castOrPlay(tune, SingleCast: true, device: result);
-                    }
-                    break;
-                  }
-                  case 7: {
-                    DialogService.showAlertDialog(context,
-                        title: "Song Information",
-                        content: SongInfoWidget(null, song: tune),
-                        padding: EdgeInsets.only(top: 10)
-                    );
-                  }
-                }
-              },
-              onSongCardTap: (song,state,isSelectedSong){
-                musicService.updatePlaylist([song]);
-                musicService.playOrPause(song);
-              },
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  SinglePicturePopupWidget({
-    Size screensize,
-    Widget TopLeftWidget,
-    String topLeftImage,
-    String title,
-    String subtitle,
-    String Description,
-    Widget underSubtitleTray,
-    bool showPlaybutton=true,
-    bool showShuffleButton=true,
-    VoidCallback onPlaybuttonTap,
-    VoidCallback onShuffleButtonTap,
-    List<int> colors,
-    List<Tune> listOfSongs = const [],
-  }){
-    File imageFile = TopLeftWidget==null?topLeftImage!=null?File.fromUri(Uri.parse(topLeftImage)):null:TopLeftWidget;
-    double popupWidth = screensize.width*0.85;
-    return Material(
-      color: Colors.transparent,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Container(
-              color: (colors!=null && colors.length!=0)?Color(colors[0]):MyTheme.darkBlack,
-              width: popupWidth,
-              child: Row(
-                children: <Widget>[
-                  Container(
-                      height: 80,
-                      width: 80,
-                      child: TopLeftWidget??(imageFile!=null &&  imageFile.existsSync())?Image.file(imageFile,
-                        fit: BoxFit.fill,
-                      ):Image.asset("images/cover.png",
-                        fit: BoxFit.cover,
-                      )
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(top: 5, left: 5),
-                    width: popupWidth - 80,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Padding(
-                          child: Text(title??"Unknown title",
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            style: TextStyle(
-                                color: colors!=null?Color(colors[1]):MyTheme.grey300,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 17
-                            ),
-                          ),
-                          padding: EdgeInsets.only(bottom: 5),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 5),
-                          child: Text(subtitle??"Unknown Artist",
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-                            style: TextStyle(
-                                color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.8),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15
-                            ),
-                          ),
-                        ),
-                        /*Text(Description??"Unknown Artist",
-                          overflow: TextOverflow.fade,
-                          maxLines: 2,
-                          style: TextStyle(
-                              color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.7),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic
-                          ),
-                        ),*/
-                        underSubtitleTray??Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(right: 5),
-                                  child: Text(
-                                    listOfSongs.length.toString(),
-                                    style: TextStyle(
-                                      color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.audiotrack,
-                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
-                                )
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(right: 8, left :8),
-                              width: 1,
-                              color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Container(
-                                  child: Text(
-                                    "${Duration(milliseconds: ConversionUtils.songListToDuration(listOfSongs).floor()).inMinutes} min",
-                                    style: TextStyle(
-                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  margin: EdgeInsets.only(right: 5),
-                                ),
-                                Icon(
-                                  Icons.access_time,
-                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
-                                )
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(right: 8, left :8),
-                              width: 4,
-                              color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
+          ShowWithFade(
+            child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
               ),
-              width: screensize.width*0.85,
               height: screensize.height*0.5,
+              width: screensize.width*0.85,
               child: GenericSongList(
                 songs: listOfSongs,
                 screenSize: screensize,
@@ -1314,7 +1115,240 @@ class _LandingPageState extends State<LandingPage> {
                   musicService.playOrPause(song);
                 },
               ),
-            )
+            ),
+            durationUntilFadeStarts: Duration(milliseconds: 150),
+            fadeDuration: Duration(milliseconds: 150),
+            shallowWidget: Container(
+              width: screensize.width*0.85,
+              height: screensize.height*0.5,
+              color: MyTheme.bgBottomBar,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  SinglePicturePopupWidget({
+    Size screensize,
+    Widget TopLeftWidget,
+    String topLeftImage,
+    String title,
+    String subtitle,
+    String Description,
+    Widget underSubtitleTray,
+    bool showPlaybutton=true,
+    bool showShuffleButton=true,
+    VoidCallback onPlaybuttonTap,
+    VoidCallback onShuffleButtonTap,
+    List<int> colors,
+    List<Tune> listOfSongs = const [],
+  }){
+    File imageFile = TopLeftWidget==null?topLeftImage!=null?File.fromUri(Uri.parse(topLeftImage)):null:TopLeftWidget;
+    double popupWidth = screensize.width*0.85;
+    return Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            GestureDetector(
+              onPanUpdate: (details){
+                if (details.delta.dy > 10){
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+              },
+              child: Container(
+                color: (colors!=null && colors.length!=0)?Color(colors[0]):MyTheme.darkBlack,
+                width: popupWidth,
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                        height: 80,
+                        width: 80,
+                        child: TopLeftWidget??(imageFile!=null &&  imageFile.existsSync())?Image.file(imageFile,
+                          fit: BoxFit.fill,
+                        ):Image.asset("images/cover.png",
+                          fit: BoxFit.cover,
+                        )
+                    ),
+                    Container(
+                      padding: EdgeInsets.only(top: 5, left: 5),
+                      width: popupWidth - 80,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Padding(
+                            child: Text(title??"Unknown title",
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  color: colors!=null?Color(colors[1]):MyTheme.grey300,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17
+                              ),
+                            ),
+                            padding: EdgeInsets.only(bottom: 5),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 5),
+                            child: Text(subtitle??"Unknown Artist",
+                              overflow: TextOverflow.fade,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.8),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15
+                              ),
+                            ),
+                          ),
+                          /*Text(Description??"Unknown Artist",
+                          overflow: TextOverflow.fade,
+                          maxLines: 2,
+                          style: TextStyle(
+                              color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.7),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic
+                          ),
+                        ),*/
+                          underSubtitleTray??Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: <Widget>[
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.only(right: 5),
+                                    child: Text(
+                                      listOfSongs.length.toString(),
+                                      style: TextStyle(
+                                        color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.audiotrack,
+                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                  )
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(right: 8, left :8),
+                                width: 1,
+                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Container(
+                                    child: Text(
+                                      "${Duration(milliseconds: ConversionUtils.songListToDuration(listOfSongs).floor()).inMinutes} min",
+                                      style: TextStyle(
+                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    margin: EdgeInsets.only(right: 5),
+                                  ),
+                                  Icon(
+                                    Icons.access_time,
+                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                  )
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(right: 8, left :8),
+                                width: 4,
+                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            ShowWithFade(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                ),
+                width: screensize.width*0.85,
+                height: screensize.height*0.5,
+                child: GenericSongList(
+                  songs: listOfSongs,
+                  screenSize: screensize,
+                  staticOffsetFromBottom: 100.0,
+                  bgColor: null,
+                  contextMenuOptions: (song){
+                    return songCardContextMenulist;
+                  },
+                  onContextOptionSelect: (choice,tune) async{
+                    switch(choice.id){
+                      case 1: {
+                        musicService.playOne(tune);
+                        break;
+                      }
+                      case 2:{
+                        musicService.startWithAndShuffleQueue(tune, listOfSongs);
+                        break;
+                      }
+                      case 3:{
+                        musicService.startWithAndShuffleAlbum(tune);
+                        break;
+                      }
+                      case 4:{
+                        musicService.playAlbum(tune);
+                        break;
+                      }
+                      case 5:{
+                        if(castService.currentDeviceToBeUsed.value==null){
+                          upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                          if(result!=null){
+                            castService.setDeviceToBeUsed(result);
+                          }
+                        }
+                        musicService.castOrPlay(tune, SingleCast: true);
+                        break;
+                      }
+                      case 6:{
+                        upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                        if(result!=null){
+                          musicService.castOrPlay(tune, SingleCast: true, device: result);
+                        }
+                        break;
+                      }
+                      case 7: {
+                        DialogService.showAlertDialog(context,
+                            title: "Song Information",
+                            content: SongInfoWidget(null, song: tune),
+                            padding: EdgeInsets.only(top: 10)
+                        );
+                      }
+                    }
+                  },
+                  onSongCardTap: (song,state,isSelectedSong){
+                    musicService.updatePlaylist([song]);
+                    musicService.playOrPause(song);
+                  },
+                ),
+              ),
+              durationUntilFadeStarts: Duration(milliseconds: 150),
+              fadeDuration: Duration(milliseconds: 150),
+              shallowWidget: Container(
+                width: screensize.width*0.85,
+                height: screensize.height*0.5,
+                color: MyTheme.bgBottomBar,
+              ),
+            ),
+
           ],
         ),
       ),
