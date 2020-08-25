@@ -20,7 +20,9 @@ class PreferredPicks extends StatelessWidget {
   final MapEntry<double, double> textPosition;
   final Key key;
   final Radius borderRadius;
-  PreferredPicks({this.bottomTitle, this.imageUri, this.colors, this.backgroundWidget, this.blurPower,this.blurColor, this.textPosition, this.key, this.borderRadius}): super(key: key);
+  final bool allImageBlur;
+  PreferredPicks({this.bottomTitle, this.imageUri, this.colors, this.backgroundWidget,
+    this.blurPower,this.blurColor, this.textPosition, this.key, this.borderRadius, this.allImageBlur=true}): super(key: key);
 
 
 
@@ -41,23 +43,28 @@ class PreferredPicks extends StatelessWidget {
           child: Stack(
             overflow: Overflow.clip,
             children: <Widget>[
-              Container(
-                child: backgroundWidget??ConstrainedBox(
-                  child: imageUri == null ? Image.asset("images/artist.jpg",fit: BoxFit.cover) : Image(
-                    image: FileImage(File(imageUri)),
-                    fit: BoxFit.cover,
-                    colorBlendMode: BlendMode.clear,
-                  ),
-                  constraints: BoxConstraints.expand(),
+              ImageFiltered(
+                imageFilter: ImageFilter.blur(
+                    sigmaX: blurPower!=null?blurPower.key:2, sigmaY: blurPower!=null?blurPower.value:3
                 ),
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
-                  border: Border.all(width: .3, color: MyTheme.bgBottomBar),
+                child: Container(
+                  child: backgroundWidget??ConstrainedBox(
+                    child: imageUri == null ? Image.asset("images/artist.jpg",fit: BoxFit.cover) : Image(
+                      image: FileImage(File(imageUri)),
+                      fit: BoxFit.cover,
+                      colorBlendMode: BlendMode.clear,
+                    ),
+                    constraints: BoxConstraints.expand(),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.all(borderRadius??Radius.circular(10)),
+                    border: Border.all(width: .3, color: MyTheme.bgBottomBar),
+                  ),
                 ),
               ),
-              Container(
+              if(allImageBlur)Container(
                   child: ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: blurPower!=null?blurPower.key:2, sigmaY: blurPower!=null?blurPower.value:3),
@@ -71,7 +78,7 @@ class PreferredPicks extends StatelessWidget {
                     ),
                   )
               ),
-              Positioned(
+              if(bottomTitle!=null)Positioned(
                 child: Text(bottomTitle??"Choice card",
                   style: TextStyle(
                       color: ((colors!=null && colors.length!=0)?new Color(colors[1]):Color(0xffffffff)).withOpacity(.8),

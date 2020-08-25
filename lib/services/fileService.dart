@@ -7,7 +7,7 @@ import 'dart:typed_data';
 
 import 'package:Tunein/services/locator.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:rxdart/rxdart.dart';
 class fileService{
 

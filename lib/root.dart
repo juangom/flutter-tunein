@@ -11,7 +11,7 @@ import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
 import 'package:Tunein/services/musicService.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:Tunein/services/sideDrawerService.dart';
 import 'package:flutter/cupertino.dart';

@@ -13,7 +13,7 @@ import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/queueService.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:Tunein/services/themeService.dart';
@@ -59,6 +59,10 @@ class MusicService {
   notificationControlService _notificationService;
   Nano _nano;
   Tune _defaultSong;
+  Map<String, Tune> SongList;
+  Map<int, Artist> ArtistList;
+  Map<int, Album> AlbumList;
+
 
   BehaviorSubject<List<Tune>> get songs$ => _songs$;
 
@@ -1449,12 +1453,31 @@ class MusicService {
     );
     _artistsImages$ = BehaviorSubject<Map<String,Artist>>();
     //This will update the artistImages set each time the artists set is changed
+    ArtistList= new Map();
     artists$.listen((value) {
       Map<String, Artist> newImages =new Map();
       value.forEach((element) {
         newImages[element.name] = element;
       });
       artistsImages$.add(newImages);
+      ArtistList = Map.fromIterable(artists$.value,
+        key: (keyvalue)=> keyvalue.id,
+        value: (value)=>value
+      );
+    });
+    SongList= new Map();
+    _songs$.listen((value){
+      SongList =Map.fromIterable(_songs$.value,
+          key: (keyvalue)=> keyvalue.id,
+          value: (value)=>value
+      );
+    });
+    AlbumList = new Map();
+    _albums$.listen((value) {
+      AlbumList = Map.fromIterable(_albums$.value,
+          key: (keyvalue)=> keyvalue.id,
+          value: (value)=>value
+      );
     });
   }
 

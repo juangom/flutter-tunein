@@ -9,7 +9,7 @@ import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import 'package:Tunein/services/locator.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:ext_storage/ext_storage.dart';
 class Nano {
 

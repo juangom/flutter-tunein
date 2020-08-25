@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:Tunein/services/locator.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 

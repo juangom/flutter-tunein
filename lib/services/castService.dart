@@ -4,7 +4,7 @@ import 'dart:isolate';
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
-import 'package:Tunein/services/musicServiceIsolate.dart';
+import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/platformService.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:upnp/upnp.dart';
