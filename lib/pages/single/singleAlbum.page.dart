@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:Tunein/components/card.dart';
 import 'package:Tunein/components/albumSongList.dart';
 import 'package:Tunein/components/cards/optionsCard.dart';
+import 'package:Tunein/components/common/ShowWithFadeComponent.dart';
 import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
@@ -209,194 +210,202 @@ class SingleAlbumPage extends StatelessWidget {
             ),
             elevation: 12.0,
           ),
+
           songsFound?Flexible(
-            child: Container(
-              color: MyTheme.darkBlack,
-              height: screenSize.height-definitionBarHeight-heightToSubstract,
-              child: CustomScrollView(
-                shrinkWrap: false,
-                scrollDirection: Axis.vertical,
-                slivers: <Widget>[
-                  SliverAppBar(
-                    elevation: 0,
-                    expandedHeight: 131,
-                    backgroundColor: MyTheme.bgBottomBar,
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Column(
-                        children: <Widget>[
-                          ItemListDevider(DeviderTitle: "More choices"),
-                          Container(
-                            color:MyTheme.bgBottomBar,
-                            height: 120,
-                            child: ListView.builder(
-                              itemExtent: 180,
-                              itemCount: 1,
-                              cacheExtent:MediaQuery.of(context).size.width,
-                              addAutomaticKeepAlives: true,
-                              shrinkWrap: false,
+            child: ShowWithFade(
+              child: Container(
+                color: MyTheme.darkBlack,
+                height: screenSize.height-definitionBarHeight-heightToSubstract,
+                child: CustomScrollView(
+                  shrinkWrap: false,
+                  scrollDirection: Axis.vertical,
+                  slivers: <Widget>[
+                    SliverAppBar(
+                      elevation: 0,
+                      expandedHeight: 131,
+                      backgroundColor: MyTheme.bgBottomBar,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Column(
+                          children: <Widget>[
+                            ItemListDevider(DeviderTitle: "More choices"),
+                            Container(
+                              color:MyTheme.bgBottomBar,
+                              height: 120,
+                              child: ListView.builder(
+                                itemExtent: 180,
+                                itemCount: 1,
+                                cacheExtent:MediaQuery.of(context).size.width,
+                                addAutomaticKeepAlives: true,
+                                shrinkWrap: false,
 
-                              scrollDirection: Axis.horizontal,
+                                scrollDirection: Axis.horizontal,
 
-                              itemBuilder: (context, index){
-                                String uniqueID = "MP${album.albumArt??album.title.split(" ").join()}";
-                                return MoreOptionsCard(
-                                  uniqueID: uniqueID,
-                                  backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
-                                  Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
-                                  imageUri: album.albumArt,
-                                  colors: album.songs[0].colors,
-                                  bottomTitle: "Most Played",
-                                  onPlayPressed: (){
-                                    musicService.playMostPlayedOfAlbum(album);
-                                  },
-                                  onSavePressed: () async{
-                                    Playlist newPlaylsit = Playlist(
-                                        "Most played of ${album.title}",
-                                        musicService.getMostPlayedOfAlbum(album),
-                                        PlayerState.stopped,
-                                        null
-                                    );
-                                    /// This is a temporary way fo handling until we incorporate the name changing in playlists
-                                    /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
-                                    /// instead of the listofSongsToBeDeleted TODO
-                                    List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
-                                    if(songsToBeDeleted!=null){
-                                      if(songsToBeDeleted.length!=0){
-                                        List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
-                                        newPlaylsit.songs.removeWhere((elem){
-                                          return idList.contains(elem.id);
-                                        });
-                                        musicService.addPlaylist(newPlaylsit).then(
-                                                (data){
-                                              DialogService.showToast(context,
-                                                  backgroundColor: MyTheme.darkBlack,
-                                                  color: MyTheme.darkRed,
-                                                  message: "Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved"
-                                              );
-                                            }
-                                        );
+                                itemBuilder: (context, index){
+                                  String uniqueID = "MP${album.albumArt??album.title.split(" ").join()}";
+                                  return MoreOptionsCard(
+                                    uniqueID: uniqueID,
+                                    backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
+                                    Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
+                                    imageUri: album.albumArt,
+                                    colors: album.songs[0].colors,
+                                    bottomTitle: "Most Played",
+                                    onPlayPressed: (){
+                                      musicService.playMostPlayedOfAlbum(album);
+                                    },
+                                    onSavePressed: () async{
+                                      Playlist newPlaylsit = Playlist(
+                                          "Most played of ${album.title}",
+                                          musicService.getMostPlayedOfAlbum(album),
+                                          PlayerState.stopped,
+                                          null
+                                      );
+                                      /// This is a temporary way fo handling until we incorporate the name changing in playlists
+                                      /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
+                                      /// instead of the listofSongsToBeDeleted TODO
+                                      List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
+                                      if(songsToBeDeleted!=null){
+                                        if(songsToBeDeleted.length!=0){
+                                          List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
+                                          newPlaylsit.songs.removeWhere((elem){
+                                            return idList.contains(elem.id);
+                                          });
+                                          musicService.addPlaylist(newPlaylsit).then(
+                                                  (data){
+                                                DialogService.showToast(context,
+                                                    backgroundColor: MyTheme.darkBlack,
+                                                    color: MyTheme.darkRed,
+                                                    message: "Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved"
+                                                );
+                                              }
+                                          );
+                                        }else{
+                                          DialogService.showToast(context,
+                                              backgroundColor: MyTheme.darkBlack,
+                                              color: MyTheme.darkRed,
+                                              message: "Chosen playlist is Empty"
+                                          );
+                                        }
+
                                       }else{
-                                        DialogService.showToast(context,
-                                            backgroundColor: MyTheme.darkBlack,
-                                            color: MyTheme.darkRed,
-                                            message: "Chosen playlist is Empty"
-                                        );
+                                        print("NO SONGS FOUND");
                                       }
-
-                                    }else{
-                                      print("NO SONGS FOUND");
-                                    }
-                                  },
-                                );
-                              },
+                                    },
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    automaticallyImplyLeading: false,
-                    stretch: true,
-                    stretchTriggerOffset: 166,
-                    floating: false,
-                  ),
-                  SliverPersistentHeader(
-                    delegate: DynamicSliverHeaderDelegate(
-                        child: Material(
-                          child: ItemListDevider(DeviderTitle: "Tracks"),
-                          color: Colors.transparent,
+                          ],
                         ),
-                        minHeight: 35,
-                        maxHeight: 35
+                      ),
+                      automaticallyImplyLeading: false,
+                      stretch: true,
+                      stretchTriggerOffset: 166,
+                      floating: false,
                     ),
-                    pinned: true,
-                  ),
-                  SliverFixedExtentList(
-                    itemExtent: 62,
-                    delegate: SliverChildBuilderDelegate((context, index){
-                      if (index == 0) {
-                        return Material(
-                          child: PageHeader(
-                            "Suffle",
-                            "All Tracks",
-                            MapEntry(
-                                IconData(Icons.shuffle.codePoint,
-                                    fontFamily: Icons.shuffle.fontFamily),
-                                Colors.white),
+                    SliverPersistentHeader(
+                      delegate: DynamicSliverHeaderDelegate(
+                          child: Material(
+                            child: ItemListDevider(DeviderTitle: "Tracks"),
+                            color: Colors.transparent,
                           ),
-                          color: Colors.transparent,
-                        );
-                      }
+                          minHeight: 35,
+                          maxHeight: 35
+                      ),
+                      pinned: true,
+                    ),
+                    SliverFixedExtentList(
+                      itemExtent: 62,
+                      delegate: SliverChildBuilderDelegate((context, index){
+                        if (index == 0) {
+                          return Material(
+                            child: PageHeader(
+                              "Suffle",
+                              "All Tracks",
+                              MapEntry(
+                                  IconData(Icons.shuffle.codePoint,
+                                      fontFamily: Icons.shuffle.fontFamily),
+                                  Colors.white),
+                            ),
+                            color: Colors.transparent,
+                          );
+                        }
 
-                      int newIndex = index - 1;
-                      return MyCard(
-                        song: album.songs[newIndex],
-                        choices: songCardContextMenulist,
-                        ScreenSize: screenSize,
-                        StaticContextMenuFromBottom: 0.0,
-                        onContextSelect: (choice) async{
-                          switch(choice.id){
-                            case 1: {
-                              musicService.playOne(album.songs[newIndex]);
-                              break;
-                            }
-                            case 2:{
-                              musicService.startWithAndShuffleQueue(album.songs[newIndex], album.songs);
-                              break;
-                            }
-                            case 3:{
-                              musicService.startWithAndShuffleAlbum(album.songs[newIndex]);
-                              break;
-                            }
-                            case 4:{
-                              musicService.playAlbum(album.songs[newIndex]);
-                              break;
-                            }
-                            case 5:{
-                              if(castService.currentDeviceToBeUsed.value==null){
+                        int newIndex = index - 1;
+                        return MyCard(
+                          song: album.songs[newIndex],
+                          choices: songCardContextMenulist,
+                          ScreenSize: screenSize,
+                          StaticContextMenuFromBottom: 0.0,
+                          onContextSelect: (choice) async{
+                            switch(choice.id){
+                              case 1: {
+                                musicService.playOne(album.songs[newIndex]);
+                                break;
+                              }
+                              case 2:{
+                                musicService.startWithAndShuffleQueue(album.songs[newIndex], album.songs);
+                                break;
+                              }
+                              case 3:{
+                                musicService.startWithAndShuffleAlbum(album.songs[newIndex]);
+                                break;
+                              }
+                              case 4:{
+                                musicService.playAlbum(album.songs[newIndex]);
+                                break;
+                              }
+                              case 5:{
+                                if(castService.currentDeviceToBeUsed.value==null){
+                                  upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
+                                  if(result!=null){
+                                    castService.setDeviceToBeUsed(result);
+                                  }
+                                }
+                                musicService.castOrPlay(album.songs[newIndex], SingleCast: true);
+                                break;
+                              }
+                              case 6:{
                                 upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
                                 if(result!=null){
-                                  castService.setDeviceToBeUsed(result);
+                                  musicService.castOrPlay(album.songs[newIndex], SingleCast: true, device: result);
                                 }
+                                break;
                               }
-                              musicService.castOrPlay(album.songs[newIndex], SingleCast: true);
-                              break;
-                            }
-                            case 6:{
-                              upnp.Device result = await DialogService.openDevicePickingDialog(context, null);
-                              if(result!=null){
-                                musicService.castOrPlay(album.songs[newIndex], SingleCast: true, device: result);
+                              case 7: {
+                                DialogService.showAlertDialog(context,
+                                    title: "Song Information",
+                                    content: SongInfoWidget(null, song: album.songs[newIndex]),
+                                    padding: EdgeInsets.only(top: 10)
+                                );
                               }
-                              break;
                             }
-                            case 7: {
-                              DialogService.showAlertDialog(context,
-                                  title: "Song Information",
-                                  content: SongInfoWidget(null, song: album.songs[newIndex]),
-                                  padding: EdgeInsets.only(top: 10)
-                              );
-                            }
-                          }
-                        },
-                        onContextCancel: (choice){
-                          print("Cancelled");
-                        },
-                        onTap: (){
-                          musicService.updatePlaylist(album.songs);
-                          musicService.playOrPause(album.songs[newIndex]);
-                        },
-                      );
-                    },
-                        childCount: album.songs.length+1
-                    ),
-                  )
-                  /*AlbumSongList(album)*/
-                ],
+                          },
+                          onContextCancel: (choice){
+                            print("Cancelled");
+                          },
+                          onTap: (){
+                            musicService.updatePlaylist(album.songs);
+                            musicService.playOrPause(album.songs[newIndex]);
+                          },
+                        );
+                      },
+                          childCount: album.songs.length+1
+                      ),
+                    )
+                    /*AlbumSongList(album)*/
+                  ],
+                ),
+              ),
+              durationUntilFadeStarts: Duration(milliseconds: 270),
+              fadeDuration: Duration(milliseconds: 150),
+              inCurve: Curves.easeIn,
+              shallowWidget: Container(
+                color: MyTheme.bgBottomBar,
               ),
             ),
-
           ):Container(
-            color: MyTheme.darkgrey,
-          )
+                color: MyTheme.darkgrey,
+              )
         ],
       ),
     );

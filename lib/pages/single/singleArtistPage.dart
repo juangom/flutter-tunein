@@ -6,6 +6,7 @@ import 'package:Tunein/components/artistAlbumsList.dart';
 import 'package:Tunein/components/card.dart';
 import 'package:Tunein/components/albumSongList.dart';
 import 'package:Tunein/components/cards/optionsCard.dart';
+import 'package:Tunein/components/common/ShowWithFadeComponent.dart';
 import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/pageheader.dart';
 import 'package:Tunein/components/scrollbar.dart';
@@ -207,167 +208,171 @@ class SingleArtistPage extends StatelessWidget {
             ),
           ),
           Flexible(
-            child: Container(
-              height: size.height-definitionBarHeight-heightToSubstract,
-              color: MyTheme.bgBottomBar,
-              child: CustomScrollView(
-                scrollDirection: Axis.vertical,
-                slivers: <Widget>[
-                  SliverAppBar(
-                    elevation: 0,
-                    expandedHeight: 131,
-                    backgroundColor: MyTheme.bgBottomBar,
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Column(
-                        children: <Widget>[
-                          ItemListDevider(DeviderTitle: "More choices"),
-                          Container(
-                            color:MyTheme.bgBottomBar,
-                            height: 120,
-                            child: ListView.builder(
-                              itemExtent: 180,
-                              itemCount: 1,
-                              cacheExtent:MediaQuery.of(context).size.width ,
-                              addAutomaticKeepAlives: true,
-                              shrinkWrap: false,
+            child: ShowWithFade(
+              child: Container(
+                height: size.height-definitionBarHeight-heightToSubstract,
+                color: MyTheme.bgBottomBar,
+                child: CustomScrollView(
+                  scrollDirection: Axis.vertical,
+                  slivers: <Widget>[
+                    SliverAppBar(
+                      elevation: 0,
+                      expandedHeight: 131,
+                      backgroundColor: MyTheme.bgBottomBar,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Column(
+                          children: <Widget>[
+                            ItemListDevider(DeviderTitle: "More choices"),
+                            Container(
+                              color:MyTheme.bgBottomBar,
+                              height: 120,
+                              child: ListView.builder(
+                                itemExtent: 180,
+                                itemCount: 1,
+                                cacheExtent:MediaQuery.of(context).size.width ,
+                                addAutomaticKeepAlives: true,
+                                shrinkWrap: false,
 
-                              scrollDirection: Axis.horizontal,
+                                scrollDirection: Axis.horizontal,
 
-                              itemBuilder: (context, index){
-                                String uniqueID = "MP${artist.coverArt??artist.name.split(" ").join()}";
-                                return MoreOptionsCard(
-                                  uniqueID: uniqueID,
-                                  backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
-                                  Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
-                                  imageUri: artist.coverArt,
-                                  colors: artist.colors,
-                                  bottomTitle: "Most Played",
-                                  onPlayPressed: (){
-                                    musicService.playMostPlayedOfArtist(artist);
-                                  },
-                                  onSavePressed: () async{
-                                    Playlist newPlaylsit = Playlist(
-                                        "Most played of ${artist.name}",
-                                        musicService.getMostPlayedOfArtist(artist),
-                                        PlayerState.stopped,
-                                        null
-                                    );
-                                    /// This is a temporary way fo handling until we incorporate the name changing in playlists
-                                    /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
-                                    /// instead of the listofSongsToBeDeleted TODO
-                                    List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
-
-                                    if(songsToBeDeleted!=null){
-                                      if(songsToBeDeleted.length!=0){
-                                        List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
-                                        newPlaylsit.songs.removeWhere((elem){
-                                          return idList.contains(elem.id);
-                                        });
-                                      }
-                                      musicService.addPlaylist(newPlaylsit).then(
-                                              (data){
-                                            DialogService.showFlushbar(context,
-                                                leftIcon: Icon(Icons.check_circle,
-                                                  color: Color(bgColor[0]).withAlpha(255),
-                                                  size: 27,
-                                                ),
-                                                showDuration: Duration(milliseconds: 1500),
-                                                color: Color(bgColor[2]),
-                                                messageText: Text("Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved",
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Color(bgColor[0])
-                                                  ),
-                                                ),
-                                                titleText: Text("Playlist Saved",
-                                                  style: TextStyle(
-                                                      fontSize: 17,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: Color(bgColor[0])
-                                                  ),
-                                                )
-                                            );
-                                          }
+                                itemBuilder: (context, index){
+                                  String uniqueID = "MP${artist.coverArt??artist.name.split(" ").join()}";
+                                  return MoreOptionsCard(
+                                    uniqueID: uniqueID,
+                                    backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
+                                    Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
+                                    imageUri: artist.coverArt,
+                                    colors: artist.colors,
+                                    bottomTitle: "Most Played",
+                                    onPlayPressed: (){
+                                      musicService.playMostPlayedOfArtist(artist);
+                                    },
+                                    onSavePressed: () async{
+                                      Playlist newPlaylsit = Playlist(
+                                          "Most played of ${artist.name}",
+                                          musicService.getMostPlayedOfArtist(artist),
+                                          PlayerState.stopped,
+                                          null
                                       );
-                                    }
+                                      /// This is a temporary way fo handling until we incorporate the name changing in playlists
+                                      /// The better way is that the passed playlist gets modified inside the dialog return function and then is returned
+                                      /// instead of the listofSongsToBeDeleted TODO
+                                      List<Tune> songsToBeDeleted = await openEditPlaylistBeforeSaving(context, newPlaylsit);
+
+                                      if(songsToBeDeleted!=null){
+                                        if(songsToBeDeleted.length!=0){
+                                          List<String> idList = songsToBeDeleted.map((elem)=>elem.id);
+                                          newPlaylsit.songs.removeWhere((elem){
+                                            return idList.contains(elem.id);
+                                          });
+                                        }
+                                        musicService.addPlaylist(newPlaylsit).then(
+                                                (data){
+                                              DialogService.showFlushbar(context,
+                                                  leftIcon: Icon(Icons.check_circle,
+                                                    color: Color(bgColor[0]).withAlpha(255),
+                                                    size: 27,
+                                                  ),
+                                                  showDuration: Duration(milliseconds: 1500),
+                                                  color: Color(bgColor[2]),
+                                                  messageText: Text("Playlist : ${"Most played of ${newPlaylsit.name}"} has been saved",
+                                                    style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Color(bgColor[0])
+                                                    ),
+                                                  ),
+                                                  titleText: Text("Playlist Saved",
+                                                    style: TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight: FontWeight.w900,
+                                                        color: Color(bgColor[0])
+                                                    ),
+                                                  )
+                                              );
+                                            }
+                                        );
+                                      }
 
 
-                                  },
-                                );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      automaticallyImplyLeading: false,
+                      stretch: true,
+                      stretchTriggerOffset: 166,
+                      floating: true,
+                    ),
+                    SliverPersistentHeader(
+                      delegate: DynamicSliverHeaderDelegate(
+                          child: Material(
+                            child: ItemListDevider(DeviderTitle: "Albums"),
+                            color: Colors.transparent,
+                          ),
+                          minHeight: 35,
+                          maxHeight: 35
+                      ),
+                      pinned: true,
+                    ),
+                    SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 3,
+                        crossAxisSpacing: 3,
+                        childAspectRatio: (itemWidth / (itemWidth + 50)),
+                      ),
+                      delegate: SliverChildBuilderDelegate((context, index){
+                        int newIndex = (index%3)+2;
+                        double albumGridCellHeight = uiScaleService.AlbumsGridCellHeight(size);
+                        return GestureDetector(
+                          onTap: () {
+                            goToSingleArtistPage(context, artist.albums[index]);
+                          },
+                          child: Material( // the material widget here helps with the themes
+                            //the non inclusion of it means you get double bars underneath the text
+                            //this is not a must but you need to find a way to give a theme to your widget
+                            //Material widget is the easiest and the one i am using in this app
+                            child: AlbumGridCell(artist.albums[index],albumGridCellHeight*0.8,albumGridCellHeight*0.2,
+                              animationDelay: (50*newIndex) - (index<6?((6-index)*160):0),
+                              useAnimation:true,
+                              choices: albumCardContextMenulist,
+                              onContextSelect: (choice){
+                                switch(choice.id){
+                                  case 1: {
+                                    musicService.playEntireAlbum(artist.albums[index]);
+                                    break;
+                                  }
+                                  case 2:{
+                                    musicService.shuffleEntireAlbum(artist.albums[index]);
+                                    break;
+                                  }
+                                }
+                              },
+                              Screensize: size,
+                              onContextCancel: (option){
+                                print("cenceled");
                               },
                             ),
+                            color: Colors.transparent,
                           ),
-                        ],
+                        );
+                      },
+                        childCount: artist.albums.length,
                       ),
-                    ),
-                    automaticallyImplyLeading: false,
-                    stretch: true,
-                    stretchTriggerOffset: 166,
-                    floating: true,
-                  ),
-                  SliverPersistentHeader(
-                    delegate: DynamicSliverHeaderDelegate(
-                        child: Material(
-                          child: ItemListDevider(DeviderTitle: "Albums"),
-                          color: Colors.transparent,
-                        ),
-                        minHeight: 35,
-                        maxHeight: 35
-                    ),
-                    pinned: true,
-                  ),
-                  SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 3,
-                      crossAxisSpacing: 3,
-                      childAspectRatio: (itemWidth / (itemWidth + 50)),
-                    ),
-                    delegate: SliverChildBuilderDelegate((context, index){
-                      int newIndex = (index%3)+2;
-                      double albumGridCellHeight = uiScaleService.AlbumsGridCellHeight(size);
-                      return GestureDetector(
-                        onTap: () {
-                          goToSingleArtistPage(context, artist.albums[index]);
-                        },
-                        child: Material( // the material widget here helps with the themes
-                          //the non inclusion of it means you get double bars underneath the text
-                          //this is not a must but you need to find a way to give a theme to your widget
-                          //Material widget is the easiest and the one i am using in this app
-                          child: AlbumGridCell(artist.albums[index],albumGridCellHeight*0.8,albumGridCellHeight*0.2,
-                            animationDelay: (50*newIndex) - (index<6?((6-index)*160):0),
-                            useAnimation:true,
-                            choices: albumCardContextMenulist,
-                            onContextSelect: (choice){
-                              switch(choice.id){
-                                case 1: {
-                                  musicService.playEntireAlbum(artist.albums[index]);
-                                  break;
-                                }
-                                case 2:{
-                                  musicService.shuffleEntireAlbum(artist.albums[index]);
-                                  break;
-                                }
-                              }
-                            },
-                            Screensize: size,
-                            onContextCancel: (option){
-                              print("cenceled");
-                            },
-                          ),
-                          color: Colors.transparent,
-                        ),
-                      );
-                    },
-                      childCount: artist.albums.length,
-                    ),
-                  )
-                  /*AlbumSongList(album)*/
-                ],
+                    )
+                    /*AlbumSongList(album)*/
+                  ],
+                ),
               ),
+              durationUntilFadeStarts: Duration(milliseconds: 270),
+              fadeDuration: Duration(milliseconds: 150),
+              inCurve: Curves.easeIn,
             ),
-
           ),
         ],
       ),

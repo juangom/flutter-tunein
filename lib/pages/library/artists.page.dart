@@ -32,7 +32,7 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
   final SettingService = locator<settingService>();
 
   BehaviorSubject<Album> currentAlbum= new BehaviorSubject<Album>();
-  ContainerTransitionType transitionType = ContainerTransitionType.fade;
+  ContainerTransitionType transitionType = ContainerTransitionType.fadeThrough;
 
   @override
   Widget build(BuildContext context) {
@@ -65,50 +65,34 @@ class _ArtistsPageState extends State<ArtistsPage> with AutomaticKeepAliveClient
             ),
             itemBuilder: (BuildContext context, int index) {
               int newIndex = (index%itemsPerRow)+(itemsPerRow-1);
-              return OpenContainer(
-                closedColor: Colors.transparent,
-                openColor: Colors.transparent,
-                closedShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.zero)
+              return GestureDetector(
+                onTap: () {
+                  goToSingleArtistPage(_artists[index]);
+                },
+                child: ArtistGridCell(
+                  _artists[index],
+                  ((artistGridCellHeight*0.75)/itemsPerRow)*3,
+                  artistGridCellHeight*0.25,
+                  choices: artistCardContextMenulist,
+                  animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
+                  useAnimation: animationDelay!=0,
+                  onContextSelect: (choice){
+                    switch(choice.id){
+                      case 1: {
+                        musicService.playAllArtistAlbums(_artists[index]);
+                        break;
+                      }
+                      case 2:{
+                        musicService.suffleAllArtistAlbums(_artists[index]);
+                        break;
+                      }
+                    }
+                  },
+                  onContextCancel: (choice){
+                    print("Cancelled");
+                  },
+                  Screensize: size,
                 ),
-                transitionDuration: Duration(milliseconds: 90),
-                transitionType: transitionType,
-                openBuilder: (BuildContext context, VoidCallback _) {
-                  return SingleArtistPage( _artists[index], heightToSubstract: 60,);
-                },
-                tappable: false,
-                closedBuilder: (BuildContext context, VoidCallback openContainer){
-                  return GestureDetector(
-                    onTap: () {
-                      openContainer();
-                      //goToSingleArtistPage(_artists[index]);
-                    },
-                    child: ArtistGridCell(
-                      _artists[index],
-                      ((artistGridCellHeight*0.75)/itemsPerRow)*3,
-                      artistGridCellHeight*0.25,
-                      choices: artistCardContextMenulist,
-                      animationDelay: (animationDelay*newIndex) - (index<6?((6-index)*150):0),
-                      useAnimation: animationDelay!=0,
-                      onContextSelect: (choice){
-                        switch(choice.id){
-                          case 1: {
-                            musicService.playAllArtistAlbums(_artists[index]);
-                            break;
-                          }
-                          case 2:{
-                            musicService.suffleAllArtistAlbums(_artists[index]);
-                            break;
-                          }
-                        }
-                      },
-                      onContextCancel: (choice){
-                        print("Cancelled");
-                      },
-                      Screensize: size,
-                    ),
-                  );
-                },
               );
             },
           );
