@@ -15,6 +15,7 @@ import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/memoryCacheService.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:Tunein/services/uiScaleService.dart';
@@ -29,6 +30,7 @@ class SingleAlbumPage extends StatelessWidget {
   final Album album;
   final double heightToSubstract;
   final musicService = locator<MusicService>();
+  final memoryCacheService = locator<MemoryCacheService>();
   final castService = locator<CastService>();
   final themeService = locator<ThemeService>();
 
@@ -236,7 +238,11 @@ class SingleAlbumPage extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
 
                               itemBuilder: (context, index){
+                                String uniqueID = "MP${album.albumArt??album.title.split(" ").join()}";
                                 return MoreOptionsCard(
+                                  uniqueID: uniqueID,
+                                  backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
+                                  Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
                                   imageUri: album.albumArt,
                                   colors: album.songs[0].colors,
                                   bottomTitle: "Most Played",

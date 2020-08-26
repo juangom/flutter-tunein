@@ -234,7 +234,11 @@ class SingleArtistPage extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
 
                               itemBuilder: (context, index){
+                                String uniqueID = "MP${artist.coverArt??artist.name.split(" ").join()}";
                                 return MoreOptionsCard(
+                                  uniqueID: uniqueID,
+                                  backgroundWidget: memoryCacheService.isItemCached(uniqueID)?
+                                  Image.memory(memoryCacheService.getCacheItem(uniqueID)):null,
                                   imageUri: artist.coverArt,
                                   colors: artist.colors,
                                   bottomTitle: "Most Played",
