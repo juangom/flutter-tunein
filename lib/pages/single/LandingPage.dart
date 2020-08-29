@@ -13,6 +13,7 @@ import 'package:Tunein/components/common/ShowWithFadeComponent.dart';
 import 'package:Tunein/components/genericSongList.dart';
 import 'package:Tunein/components/itemListDevider.dart';
 import 'package:Tunein/components/songInfoWidget.dart';
+import 'package:Tunein/components/stageScrollingPhysics.dart';
 import 'package:Tunein/components/trackListDeck.dart';
 import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
@@ -25,6 +26,7 @@ import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/utils/MathUtils.dart';
+import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:flutter/rendering.dart';
 import 'package:popup_menu/popup_menu.dart';
 import 'package:rxdart/rxdart.dart';
@@ -147,6 +149,11 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    ScrollController queuWidgetController = new ScrollController();
+    int currentSongIndex =0;
+    int currentListIndex=0;
+    int currentSelectedItem;
 
     return Container(
       color: MyTheme.darkBlack,
@@ -279,38 +286,146 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: ItemListDevider(DeviderTitle: "Preferred Pics",
+                  child: ItemListDevider(DeviderTitle: "Queue",
                     backgroundColor: Colors.transparent,
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Container(
                     height:150,
-                    child: ListView.builder(
-                      itemBuilder: (context, index){
-                        return Material(
-                            child: GestureDetector(
-                              child: Container(
-                                margin: EdgeInsets.only(right: 8),
-                                child: PreferredPicks(
-                                  allImageBlur:false,
-                                  bottomTitle: "Most Played",
-                                  colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                ),
-                              ),
-                              onTap: (){
+                    child: ListView(
+                      children: [
+                        Material(
+                            child: Container(
+                              child: StreamBuilder(
+                                stream: Rx.combineLatest3(musicService.playerState$, musicService.playlist$, musicService.playback$,(a, b, c) => [a,b,c]),
+                                builder: (context, AsyncSnapshot<List> snapshot){
+                                  if(!snapshot.hasData){
+                                    return Container();
+                                  }
 
-                              },
+                                  currentListIndex=0;
+                                  Tune currentSong = snapshot.data[0].value;
+                                  FixedExtentScrollController controller = new FixedExtentScrollController(initialItem: musicService.getSongIndex(currentSong));
+                                  PlayerState currentState = snapshot.data[0].key;
+                                  bool isPlaying = currentState==PlayerState.playing;
+                                  final bool _isShuffle = snapshot.data[2].contains(Playback.shuffle);
+                                  final List<Tune> currentPlaylist = _isShuffle ? snapshot.data[1].value : snapshot.data[1].key;
+
+
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          child: Container(
+                                            child: FadeInImage(
+                                              placeholder: AssetImage('images/track.png'),
+                                              fadeInDuration: Duration(milliseconds: 200),
+                                              fadeOutDuration: Duration(milliseconds: 100),
+                                              image: currentSong.albumArt != null
+                                                  ? FileImage(
+                                                new File(currentSong.albumArt),
+                                              )
+                                                  : AssetImage('images/track.png'),
+                                            ),
+                                          ),
+                                          onTap: (){
+                                            controller.animateToItem(currentSongIndex-1, curve: Curves.easeIn, duration: Duration(milliseconds: 200));
+                                          },
+                                        ),
+                                        flex: 3,
+                                      ),
+                                      Expanded(
+                                        flex: 9,
+                                        child: Container(
+                                          height: screenSize.width/3,
+                                          /*margin: EdgeInsets.all(8).subtract(EdgeInsets.only(left: 8, right: 8))
+                                  .add(EdgeInsets.only(top: 10)),*/
+                                          child: GestureDetector(
+                                            child: FadingEdgeScrollView.fromListWheelScrollView(
+                                              child: ListWheelScrollView(
+                                                children: currentPlaylist.map((e){
+                                                  currentListIndex++;
+                                                  bool isCurrentSong = e.id == currentSong.id;
+                                                  if(isCurrentSong) currentSongIndex=currentListIndex;
+                                                  return ListTile(
+                                                    visualDensity: VisualDensity.compact,
+                                                    contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                                                    dense: true,
+                                                    leading: isCurrentSong?Icon(isPlaying?Icons.pause_circle_outline:Icons.play_circle_outline, size: 28, color: MyTheme.darkRed):Icon(Icons.play_circle_outline, size: 28, color: MyTheme.darkgrey),
+                                                    title: Text(e.title,
+                                                      maxLines: 1,
+                                                      strutStyle: StrutStyle(
+                                                          height: 1,
+                                                          forceStrutHeight: true
+                                                      ),
+                                                      style: TextStyle(
+                                                          color: MyTheme.grey300,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 15
+                                                      ),
+                                                    ),
+                                                    subtitle: SingleChildScrollView(
+                                                        scrollDirection: Axis.horizontal,
+                                                        child: Text(
+                                                          "${e.album} by ${e.artist}",
+                                                          maxLines: 1,
+                                                          strutStyle: StrutStyle(
+                                                              height: 1,
+                                                              forceStrutHeight: true
+                                                          ),
+                                                          style: TextStyle(
+                                                            color: MyTheme.grey300,
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 13,
+                                                          ),
+                                                        )
+                                                    ),
+                                                    onTap: (){
+                                                      musicService.playOrPause(e);
+                                                    },
+                                                    enabled: true,
+                                                  );
+                                                }).toList(),
+                                                physics: FixedExtentScrollPhysics(),
+                                                controller: controller,
+                                                itemExtent: 45,
+                                                magnification: 1.2,
+                                                useMagnifier: false,
+                                                diameterRatio: 3,
+                                                perspective: 0.003,
+                                                onSelectedItemChanged: (index){
+                                                  currentSelectedItem=index;
+                                                },
+                                              ),
+                                              gradientFractionOnEnd: 0.4,
+                                              gradientFractionOnStart: 0.35,
+                                            ),
+                                            onTap: (){
+                                              if(currentSelectedItem!=null)musicService.playOrPause(currentPlaylist[currentSelectedItem]);
+                                            },
+                                          ),
+                                          padding: EdgeInsets.only(right: 5, left :5),
+                                        ),
+                                      )
+                                    ],
+                                  );
+                                },
+                              ),
                             ),
                             color: Colors.transparent
-                        );
-                      },
+                        ),
+                      ],
                       scrollDirection: Axis.horizontal,
-                      itemCount: 4,
                       shrinkWrap: false,
-                      itemExtent: 200,
-                      physics: AlwaysScrollableScrollPhysics(),
+                      itemExtent: 500,
+                      physics: StageScrollingPhysics(
+                          currentStage: 0,
+                          stages: [0,(screenSize.width/4)+40]
+                      ),
                       cacheExtent: 122,
+                      controller: queuWidgetController,
+
                     ),
                     padding: EdgeInsets.all(10),
                   ),

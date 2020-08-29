@@ -210,6 +210,7 @@ class SingleArtistPage extends StatelessWidget {
           Flexible(
             child: ShowWithFade(
               child: Container(
+                padding: EdgeInsets.only(left: 5),
                 height: size.height-definitionBarHeight-heightToSubstract,
                 color: MyTheme.bgBottomBar,
                 child: CustomScrollView(
