@@ -10,6 +10,7 @@ import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -329,6 +330,15 @@ class _SearchPageState extends State<SearchPage> {
                                 content: SongInfoWidget(null, song: song),
                                 padding: EdgeInsets.only(top: 10)
                             );
+                            break;
+                          }
+                          case 8:{
+                            PageRoutes.goToAlbumSongsList(song, context);
+                            break;
+                          }
+                          case 9:{
+                            PageRoutes.goToSingleArtistPage(song, context);
+                            break;
                           }
                         }
                       },

@@ -18,6 +18,7 @@ import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/memoryCacheService.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:Tunein/services/uiScaleService.dart';
 import 'package:Tunein/utils/ConversionUtils.dart';
@@ -377,6 +378,15 @@ class SingleAlbumPage extends StatelessWidget {
                                     content: SongInfoWidget(null, song: album.songs[newIndex]),
                                     padding: EdgeInsets.only(top: 10)
                                 );
+                                break;
+                              }
+                              case 8:{
+                                PageRoutes.goToAlbumSongsList(album.songs[newIndex], context);
+                                break;
+                              }
+                              case 9:{
+                                PageRoutes.goToSingleArtistPage(album.songs[newIndex], context);
+                                break;
                               }
                             }
                           },

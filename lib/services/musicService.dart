@@ -757,6 +757,14 @@ class MusicService {
     return _playlist.indexWhere((elem)=>elem.id==song.id);
   }
 
+  Album getAlbumFromSong(Tune song){
+    return albums$.value.firstWhere((element) => element.title==song.album, orElse: ()=>null);
+  }
+
+  Artist getArtistTitle(String title){
+    return artists$.value.firstWhere((element) => element.name==title, orElse: ()=>null);
+  }
+
   Future<Map> getSongInformation(Tune song) async{
     Map<String,dynamic> finalMap = new Map();
 

@@ -13,6 +13,7 @@ import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/services/themeService.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
@@ -391,6 +392,15 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                                   content: SongInfoWidget(null, song: _playlist[newIndex]),
                                                   padding: EdgeInsets.only(top: 10)
                                               );
+                                              break;
+                                            }
+                                            case 8:{
+                                              PageRoutes.goToAlbumSongsList(_playlist[newIndex], context);
+                                              break;
+                                            }
+                                            case 9:{
+                                              PageRoutes.goToSingleArtistPage(_playlist[newIndex], context);
+                                              break;
                                             }
                                           }
                                         },

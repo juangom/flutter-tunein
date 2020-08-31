@@ -19,6 +19,8 @@ import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playback.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/pages/single/singleAlbum.page.dart';
+import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/plugins/upnp.dart';
 import 'package:Tunein/services/castService.dart';
@@ -1038,6 +1040,30 @@ class _LandingPageState extends State<LandingPage> {
     }
   }
 
+  void goToAlbumSongsList(Tune song) async {
+    Album album = musicService.getAlbumFromSong(song);
+    if(album!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleAlbumPage(null,
+            album:album,
+            heightToSubstract: 60,
+          ),
+        ),
+      );
+    }
+  }
+
+  void goToSingleArtistPage(Tune song){
+    Artist artist = musicService.getArtistTitle(song.artist);
+    if(artist!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
+        ),
+      );
+    }
+  }
 
   ///Will return the content of the popup widget with a list of songs and a control deck
   MultipleSongTapPopupWidget({
@@ -1228,6 +1254,15 @@ class _LandingPageState extends State<LandingPage> {
                           content: SongInfoWidget(null, song: tune),
                           padding: EdgeInsets.only(top: 10)
                       );
+                      break;
+                    }
+                    case 8:{
+                      goToAlbumSongsList(tune);
+                      break;
+                    }
+                    case 9:{
+                      goToSingleArtistPage(tune);
+                      break;
                     }
                   }
                 },
@@ -1463,6 +1498,15 @@ class _LandingPageState extends State<LandingPage> {
                             content: SongInfoWidget(null, song: tune),
                             padding: EdgeInsets.only(top: 10)
                         );
+                        break;
+                      }
+                      case 8:{
+                        goToAlbumSongsList(tune);
+                        break;
+                      }
+                      case 9:{
+                        goToSingleArtistPage(tune);
+                        break;
                       }
                     }
                   },

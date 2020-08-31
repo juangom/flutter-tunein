@@ -4,6 +4,16 @@ import 'package:flutter/material.dart';
 ///The context menu for the regular song cards found on tracks page, album page and queue
 final songCardContextMenulist=[
   ContextMenuOptions(
+    id: 8,
+    title: "Album",
+    icon: Icons.play_circle_outline,
+  ),
+  ContextMenuOptions(
+    id: 9,
+    title: "Artist",
+    icon: Icons.play_circle_outline,
+  ),
+  ContextMenuOptions(
     id: 1,
     title: "Play one",
     icon: Icons.play_circle_outline,

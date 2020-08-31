@@ -10,6 +10,7 @@ import 'package:Tunein/components/scrollbar.dart';
 import 'package:Tunein/components/songInfoWidget.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
@@ -135,6 +136,15 @@ class _AlbumSongListState extends State<AlbumSongList> {
                                       content: SongInfoWidget(null, song: widget.album.songs[newIndex]),
                                       padding: EdgeInsets.only(top: 10)
                                   );
+                                  break;
+                                }
+                                case 8:{
+
+                                  break;
+                                }
+                                case 9:{
+                                  goToSingleArtistPage(widget.album);
+                                  break;
                                 }
                               }
                             },
@@ -162,28 +172,17 @@ class _AlbumSongListState extends State<AlbumSongList> {
       },
     );
 
+  }
 
-
-
+  void goToSingleArtistPage(Album album){
+    Artist artist = musicService.getArtistTitle(album.artist);
+    if(artist!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
+        ),
+      );
+    }
   }
 }
 
-
-class CustomScrollPhysics extends FixedExtentScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent})
-      : super(parent: parent);
-
-  @override
-  double get minFlingVelocity => double.infinity;
-
-  @override
-  double get maxFlingVelocity => double.infinity;
-
-  @override
-  double get minFlingDistance => double.infinity;
-
-  @override
-  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics(parent: buildParent(ancestor));
-  }
-}

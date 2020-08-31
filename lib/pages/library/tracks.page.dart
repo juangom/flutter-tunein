@@ -9,12 +9,15 @@ import 'package:Tunein/components/trackListDeck.dart';
 import 'package:Tunein/components/trackListDeckItem.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/pages/single/singleAlbum.page.dart';
+import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:flutter/material.dart';
@@ -870,6 +873,15 @@ class _TracksPageState extends State<TracksPage>
                                         content: SongInfoWidget(null, song: _songs[newIndex]),
                                         padding: EdgeInsets.only(top: 10)
                                       );
+                                      break;
+                                    }
+                                    case 8:{
+                                      PageRoutes.goToAlbumSongsList(_songs[newIndex], context);
+                                      break;
+                                    }
+                                    case 9:{
+                                      PageRoutes.goToSingleArtistPage(_songs[newIndex], context);
+                                      break;
                                     }
                                   }
                                 },
@@ -906,7 +918,30 @@ class _TracksPageState extends State<TracksPage>
   @override
   bool get wantKeepAlive => true;
 
+  void goToAlbumSongsList(Tune song) async {
+    Album album = musicService.getAlbumFromSong(song);
+    if(album!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleAlbumPage(null,
+            album:album,
+            heightToSubstract: 60,
+          ),
+        ),
+      );
+    }
+  }
 
+  void goToSingleArtistPage(Tune song){
+    Artist artist = musicService.getArtistTitle(song.artist);
+    if(artist!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
+        ),
+      );
+    }
+  }
 
   dismissAllShownMenus(){
     print("called");
