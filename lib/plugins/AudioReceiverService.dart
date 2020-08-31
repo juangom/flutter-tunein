@@ -12,9 +12,9 @@ import 'package:audioplayer/audioplayer.dart';
 
 class AudioReceiverService{
   AudioPlayer _audioPlayer = AudioPlayer();
-  StreamSubscription _audioPositionSub;
-  StreamSubscription _audioStateChangeSub;
-  StreamSubscription _audioPlaybkacKeysSub;
+  List<StreamSubscription> _audioPositionSub = new List();
+  List<StreamSubscription> _audioStateChangeSub = new List();
+  List<StreamSubscription> _audioPlaybkacKeysSub = new List();
 
 
   AudioReceiverService();
@@ -38,37 +38,28 @@ class AudioReceiverService{
 
 
   onPositionChanges(Function(Duration) callback){
-    if(_audioPositionSub==null){
-      _audioPositionSub =
-          _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
-            callback(duration);
-          });
-    }
+    _audioPositionSub.add(_audioPlayer.onAudioPositionChanged.listen((Duration duration) {
+      callback(duration);
+    }));
   }
 
   onStateChanges(Function(String) callback){
-   if(_audioStateChangeSub==null){
-     _audioStateChangeSub =
-         _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
-           callback(serializeEnums(state));
-         });
-   }
+    _audioStateChangeSub.add(_audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
+      callback(serializeEnums(state));
+    }));
   }
 
   onPlaybackKeys(Function(String) callback){
-    if(_audioPlaybkacKeysSub==null){
-      _audioPlaybkacKeysSub =
-          _audioPlayer.onPlaybackKeyEvent.listen((PlayBackKeys data) {
-            callback(serializeEnums(data));
-          });
-    }
+    _audioPlaybkacKeysSub.add(_audioPlayer.onPlaybackKeyEvent.listen((PlayBackKeys data) {
+      callback(serializeEnums(data));
+    }));
   }
 
 
   closeAllSubs(){
-    if(_audioPlaybkacKeysSub!=null)_audioPlaybkacKeysSub.cancel();
-    if(_audioPositionSub!=null)_audioPositionSub.cancel();
-    if(_audioStateChangeSub!=null)_audioStateChangeSub.cancel();
+    if(_audioPlaybkacKeysSub!=null)_audioPlaybkacKeysSub.forEach((element) {element.cancel();});
+    if(_audioPositionSub!=null)_audioPositionSub.forEach((element) {element.cancel();});
+    if(_audioStateChangeSub!=null)_audioStateChangeSub.forEach((element) {element.cancel();});
   }
 
   serializeEnums(entry){

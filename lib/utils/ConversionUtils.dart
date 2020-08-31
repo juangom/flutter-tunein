@@ -14,6 +14,7 @@ import 'package:flutter/rendering.dart';
 class ConversionUtils{
 
   static final FileService = locator<fileService>();
+
   static String DurationToFancyText(Duration duration, {showHours=true, showMinutes=true, showSeconds=true}){
     assert(duration!=null, "duration argument can't be null");
     String finalText ="";
@@ -28,6 +29,30 @@ class ConversionUtils{
     }
 
     return finalText;
+  }
+
+  static String DurationToStandardTimeDisplay({Duration inputDuration, showHours=false, showMinutes=true, showSeconds=true}){
+    String finalDuration="";
+
+    if(showHours){
+      int hours = inputDuration.inHours;
+      finalDuration+="${hours<10?"0":""}${inputDuration.inHours}:";
+    }
+    if(showMinutes){
+      if(showHours){
+        int minutes = inputDuration.inMinutes.remainder(60);
+        finalDuration+="${minutes<10?"0":""}${minutes}:";
+      }else{
+        int minutes = inputDuration.inMinutes;
+        finalDuration+="${minutes<10?"0":""}${minutes}:";
+      }
+    }
+    if(showSeconds){
+      int seconds = inputDuration.inSeconds.remainder(60);
+      finalDuration+="${seconds<10?"0":""}${seconds}";
+    }
+
+    return finalDuration;
   }
 
 

@@ -7,6 +7,7 @@ import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/AudioReceiverService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/isolates/standardIsolateFunctions.dart';
+import 'package:Tunein/utils/ConversionUtils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -387,6 +388,7 @@ class musicServiceIsolate {
                 (incomingMessage[2] as SendPort).send(data);
               }
             );
+            audioReceiverService.onPositionChanges((position) => setTimeStamp(ConversionUtils.DurationToStandardTimeDisplay(inputDuration: position)));
           }
           break;
         }
@@ -563,6 +565,9 @@ class musicServiceIsolate {
     }on PlatformException{
       //
     }
+  }
+  static setTimeStamp(String timeStamp) async{
+    MediaNotification.setTimestamp(timeStamp);
   }
 
   static subscribeToPlayButton(Function(dynamic) callback) async{
