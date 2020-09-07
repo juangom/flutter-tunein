@@ -40,15 +40,22 @@ Thank you in advance 👍
 - [x] Adding support for artist thumbnail update via online service (Discog Only, for the moment)
 - [x] Finishing up the Settings page
 - [x] upgrading performance
-- [ ] Adding UPnP, DLNA v4.0 (DMS, DMP, DMC, maybe DMR), maybe Apple Airplay
+- [x] Adding Native Media Controls:
+    - [x] Native Android Media Controls
+    - [ ] Native iOS Media Controls
+- [ ] Adding UPnP Casting
     - [x] UPnP
         - [x] Basic Http only casting with stable UI integration
         - [x] Full Interface and integration and testing
         - [ ] Full integration with media keys (headphones, wireless earphones, ...)
         - [ ] Implementing private access to files and moving to a HTTPS-only option
-    - [ ] DLNA
+- [ ] Adding a better landing page :
+    - [x] Most Played & Random songs
+    - [x] Top Albums
+    - [x] Current Queue wheel
+    - [ ] Discover Artists/Albums
 - [ ] FTP song registry
-- [ ] Adding a better landing page
+- [ ] Media Tags changing, Song and library management
 - [ ] adding proper UI scaling
 - [ ] Spotify integration
 
