@@ -261,6 +261,20 @@ class SettingsPage extends StatelessWidget {
                                   SettingService.updateSingleSetting(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL, value.toString());
                                 },
                               ),
+                              SettingsTile.switchTile(
+                                title: 'Android native notification playback controls',
+                                subtitle:"Show and hide the native android notification playback controls",
+                                leading: Icon(
+                                    Icons.play_circle_outline,
+                                    color: MyTheme.grey300
+                                ),
+                                switchValue: _settings[SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL]=="true",
+                                onToggle: (bool value) async{
+                                  print("got the value : ${value}");
+
+                                  SettingService.updateSingleSetting(SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL, value.toString());
+                                },
+                              ),
                             ],
                           ),
                         ],

@@ -1,5 +1,6 @@
 
 
+import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:Tunein/services/locator.dart';
@@ -28,8 +29,14 @@ class AudioPluginService{
   }
 
 
-  Future playSong(String uri){
-    return sendNewIsolateCommand(command: "playMusic",message: uri);
+  Future playSong(String uri, {String album, String title, String artist, String albumArt}){
+    return sendNewIsolateCommand(command: "playMusic",message: json.encode({
+      'uri':uri,
+      'album':album,
+      'title':title,
+      'artist':artist,
+      'albumArt':albumArt,
+    }));
   }
 
   Future pauseSong(){
@@ -45,6 +52,17 @@ class AudioPluginService{
     return sendNewIsolateCommand(command: "seekMusic",message: seconds.toString());
   }
 
+  Future useNotification({bool useNotification, bool cancelWhenNotPlaying}){
+    return sendNewIsolateCommand(command: "useAndroidNotification",message: json.encode({'useNotification':useNotification, 'cancelWhenNotPlaying':cancelWhenNotPlaying}));
+  }
+
+  Future showNotification(){
+    return sendNewIsolateCommand(command: "showAndroidNotification",message: "");
+  }
+
+  Future hideNotification(){
+    return sendNewIsolateCommand(command: "hideAndroidNotification",message: "");
+  }
 
   BehaviorSubject<Duration> subscribeToPositionChanges(){
     ReceivePort tempPort = ReceivePort();

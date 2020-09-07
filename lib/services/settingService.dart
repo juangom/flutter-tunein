@@ -26,7 +26,8 @@ enum SettingsIds{
   SET_DISCOG_THUMB_QUALITY,
   SET_TRACK_LIST_DECK_ITEMS,
   SET_ALBUM_LIST_PAGE,
-  SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL
+  SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL,
+  SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL
 }
 
 
@@ -198,6 +199,9 @@ class settingService{
         return "{}";
         break;
       case SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL:
+        return "true";
+        break;
+      case SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL:
         return "true";
         break;
       default:

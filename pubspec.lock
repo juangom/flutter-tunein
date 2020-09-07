@@ -20,7 +20,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "4f4690855c9d5e75b47c019095715821f31345d4"
+      resolved-ref: daaa0270b0949a62a82f693a17646bb9cbb6eacd
       url: "https://github.com/moda20/audioplayer"
     source: git
     version: "0.5.2"
@@ -286,7 +286,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "2d7a0ab56fa29b5453a1ecc00e4f9ac949db86ad"
+      resolved-ref: b0dba190a6a9681d9f182978c7947f4f54c243f6
       url: "https://github.com/moda20/flutter_media_notification"
     source: git
     version: "0.0.5"

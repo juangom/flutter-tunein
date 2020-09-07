@@ -19,8 +19,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'components/bottomnavbar.dart';
 import 'globals.dart';
-import 'package:Tunein/services/dialogService.dart';
-import 'package:media_notification/media_notification.dart';
 enum StartupState { Busy, Success, Error }
 
 class Root extends StatefulWidget {

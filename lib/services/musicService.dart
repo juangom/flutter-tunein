@@ -134,6 +134,15 @@ class MusicService {
           bgImageBackgroundColor: MyTheme.darkBlack,
           bgColor: MyTheme.darkBlack);
     }
+    SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL).listen((value) {
+      if(value=="true"){
+        _audioPlayer.useNotification(useNotification: true, cancelWhenNotPlaying: false);
+        _audioPlayer.showNotification();
+      }else{
+        _audioPlayer.useNotification(useNotification: false, cancelWhenNotPlaying: false);
+        _audioPlayer.hideNotification();
+      }
+    });
     Rx.combineLatest2(_playerState$, SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL), (a, b) => MapEntry<MapEntry<PlayerState, Tune>,String>(a,b)).listen((data) async {
       List<int> SongColors = await themeService.getThemeColors(data.key.value);
       Artist artist = artistsImages$.value!=null?artistsImages$.value[data.key.value.artist]:null;
@@ -167,7 +176,7 @@ class MusicService {
             break;
         }
       }else{
-        _notificationService.show(
+        await _notificationService.show(
             title: '${data.key.value.title?? "Unknown Title"}',
             author: '${data.key.value.artist?? "Unknown Artist"}',
             play: true,
@@ -189,7 +198,6 @@ class MusicService {
       if(value!=null){
         if (_playerState$.value.value != null) {
           print("playing shoud slart");
-          print("${_playerState$.value.key}");
           playMusic(_playerState$.value.value);
         }
       }
@@ -199,7 +207,6 @@ class MusicService {
       if(value!=null){
         if (_playerState$.value.value != null) {
           print("pausing shoud slart");
-          print("${_playerState$.value.key}");
           pauseMusic(_playerState$.value.value);
         }
       }
@@ -208,7 +215,6 @@ class MusicService {
     _notificationService.subscribeToNextButton().listen((value) {
       if(value!=null){
         print("next shoud slart");
-        print("${_playerState$.value.key}");
         if (_playerState$.value.value != null) {
           playNextSong();
         }
@@ -218,7 +224,6 @@ class MusicService {
     _notificationService.subscribeToPrevButton().listen((value) {
       if(value!=null){
         if (_playerState$.value.value != null) {
-          print("${_playerState$.value.key}");
           playPreviousSong();
         }
       }
@@ -301,6 +306,14 @@ class MusicService {
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     _artists$.add(newAlbumList);
+  }
+
+  void showAndroidNativeNotifications(){
+    _audioPlayer.showNotification();
+  }
+
+  void hideAndroidNativeNotifications(){
+    _audioPlayer.hideNotification();
   }
 
   Future<int> rescanLibrary(context) async{
@@ -586,7 +599,7 @@ class MusicService {
       //refresh it everytime we play to the casting device
       initializePlayStreams();
       //playing the song if it is a local play
-      _audioPlayer.playSong(song.uri);
+      _audioPlayer.playSong(song.uri, albumArt: song.albumArt, album: song.album, title: song.title, artist: song.artist);
     }
 
 

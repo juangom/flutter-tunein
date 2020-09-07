@@ -216,7 +216,7 @@ class BottomPanel extends StatelessWidget {
                 return new LinearProgressIndicator(
                   value: _currentDuration != null &&
                       _currentDuration.inMilliseconds > 0
-                      ? (_currentDuration.inMilliseconds.toDouble()/song.duration)
+                      ? (song.duration!=0?_currentDuration.inMilliseconds.toDouble()/song.duration:0)
                       : 0.0,
                   valueColor:
                   new AlwaysStoppedAnimation(Color(colors[1])),

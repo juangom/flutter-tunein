@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -290,6 +291,7 @@ class musicServiceIsolate {
   static void pluginEnabledIsolateCallbackFunction(SendPort callerSendPort) {
 
     ReceivePort newIsolateReceivePort = ReceivePort();
+    StreamSubscription NotificationTimestampSub ;
 
     AudioReceiverService audioReceiverService = new AudioReceiverService();
 
@@ -326,7 +328,13 @@ class musicServiceIsolate {
 
         case "playMusic":{
           if(incomingMessage[1]!=null){
-            audioReceiverService.playSong(incomingMessage[1]).then((data)=>(incomingMessage[2] as SendPort).send(data));
+            Map args = json.decode(incomingMessage[1]);
+            audioReceiverService.playSong(args['uri'],
+              albumArt: args["albumArt"],
+              album: args["album"],
+              title: args["title"],
+              artist: args["artist"],
+            ).then((data)=>(incomingMessage[2] as SendPort).send(data));
           }
           break;
         }
@@ -346,6 +354,25 @@ class musicServiceIsolate {
         case "seekMusic":{
           if(incomingMessage[1]!=null){
             audioReceiverService.seek(double.tryParse(incomingMessage[1])).then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "useAndroidNotification":{
+          if(incomingMessage[1]!=null){
+            Map args = json.decode(incomingMessage[1]);
+            audioReceiverService.useNotification(useNotification: args["useNotification"], cancelWhenPlayingStops: args["cancelWhenNotPlaying"]).then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "showAndroidNotification":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.showNotification().then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
+        case "hideAndroidNotification":{
+          if(incomingMessage[1]!=null){
+            audioReceiverService.hideNotification().then((data)=>(incomingMessage[2] as SendPort).send(data));
           }
           break;
         }
@@ -370,8 +397,9 @@ class musicServiceIsolate {
         case "showNotification":{
           if(incomingMessage[1]!=null){
             Map<String, dynamic> convertedMap = json.decode(incomingMessage[1]);
+            int BigLayoutIconColor = convertedMap["bigLayoutIconColor"]!=null?int.tryParse(convertedMap["bigLayoutIconColor"]):null;
             show(
-              bigLayoutIconColor: convertedMap["bigLayoutIconColor"]!=null?Color(int.tryParse(convertedMap["bigLayoutIconColor"])):null,
+              bigLayoutIconColor: BigLayoutIconColor!=null?Color(BigLayoutIconColor):null,
               author: convertedMap["author"]??"",
               bgColor: convertedMap["bgColor"]!=null?Color(int.tryParse(convertedMap["bgColor"])):Colors.white,
               BitmapImage: convertedMap["BitmapImage"]!=null?Uint8List.fromList((convertedMap["BitmapImage"] as List).map((e) => int.tryParse(e.toString())).toList()):null,
@@ -388,13 +416,16 @@ class musicServiceIsolate {
                 (incomingMessage[2] as SendPort).send(data);
               }
             );
-            audioReceiverService.onPositionChanges((position) => setTimeStamp(ConversionUtils.DurationToStandardTimeDisplay(inputDuration: position)));
+
+            if(NotificationTimestampSub==null)NotificationTimestampSub = audioReceiverService.onPositionChanges((position) => setNotificationTimeStamp(ConversionUtils.DurationToStandardTimeDisplay(inputDuration: position)));
           }
           break;
         }
         case "hideNotification":{
           if(incomingMessage[1]!=null){
-            hide().then((value) => (incomingMessage[2] as SendPort).send(value));
+            hide().then((value) {
+              return NotificationTimestampSub.cancel().then((canceled) => (incomingMessage[2] as SendPort).send(value));
+            });
           }
           break;
         }
@@ -566,7 +597,7 @@ class musicServiceIsolate {
       //
     }
   }
-  static setTimeStamp(String timeStamp) async{
+  static setNotificationTimeStamp(String timeStamp) async{
     MediaNotification.setTimestamp(timeStamp);
   }
 
