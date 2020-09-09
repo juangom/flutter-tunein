@@ -174,6 +174,7 @@ class StandardIsolateFunctions{
     });
 
     Map<String, int> artistsAndTheirPresenceInMostPlayed =Map();
+    List<Artist> topArtists=List();
     newSongMap.keys.toList().forEach((element) {
       if(element!=null)
         artistsAndTheirPresenceInMostPlayed[element.artist]=artistsAndTheirPresenceInMostPlayed[element.artist]!=null?artistsAndTheirPresenceInMostPlayed[element.artist]++:1;
@@ -210,19 +211,33 @@ class StandardIsolateFunctions{
 
         newSongMap[artistToPickFrom.albums[albumIndex].songs[songIndex]] = newSongMap.values.toList().last;
         artistsAndTheirPresenceInMostPlayed[artistToPickFrom.name]++;
+        topArtists.add(artistToPickFrom);
       }
     }
+
+    List<Artist> notTopArtists = artists.entries.where((element) {
+      return !topArtists.map((e) => e.id).contains(element.key);
+    }).map((e) => e.value).toList();
+    List<int> randomIndexList = List();
+    for(int i=0; i<4; i++){
+      randomIndexList.add(MathUtils.getRandomFromRange(0, notTopArtists.length));
+    }
+    List<Artist> discoverableArtists = randomIndexList.map((e) => notTopArtists[e]).toList();
 
     //Deleting null objects if found
     List<Tune> mostPlayedSongsToReturn = newSongMap.keys.toList();
     mostPlayedSongsToReturn.removeWhere((element) => element==null);
 
+
+
     if(callback!=null){
       callback( {
         "artistsPresence" : artistsAndTheirPresenceInMostPlayed,
         "mostPlayedSongs" : mostPlayedSongsToReturn,
+        "discoverableArtists" : discoverableArtists,
       });
     }
 
   }
-}
+
+  }

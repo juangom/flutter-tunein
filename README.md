@@ -53,7 +53,7 @@ Thank you in advance 👍
     - [x] Most Played & Random songs
     - [x] Top Albums
     - [x] Current Queue wheel
-    - [ ] Discover Artists/Albums
+    - [x] Discover Artists/Albums
 - [ ] FTP song registry
 - [ ] Media Tags changing, Song and library management
 - [ ] adding proper UI scaling

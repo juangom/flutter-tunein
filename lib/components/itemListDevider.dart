@@ -11,22 +11,44 @@ class ItemListDevider extends StatelessWidget {
   final double height;
   final String DeviderTitle;
   final Color backgroundColor;
+  final String secondaryTitle;
 
-
-  const ItemListDevider({this.textStyle, this.height, this.DeviderTitle, this.backgroundColor});
+  const ItemListDevider({this.textStyle, this.height, this.DeviderTitle, this.backgroundColor, this.secondaryTitle});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Padding(
-        child: Text(DeviderTitle??"Albums",
-          style: textStyle??TextStyle(
-            fontSize: 15.5,
-            color: MyTheme.grey300,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
-          ),
-          textAlign: TextAlign.left,
+        child: Row(
+          children: [
+            Text(DeviderTitle??"Albums",
+              style: textStyle??TextStyle(
+                fontSize: 15.5,
+                color: MyTheme.grey300,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+              textAlign: TextAlign.left,
+            ),
+            if(secondaryTitle!=null)Padding(
+              child: Text(secondaryTitle??"Albums",
+                style: textStyle??TextStyle(
+                  fontSize: 10,
+                  color: MyTheme.grey300,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 1.25,
+                ),
+                strutStyle: StrutStyle(
+                    forceStrutHeight: true,
+                    height: 1.3,
+                  fontStyle: FontStyle.italic
+                ),
+                textAlign: TextAlign.left,
+              ),
+               padding: EdgeInsets.only(left: 5),
+            )
+          ],
         ),
         padding: EdgeInsets.all(8).add(EdgeInsets.only(top: 2,left: 4)),
       ),

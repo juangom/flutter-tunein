@@ -27,6 +27,7 @@ import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/utils/MathUtils.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:flutter/rendering.dart';
@@ -156,7 +157,10 @@ class _LandingPageState extends State<LandingPage> {
     int currentSongIndex =0;
     int currentListIndex=0;
     int currentSelectedItem;
-
+    BehaviorSubject<dynamic> topAlbumsStream = new BehaviorSubject<dynamic>();
+    topAlbumsStream.addStream(metricService.getOrCreateSingleSettingStream(MetricIds.MET_GLOBAL_SONG_PLAY_TIME).asyncMap(((value) => getTopAlbum(value))));
+    BehaviorSubject<dynamic> mostPlayedStream = new BehaviorSubject<dynamic>();
+    mostPlayedStream.addStream(metricService.getOrCreateSingleSettingStream(MetricIds.MET_GLOBAL_SONG_PLAY_TIME).asyncMap((value) => getMostPlayedSongs(value)));
     return Container(
       color: MyTheme.darkBlack,
       child: Column(
@@ -175,7 +179,7 @@ class _LandingPageState extends State<LandingPage> {
                 ),
                 SliverToBoxAdapter(
                   child: StreamBuilder(
-                    stream: metricService.getOrCreateSingleSettingStream(MetricIds.MET_GLOBAL_SONG_PLAY_TIME),
+                    stream: mostPlayedStream,
                     builder: (context, AsyncSnapshot<dynamic> msnapshot){
                       if(!msnapshot.hasData){
                         return Container(
@@ -186,7 +190,7 @@ class _LandingPageState extends State<LandingPage> {
                           ),
                         );
                       }
-                      Widget MostPlayedWiget = getMostPlayedWidget(context, msnapshot.data);
+                      Widget MostPlayedWiget = getMostPlayedWidget(context, msnapshot.data["artistsPresence"], msnapshot.data["mostPlayedSongs"]);
                       int firstLimiter = MathUtils.getRandomFromRange(0,  musicService.songs$.value.length-10);
                       List<Tune> randomSongs = musicService.songs$.value.sublist(firstLimiter, firstLimiter+10);
                       Widget RandomSongsWidgets = getRandomSongsWidget(context, randomSongs);
@@ -226,64 +230,46 @@ class _LandingPageState extends State<LandingPage> {
                 ),
                 SliverToBoxAdapter(
                   child: StreamBuilder(
-                    stream: metricService.getOrCreateSingleSettingStream(MetricIds.MET_GLOBAL_SONG_PLAY_TIME),
-                    // ignore: missing_return
-                    builder: (context, AsyncSnapshot<dynamic> msnapshot) {
-                      List<Album> topAlbums;
-                      if(msnapshot.hasData){
-                        // ignore: missing_return
-                        return StreamBuilder(
-                          stream: getTopAlbum(msnapshot.data).asStream(),
-                          builder: (context, AsyncSnapshot<dynamic> snapshot){
-                            if(!snapshot.hasData){
-                              return Container(
-                                height: 190,
-                                color: MyTheme.darkBlack,
-                                padding: EdgeInsets.only(top: 10, bottom: 10),
-                                child: Center(
-                                  child: Text("Looking for Albums",
-                                    style: TextStyle(
-                                        color: MyTheme.grey300.withOpacity(.8),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 18
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            Map albumData = snapshot.data;
-                            topAlbums = albumData["topAlbums"];
-                            Map PlayDuration = albumData["playDuration"];
-                            Widget shallowWidget = Container(
-                              height: 190,
-                              color: MyTheme.darkBlack,
-                              padding: EdgeInsets.only(top: 10, bottom: 10),
-                              child: Center(
-                                child: Text("Looking for Albums",
-                                  style: TextStyle(
-                                      color: MyTheme.grey300.withOpacity(.8),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18
-                                  ),
-                                ),
-                              ),
-                            );
-                            if(topAlbums==null){
-                              return shallowWidget;
-                            }
-                            return getTopAlbumsWidget(context, topAlbums, PlayDuration);
-                          },
-                        );
-                      }else{
+                    stream: topAlbumsStream,
+                    builder: (context, AsyncSnapshot<dynamic> snapshot){
+                      if(!snapshot.hasData){
                         return Container(
-                          child: PreferredPicks(
-                            allImageBlur:false,
-                            bottomTitle: "",
-                            colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                          ),
                           height: 190,
+                          color: MyTheme.darkBlack,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: Text("Looking for Albums",
+                              style: TextStyle(
+                                  color: MyTheme.grey300.withOpacity(.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18
+                              ),
+                            ),
+                          ),
                         );
                       }
+                      Map albumData = snapshot.data;
+                      List<Album> topAlbums;
+                      topAlbums = albumData["topAlbums"];
+                      Map PlayDuration = albumData["playDuration"];
+                      Widget shallowWidget = Container(
+                        height: 190,
+                        color: MyTheme.darkBlack,
+                        padding: EdgeInsets.only(top: 10, bottom: 10),
+                        child: Center(
+                          child: Text("Looking for Albums",
+                            style: TextStyle(
+                                color: MyTheme.grey300.withOpacity(.8),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18
+                            ),
+                          ),
+                        ),
+                      );
+                      if(topAlbums==null){
+                        return shallowWidget;
+                      }
+                      return getTopAlbumsWidget(context, topAlbums, PlayDuration);
                     },
                   ),
                 ),
@@ -433,40 +419,51 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: ItemListDevider(DeviderTitle: "Preferred Pics",
+                  child: ItemListDevider(DeviderTitle: "Discover",
+                    secondaryTitle: "Artists you don't listen to much",
                     backgroundColor: Colors.transparent,
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: Container(
-                    height:190,
-                    child: ListView.builder(
-                      itemBuilder: (context, index){
-                        return Material(
-                            child: GestureDetector(
-                              child: Container(
-                                margin: EdgeInsets.only(right: 8),
-                                child: PreferredPicks(
-                                  allImageBlur:false,
-                                  bottomTitle: "Most Played",
-                                  colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                                ),
+                  child: StreamBuilder(
+                    stream: mostPlayedStream,
+                    builder: (context, AsyncSnapshot<dynamic> snapshot){
+                      if(!snapshot.hasData){
+                        return Container(
+                          height: 190,
+                          color: MyTheme.darkBlack,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: Text("Looking for Albums",
+                              style: TextStyle(
+                                  color: MyTheme.grey300.withOpacity(.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18
                               ),
-                              onTap: (){
-
-                              },
                             ),
-                            color: Colors.transparent
+                          ),
                         );
-                      },
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 4,
-                      shrinkWrap: false,
-                      itemExtent: 122,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      cacheExtent: 122,
-                    ),
-                    padding: EdgeInsets.all(10),
+                      }
+                      List<Artist> discoverableArtists = snapshot.data["discoverableArtists"];
+                      Widget shallowWidget = Container(
+                        height: 190,
+                        color: MyTheme.darkBlack,
+                        padding: EdgeInsets.only(top: 10, bottom: 10),
+                        child: Center(
+                          child: Text("Looking for new Discoveries",
+                            style: TextStyle(
+                                color: MyTheme.grey300.withOpacity(.8),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18
+                            ),
+                          ),
+                        ),
+                      );
+                      if(discoverableArtists==null){
+                        return shallowWidget;
+                      }
+                      return getDiscoverArtistWidget(context, discoverableArtists);
+                    },
                   ),
                 )
               ],
@@ -479,185 +476,165 @@ class _LandingPageState extends State<LandingPage> {
 
 
   ///Will return a single MostPlayed Widget
-  Widget getMostPlayedWidget(context, Map PlayedSongData){
+  Widget getMostPlayedWidget(context,  Map<String,int> artistPresence, List<Tune> mostPlayedSongs){
     Size screensize = MediaQuery.of(context).size;
     Future<List<int>> Asset8bitList = Future.sync(() async{
       ByteData dibd = await rootBundle.load("images/artist.jpg");
       List<int> defaultImageBytes = dibd.buffer.asUint8List();
       return defaultImageBytes;
     });
-
+    mostPlayedSongs = mostPlayedSongs.sublist(0,min(9,mostPlayedSongs.length));
+    List<Artist> artistToPutToWidgetBackground = artistPresence.keys.toList().sublist(0,min(4,artistPresence.length)).map((e) {
+      return musicService.artists$.value.firstWhere((element) => element.name==e);
+    }).toList();
+    Future<List<List<int>>> backgroundimagesForMostPlayedSongs = Future.wait(artistToPutToWidgetBackground.map((e) async{
+      if(e.coverArt==null){
+        return await Asset8bitList;
+      }
+      return await ConversionUtils.FileUriTo8Bit(e.coverArt);
+    }).toList());
     Uint8List topImage;
     return Material(
         child: StreamBuilder(
-          stream: getMostPlayedSongs(PlayedSongData).asStream(),
-          builder: (context, AsyncSnapshot<dynamic> snapshot){
-            Map mostPlayed = snapshot.data;
-            if(!snapshot.hasData || mostPlayed==null){
-              return Container(
-                height: 190,
-                child: PreferredPicks(
-                  allImageBlur:false,
-                  bottomTitle: "Most Played",
-                  colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                ),
-              );
-            }
-
-            Map<String,int> artistPresence = mostPlayed["artistsPresence"];
-            List<Tune> mostPlayedSongs = mostPlayed["mostPlayedSongs"];
-            mostPlayedSongs = mostPlayedSongs.sublist(0,min(9,mostPlayedSongs.length));
-            List<Artist> artistToPutToWidgetBackground = artistPresence.keys.toList().sublist(0,min(4,artistPresence.length)).map((e) {
-              return musicService.artists$.value.firstWhere((element) => element.name==e);
-            }).toList();
-            Future<List<List<int>>> backgroundimagesForMostPlayedSongs = Future.wait(artistToPutToWidgetBackground.map((e) async{
-              if(e.coverArt==null){
-                return await Asset8bitList;
-              }
-              return await ConversionUtils.FileUriTo8Bit(e.coverArt);
-            }).toList());
-            return StreamBuilder(
-              stream: artistToPutToWidgetBackground.length!=0?backgroundimagesForMostPlayedSongs.asStream():Future.wait([Asset8bitList]).asStream(),
-              builder: (context, AsyncSnapshot<List<List<int>>> snapshot){
-                if(!snapshot.hasData){
-                  return Container(
-                    child: PreferredPicks(
-                      allImageBlur:false,
+      stream: artistToPutToWidgetBackground.length!=0?backgroundimagesForMostPlayedSongs.asStream():Future.wait([Asset8bitList]).asStream(),
+      builder: (context, AsyncSnapshot<List<List<int>>> snapshot){
+        if(!snapshot.hasData){
+          return Container(
+            child: PreferredPicks(
+              allImageBlur:false,
+              bottomTitle: "Most Played",
+              colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+            ),
+          );
+        }
+        return GestureDetector(
+          child: Container(
+            margin: EdgeInsets.only(right: 8),
+            child: ShowWithFade.fromStream(
+              inStream: ConversionUtils.createImageFromWidget(
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child:PreferredPicks(
                       bottomTitle: "Most Played",
-                      colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                    ),
-                  );
-                }
-                return GestureDetector(
-                  child: Container(
-                    margin: EdgeInsets.only(right: 8),
-                    child: ShowWithFade.fromStream(
-                      inStream: ConversionUtils.createImageFromWidget(
-                          Directionality(
-                            textDirection: TextDirection.ltr,
-                            child:PreferredPicks(
-                              bottomTitle: "Most Played",
-                              allImageBlur:false,
-                              colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
-                              backgroundWidget: getCombinedImages(snapshot.data, standardHeight: 150, standardWidth: 200, maxWidth: 200),
-                            ),
-                          ),
-                          imageSize: Size(200, 150),
-                          logicalSize: Size(200, 150),
-                          wait: Duration(milliseconds: 450)
-                      ).then((value) {
-                        topImage = value;
-                        return Image.memory(value);
-                      }).asStream(),
-                      inCurve: Curves.easeIn,
-                      fadeDuration: Duration(milliseconds: 100),
-                      durationUntilFadeStarts: Duration(milliseconds: 350),
-                      shallowWidget: PreferredPicks(
-                        allImageBlur:false,
-                        bottomTitle: "Most Played",
-                        colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
-                      ),
+                      allImageBlur:false,
+                      colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
+                      backgroundWidget: getCombinedImages(snapshot.data, standardHeight: 150, standardWidth: 200, maxWidth: 200),
                     ),
                   ),
-                  onTap: (){
-                    showGeneralDialog(
-                        barrierLabel: "MostPlayed",
-                        barrierDismissible: true,
-                        barrierColor: Colors.black.withOpacity(0.8),
-                        transitionDuration: Duration(milliseconds: 100),
-                        context: context,
-                        pageBuilder: (context, anim1, anim2){
-                          return MultipleSongTapPopupWidget(
-                              TopBackgroundWidget: getCombinedImages(snapshot.data, standardHeight: screensize.height*0.2, standardWidth: screensize.width*0.85, maxWidth: screensize.width*0.85),
-                              screensize: screensize,
-                              onShuffleButtonTap: (){
-                                musicService.updatePlaylist(mostPlayedSongs);
-                                musicService.updatePlayback(Playback.shuffle);
-                                musicService.stopMusic();
-                                musicService.playMusic(musicService.playlist$.value.value[0]);
-                              },
-                              listOfSongs: mostPlayedSongs,
-                              TopwidgetBottomTitle: "Most Played Songs'List",
-                              onPlaybuttonTap: (){
-                                musicService.updatePlaylist(mostPlayedSongs);
-                                musicService.stopMusic();
-                                musicService.playMusic(mostPlayedSongs[0]);
-                              },
-                              onSaveButtonTap: () async{
-                                bool result = await  DialogService.showConfirmDialog(context,
-                                    message: "Save the most played songs as a playlist",
-                                    title: "Save as a Playlist"
-                                );
-                                if(result){
-                                  deckItemStateStream["save"].add(
-                                      {
-                                        "withBadge":true,
-                                        "badgeContent": Icon(
-                                          Icons.hourglass_empty,
-                                          color: MyTheme.darkRed,
-                                          size: 17,
-                                        ),
-                                        "badgeColor":Colors.transparent,
-                                        "iconColor":null,
-                                        "icon":null,
-                                        "title":"Saving"
-                                      }
-                                  );
-                                  Uri fileURI = await FileService.saveBytesToFile(topImage);
-                                  Playlist newPlaylist = new Playlist(
-                                      "Most Played ${DateTime.now().toIso8601String()}",
-                                      mostPlayedSongs,
-                                      PlayerState.stopped,
-                                      fileURI.path
-                                  );
-
-                                  musicService.addPlaylist(newPlaylist).then(
-                                          (value){
-                                        deckItemStateStream["save"].add(
-                                            {
-                                              "withBadge":false,
-                                              "badgeContent": null,
-                                              "badgeColor":null,
-                                              "iconColor":MyTheme.darkRed,
-                                              "icon":null,
-                                              "title":"Saved !"
-                                            }
-                                        );
-
-                                        Future.delayed(Duration(milliseconds: 1000), (){
-                                          deckItemStateStream["save"].add(
-                                              {
-                                                "withBadge":false,
-                                                "badgeContent": null,
-                                                "badgeColor":null,
-                                                "iconColor":MyTheme.grey300,
-                                                "icon":Icon(
-                                                  Icons.save,
-                                                ),
-                                                "title":"Save"
-                                              }
-                                          );
-                                        });
-                                      }
-                                  );
-                                }
-                                return null;
+                  imageSize: Size(200, 150),
+                  logicalSize: Size(200, 150),
+                  wait: Duration(milliseconds: 450)
+              ).then((value) {
+                topImage = value;
+                return Image.memory(value);
+              }).asStream(),
+              inCurve: Curves.easeIn,
+              fadeDuration: Duration(milliseconds: 100),
+              durationUntilFadeStarts: Duration(milliseconds: 350),
+              shallowWidget: PreferredPicks(
+                allImageBlur:false,
+                bottomTitle: "Most Played",
+                colors: [MyTheme.bgBottomBar.value, MyTheme.darkBlack.value],
+              ),
+            ),
+          ),
+          onTap: (){
+            showGeneralDialog(
+                barrierLabel: "MostPlayed",
+                barrierDismissible: true,
+                barrierColor: Colors.black.withOpacity(0.8),
+                transitionDuration: Duration(milliseconds: 100),
+                context: context,
+                pageBuilder: (context, anim1, anim2){
+                  return MultipleSongTapPopupWidget(
+                      TopBackgroundWidget: getCombinedImages(snapshot.data, standardHeight: screensize.height*0.2, standardWidth: screensize.width*0.85, maxWidth: screensize.width*0.85),
+                      screensize: screensize,
+                      onShuffleButtonTap: (){
+                        musicService.updatePlaylist(mostPlayedSongs);
+                        musicService.updatePlayback(Playback.shuffle);
+                        musicService.stopMusic();
+                        musicService.playMusic(musicService.playlist$.value.value[0]);
+                      },
+                      listOfSongs: mostPlayedSongs,
+                      TopwidgetBottomTitle: "Most Played Songs'List",
+                      onPlaybuttonTap: (){
+                        musicService.updatePlaylist(mostPlayedSongs);
+                        musicService.stopMusic();
+                        musicService.playMusic(mostPlayedSongs[0]);
+                      },
+                      onSaveButtonTap: () async{
+                        bool result = await  DialogService.showConfirmDialog(context,
+                            message: "Save the most played songs as a playlist",
+                            title: "Save as a Playlist"
+                        );
+                        if(result){
+                          deckItemStateStream["save"].add(
+                              {
+                                "withBadge":true,
+                                "badgeContent": Icon(
+                                  Icons.hourglass_empty,
+                                  color: MyTheme.darkRed,
+                                  size: 17,
+                                ),
+                                "badgeColor":Colors.transparent,
+                                "iconColor":null,
+                                "icon":null,
+                                "title":"Saving"
                               }
                           );
-                        },
-                        transitionBuilder: (context, anim1, anim2, child){
-                          return AnimatedDialog(
-                            dialogContent: child,
-                            inputAnimation: anim1,
+                          Uri fileURI = await FileService.saveBytesToFile(topImage);
+                          Playlist newPlaylist = new Playlist(
+                              "Most Played ${DateTime.now().toIso8601String()}",
+                              mostPlayedSongs,
+                              PlayerState.stopped,
+                              fileURI.path
+                          );
+
+                          musicService.addPlaylist(newPlaylist).then(
+                                  (value){
+                                deckItemStateStream["save"].add(
+                                    {
+                                      "withBadge":false,
+                                      "badgeContent": null,
+                                      "badgeColor":null,
+                                      "iconColor":MyTheme.darkRed,
+                                      "icon":null,
+                                      "title":"Saved !"
+                                    }
+                                );
+
+                                Future.delayed(Duration(milliseconds: 1000), (){
+                                  deckItemStateStream["save"].add(
+                                      {
+                                        "withBadge":false,
+                                        "badgeContent": null,
+                                        "badgeColor":null,
+                                        "iconColor":MyTheme.grey300,
+                                        "icon":Icon(
+                                          Icons.save,
+                                        ),
+                                        "title":"Save"
+                                      }
+                                  );
+                                });
+                              }
                           );
                         }
-                    );
-                  },
-                );
-              },
+                        return null;
+                      }
+                  );
+                },
+                transitionBuilder: (context, anim1, anim2, child){
+                  return AnimatedDialog(
+                    dialogContent: child,
+                    inputAnimation: anim1,
+                  );
+                }
             );
           },
-        ),
+        );
+      },
+    ),
         color: Colors.transparent
     );
   }
@@ -1040,30 +1017,210 @@ class _LandingPageState extends State<LandingPage> {
     }
   }
 
-  void goToAlbumSongsList(Tune song) async {
-    Album album = musicService.getAlbumFromSong(song);
-    if(album!=null){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SingleAlbumPage(null,
-            album:album,
-            heightToSubstract: 60,
+
+  ///Will return a single Discover Artit widget
+  Widget getDiscoverArtistWidget(context, List<Artist> Artists){
+    if(Artists !=null && Artists.length!=0){
+      Size screensize = MediaQuery.of(context).size;
+      Future<List<int>> Asset8bitList = Future.sync(() async{
+        ByteData dibd = await rootBundle.load("images/artist.jpg");
+        List<int> defaultImageBytes = dibd.buffer.asUint8List();
+        return defaultImageBytes;
+      });
+
+
+      return Material(
+          child: Container(
+            height:190,
+            child: ListView.builder(
+              itemBuilder: (context, index){
+                return Material(
+                    child: StreamBuilder(
+                      stream: Artists[index].coverArt!=null?ConversionUtils.FileUriTo8Bit(Artists[index].coverArt).asStream():Asset8bitList.asStream(),
+                      builder: (context, AsyncSnapshot<List<int>> snapshot){
+                        if(snapshot.hasError){
+
+                          return PreferredPicks(
+                            allImageBlur:false,
+                            bottomTitle: "",
+                            colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
+                          );
+                        }
+                        return AnimatedSwitcher(
+                          duration: Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeInToLinear,
+                          child: !snapshot.hasData?Container(
+                            child: PreferredPicks(
+                              allImageBlur:false,
+                              bottomTitle: "Most Played",
+                              colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
+                            ),
+                          ):GestureDetector(
+                            child: Container(
+                              margin: EdgeInsets.only(right: 8),
+                              child: Stack(
+                                children: <Widget>[
+                                  PreferredPicks(
+                                    allImageBlur:false,
+                                    bottomTitle: "${Artists[index].name.split(' ').join('\n')}",
+                                    backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
+                                    colors: Artists[index].colors.map((e){
+                                      return Color(e).withOpacity(.5).value;
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onTap: (){
+                              List<int> colors = Artists[index].colors;
+                              /*showGeneralDialog(
+                                  barrierLabel: "TopAlbums",
+                                  barrierDismissible: true,
+                                  barrierColor: Colors.black.withOpacity(0.7),
+                                  transitionDuration: Duration(milliseconds: 100),
+                                  context: context,
+                                  pageBuilder: (context, anim1, anim2){
+                                    return SinglePicturePopupWidget(
+                                        listOfSongs: AlbumSongs[index].songs,
+                                        onPlaybuttonTap: (){
+                                          musicService.updatePlaylist(AlbumSongs[index].songs);
+                                          musicService.stopMusic();
+                                          musicService.playMusic(AlbumSongs[index].songs[0]);
+                                        },
+                                        onShuffleButtonTap: (){
+                                          musicService.updatePlaylist(AlbumSongs[index].songs);
+                                          musicService.updatePlayback(Playback.shuffle);
+                                          musicService.stopMusic();
+                                          musicService.playMusic(musicService.playlist$.value.value[0]);
+                                        },
+                                        screensize: screensize,
+                                        title: AlbumSongs[index].title,
+                                        subtitle: AlbumSongs[index].artist,
+                                        colors: colors,
+                                        topLeftImage: AlbumSongs[index].albumArt,
+                                        Description: "3333333333",
+                                        underSubtitleTray: Column(
+                                          children: <Widget>[
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      margin: EdgeInsets.only(right: 5),
+                                                      child: Text(
+                                                        AlbumSongs[index].songs.length.toString(),
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Icon(
+                                                      Icons.audiotrack,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    )
+                                                  ],
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(right: 8, left :8),
+                                                  width: 1,
+                                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                ),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      child: Text(
+                                                        "${Duration(milliseconds: ConversionUtils.songListToDuration(AlbumSongs[index].songs).floor()).inMinutes} min",
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      margin: EdgeInsets.only(right: 5),
+                                                    ),
+                                                    Icon(
+                                                      Icons.access_time,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    )
+                                                  ],
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(right: 8, left :8),
+                                                  width: 4,
+                                                  color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                ),
+                                              ],
+                                            ),
+                                            SingleChildScrollView(
+                                                scrollDirection: Axis.horizontal,
+                                                child: Padding(
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.max,
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Icon(
+                                                        Icons.av_timer,
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                      ),
+                                                      Container(
+                                                        child: Text(
+                                                          "${ConversionUtils.DurationToFancyText(playDuration[AlbumSongs[index].id.toString()])} of play time",
+                                                          style: TextStyle(
+                                                            color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                            fontWeight: FontWeight.w700,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        margin: EdgeInsets.only(left: 5),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  padding: EdgeInsets.only(left: 4),
+                                                )
+                                            )
+
+                                          ],
+                                        )
+                                    );
+                                  },
+                                  transitionBuilder: (context, anim1, anim2, child){
+                                    return AnimatedDialog(
+                                      dialogContent: child,
+                                      inputAnimation: anim1,
+                                    );
+                                  }
+                              );*/
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    color: Colors.transparent
+                );
+              },
+              scrollDirection: Axis.horizontal,
+              itemCount: min(4,Artists.length),
+              shrinkWrap: false,
+              itemExtent: 122,
+              physics: AlwaysScrollableScrollPhysics(),
+              cacheExtent: 122,
+            ),
+            padding: EdgeInsets.all(10),
           ),
-        ),
+          color: Colors.transparent
       );
+    }
+    else{
+      return null;
     }
   }
 
-  void goToSingleArtistPage(Tune song){
-    Artist artist = musicService.getArtistTitle(song.artist);
-    if(artist!=null){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
-        ),
-      );
-    }
-  }
 
   ///Will return the content of the popup widget with a list of songs and a control deck
   MultipleSongTapPopupWidget({
@@ -1257,11 +1414,11 @@ class _LandingPageState extends State<LandingPage> {
                       break;
                     }
                     case 8:{
-                      goToAlbumSongsList(tune);
+                      PageRoutes.goToAlbumSongsList(tune, context);
                       break;
                     }
                     case 9:{
-                      goToSingleArtistPage(tune);
+                      PageRoutes.goToSingleArtistPage(tune, context);
                       break;
                     }
                   }
@@ -1501,11 +1658,11 @@ class _LandingPageState extends State<LandingPage> {
                         break;
                       }
                       case 8:{
-                        goToAlbumSongsList(tune);
+                        PageRoutes.goToAlbumSongsList(tune, context);
                         break;
                       }
                       case 9:{
-                        goToSingleArtistPage(tune);
+                        PageRoutes.goToSingleArtistPage(tune, context);
                         break;
                       }
                     }
