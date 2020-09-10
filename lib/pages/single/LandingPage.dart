@@ -6,6 +6,7 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:Tunein/components/AlbumSongCell.dart';
 import 'package:Tunein/components/cards/AnimatedDialog.dart';
 import 'package:Tunein/components/cards/PreferedPicks.dart';
 import 'package:Tunein/components/cards/expandableItems.dart';
@@ -28,6 +29,7 @@ import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/routes/pageRoutes.dart';
+import 'package:Tunein/services/uiScaleService.dart';
 import 'package:Tunein/utils/MathUtils.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'package:flutter/rendering.dart';
@@ -445,6 +447,7 @@ class _LandingPageState extends State<LandingPage> {
                         );
                       }
                       List<Artist> discoverableArtists = snapshot.data["discoverableArtists"];
+                      Map<String,int> playDuration = snapshot.data["playDuration"];
                       Widget shallowWidget = Container(
                         height: 190,
                         color: MyTheme.darkBlack,
@@ -462,7 +465,7 @@ class _LandingPageState extends State<LandingPage> {
                       if(discoverableArtists==null){
                         return shallowWidget;
                       }
-                      return getDiscoverArtistWidget(context, discoverableArtists);
+                      return getDiscoverArtistWidget(context, discoverableArtists, playDuration);
                     },
                   ),
                 )
@@ -1019,7 +1022,7 @@ class _LandingPageState extends State<LandingPage> {
 
 
   ///Will return a single Discover Artit widget
-  Widget getDiscoverArtistWidget(context, List<Artist> Artists){
+  Widget getDiscoverArtistWidget(context, List<Artist> Artists, Map<String, int> playDuration){
     if(Artists !=null && Artists.length!=0){
       Size screensize = MediaQuery.of(context).size;
       Future<List<int>> Asset8bitList = Future.sync(() async{
@@ -1039,7 +1042,6 @@ class _LandingPageState extends State<LandingPage> {
                       stream: Artists[index].coverArt!=null?ConversionUtils.FileUriTo8Bit(Artists[index].coverArt).asStream():Asset8bitList.asStream(),
                       builder: (context, AsyncSnapshot<List<int>> snapshot){
                         if(snapshot.hasError){
-
                           return PreferredPicks(
                             allImageBlur:false,
                             bottomTitle: "",
@@ -1073,32 +1075,20 @@ class _LandingPageState extends State<LandingPage> {
                             ),
                             onTap: (){
                               List<int> colors = Artists[index].colors;
-                              /*showGeneralDialog(
+                              showGeneralDialog(
                                   barrierLabel: "TopAlbums",
                                   barrierDismissible: true,
                                   barrierColor: Colors.black.withOpacity(0.7),
                                   transitionDuration: Duration(milliseconds: 100),
                                   context: context,
                                   pageBuilder: (context, anim1, anim2){
-                                    return SinglePicturePopupWidget(
-                                        listOfSongs: AlbumSongs[index].songs,
-                                        onPlaybuttonTap: (){
-                                          musicService.updatePlaylist(AlbumSongs[index].songs);
-                                          musicService.stopMusic();
-                                          musicService.playMusic(AlbumSongs[index].songs[0]);
-                                        },
-                                        onShuffleButtonTap: (){
-                                          musicService.updatePlaylist(AlbumSongs[index].songs);
-                                          musicService.updatePlayback(Playback.shuffle);
-                                          musicService.stopMusic();
-                                          musicService.playMusic(musicService.playlist$.value.value[0]);
-                                        },
+                                    return SinglePictureArtistPopupWidget(
+                                        artist: Artists[index],
                                         screensize: screensize,
-                                        title: AlbumSongs[index].title,
-                                        subtitle: AlbumSongs[index].artist,
+                                        title: Artists[index].name,
+                                        subtitle: '',
                                         colors: colors,
-                                        topLeftImage: AlbumSongs[index].albumArt,
-                                        Description: "3333333333",
+                                        topLeftImage: Artists[index].coverArt,
                                         underSubtitleTray: Column(
                                           children: <Widget>[
                                             Row(
@@ -1111,7 +1101,7 @@ class _LandingPageState extends State<LandingPage> {
                                                     Container(
                                                       margin: EdgeInsets.only(right: 5),
                                                       child: Text(
-                                                        AlbumSongs[index].songs.length.toString(),
+                                                        Artists[index].albums.length.toString(),
                                                         style: TextStyle(
                                                           color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
                                                           fontWeight: FontWeight.w700,
@@ -1120,7 +1110,7 @@ class _LandingPageState extends State<LandingPage> {
                                                       ),
                                                     ),
                                                     Icon(
-                                                      Icons.audiotrack,
+                                                      Icons.album,
                                                       color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
                                                     )
                                                   ],
@@ -1135,7 +1125,10 @@ class _LandingPageState extends State<LandingPage> {
                                                   children: <Widget>[
                                                     Container(
                                                       child: Text(
-                                                        "${Duration(milliseconds: ConversionUtils.songListToDuration(AlbumSongs[index].songs).floor()).inMinutes} min",
+                                                        "${Duration(milliseconds: ConversionUtils.songListToDuration(Artists[index].albums.reduce((value, element){
+                                                          value.songs.addAll(element.songs);
+                                                          return value;
+                                                        }).songs).floor()).inMinutes} min",
                                                         style: TextStyle(
                                                           color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
                                                           fontWeight: FontWeight.w700,
@@ -1170,7 +1163,7 @@ class _LandingPageState extends State<LandingPage> {
                                                       ),
                                                       Container(
                                                         child: Text(
-                                                          "${ConversionUtils.DurationToFancyText(playDuration[AlbumSongs[index].id.toString()])} of play time",
+                                                          "${ConversionUtils.DurationToFancyText(Duration(seconds: playDuration[Artists[index].name]??0))} of play time",
                                                           style: TextStyle(
                                                             color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
                                                             fontWeight: FontWeight.w700,
@@ -1195,7 +1188,7 @@ class _LandingPageState extends State<LandingPage> {
                                       inputAnimation: anim1,
                                     );
                                   }
-                              );*/
+                              );
                             },
                           ),
                         );
@@ -1687,4 +1680,174 @@ class _LandingPageState extends State<LandingPage> {
       ),
     );
   }
+
+  ///Will return the content of the popup widget with a single picture on the top and information on the right and a list
+  ///of songs beneath (used in topAlbums)
+  SinglePictureArtistPopupWidget({
+    Size screensize,
+    Widget TopLeftWidget,
+    String topLeftImage,
+    String title,
+    String subtitle,
+    String Description,
+    Widget underSubtitleTray,
+    List<int> colors,
+    Artist artist,
+  }){
+    File imageFile = TopLeftWidget==null?topLeftImage!=null?File.fromUri(Uri.parse(topLeftImage)):null:TopLeftWidget;
+    double popupWidth = screensize.width*0.85;
+    double albumGridCellHeight = uiScaleService.AlbumArtistInfoPage(Size(popupWidth,screensize.height*0.75));
+    int itemsPerRow = 3;
+    double itemWidth = popupWidth/ itemsPerRow;
+    return Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            GestureDetector(
+              onPanUpdate: (details){
+                if (details.delta.dy > 10){
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+              },
+              child: Container(
+                color: MyTheme.bgBottomBar,
+                margin: EdgeInsets.only(bottom: 5),
+                width: popupWidth,
+                child: ShowWithFade(
+                  durationUntilFadeStarts: Duration(milliseconds: 300),
+                  fadeDuration: Duration(milliseconds: 50),
+                  child: Container(
+                    color: (colors!=null && colors.length!=0)?Color(colors[0]):MyTheme.darkBlack,
+                    width: popupWidth,
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                            height: 80,
+                            width: 80,
+                            child: TopLeftWidget??FadeInImage(
+                              fit: BoxFit.cover,
+                              placeholder: AssetImage('images/cover.png'),
+                              fadeInDuration: Duration(milliseconds: 300),
+                              fadeOutDuration: Duration(milliseconds: 100),
+                              image: (imageFile!=null &&  imageFile.existsSync())
+                                  ? FileImage(
+                                imageFile,
+                              )
+                                  : AssetImage('images/cover.png'),
+                            )
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(top: 5, left: 5),
+                          width: popupWidth - 80,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: <Widget>[
+                              Padding(
+                                child: Text(title??"Unknown title",
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                      color: colors!=null?Color(colors[1]):MyTheme.grey300,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 17
+                                  ),
+                                ),
+                                padding: EdgeInsets.only(bottom: 5),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 5),
+                                child: Text(subtitle??"Unknown Artist",
+                                  overflow: TextOverflow.fade,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                      color: (colors!=null?Color(colors[1]):MyTheme.grey300).withOpacity(.8),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15
+                                  ),
+                                ),
+                              ),
+                              if(underSubtitleTray!=null)underSubtitleTray
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  inCurve: Curves.easeIn,
+                  shallowWidget: Container(
+                    width: popupWidth,
+                    color: MyTheme.bgBottomBar.withOpacity(.3),
+                  ),
+                ),
+              ),
+            ),
+            ShowWithFade(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                  color: MyTheme.darkBlack
+                ),
+                width: screensize.width*0.85,
+                height: screensize.height*0.5,
+                child:GridView.builder(
+                  padding: EdgeInsets.all(0),
+                  itemCount: artist.albums.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: itemsPerRow,
+                    mainAxisSpacing: itemsPerRow.toDouble(),
+                    crossAxisSpacing: itemsPerRow.toDouble(),
+                    childAspectRatio: (itemWidth / (itemWidth + 50)),
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    int newIndex = (index%itemsPerRow)+2;
+                    return GestureDetector(
+                      onTap: () {
+                        PageRoutes.goToAlbumSongsList(null, context, album: artist.albums[index]);
+                      },
+                      child: AlbumGridCell(artist.albums[index],
+                        ((albumGridCellHeight*0.8)/itemsPerRow)*3,
+                        albumGridCellHeight*0.20,
+                        animationDelay: (80*newIndex) - (index<3?((3-index)*150):0),
+                        useAnimation: !(80==0),
+                        choices: albumCardContextMenulist,
+                        onContextSelect: (choice){
+                          switch(choice.id){
+                            case 1: {
+                              musicService.playEntireAlbum(artist.albums[index]);
+                              break;
+                            }
+                            case 2:{
+                              musicService.shuffleEntireAlbum(artist.albums[index]);
+                              break;
+                            }
+                          }
+                        },
+                        Screensize: screensize,
+                        onContextCancel: (option){
+                          print("cenceled");
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              durationUntilFadeStarts: Duration(milliseconds: 200),
+              fadeDuration: Duration(milliseconds: 150),
+              shallowWidget: Container(
+                width: screensize.width*0.85,
+                height: screensize.height*0.5,
+                color: MyTheme.bgBottomBar,
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+

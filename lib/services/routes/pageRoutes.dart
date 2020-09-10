@@ -14,26 +14,26 @@ final musicService = locator<MusicService>();
 class PageRoutes{
 
 
-  static void goToAlbumSongsList(Tune song, context) async {
-    Album album = musicService.getAlbumFromSong(song);
-    if(album!=null){
-      Navigator.of(context).push(
+  static void goToAlbumSongsList(Tune song, context, {Album album, bool subtract60ForBottomBar=false, bool rootRouter=false}){
+    Album targetAlbum = album??musicService.getAlbumFromSong(song);
+    if(targetAlbum!=null){
+      Navigator.of(context, rootNavigator: rootRouter).push(
         MaterialPageRoute(
           builder: (context) => SingleAlbumPage(null,
-            album:album,
-            heightToSubstract: 60,
+            album:targetAlbum,
+            heightToSubstract: subtract60ForBottomBar?60:0,
           ),
         ),
       );
     }
   }
 
-  static void goToSingleArtistPage(Tune song, context){
-    Artist artist = musicService.getArtistTitle(song.artist);
-    if(artist!=null){
-      Navigator.of(context).push(
+  static void goToSingleArtistPage(Tune song, context, {Artist artist, bool subtract60ForBottomBar=false, bool rootRouter=false}){
+    Artist targetArtist = artist??musicService.getArtistTitle(song.artist);
+    if(targetArtist!=null){
+      Navigator.of(context, rootNavigator: rootRouter).push(
         MaterialPageRoute(
-          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
+          builder: (context) => SingleArtistPage(targetArtist, heightToSubstract: subtract60ForBottomBar?60:0),
         ),
       );
     }

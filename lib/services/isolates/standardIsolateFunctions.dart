@@ -167,17 +167,19 @@ class StandardIsolateFunctions{
       ..sort((k1, k2) => int.parse(newValue[k2]).compareTo(int.parse(newValue[k1])));
     Map<String,String> sortedMap = new Map
         .fromIterable(sortedKeys, key: (k) => k, value: (k) => newValue[k]);
-
+    Map<String, int> playDuration = Map();
     Map<Tune,int> newSongMap = sortedMap.map((key, value) {
       Tune newKey = songs[key];
       return MapEntry(newKey, int.tryParse(value));
     });
 
-    Map<String, int> artistsAndTheirPresenceInMostPlayed =Map();
+    Map<String, int> artistsAndTheirPresenceInMostPlayed = Map();
     List<Artist> topArtists=List();
     newSongMap.keys.toList().forEach((element) {
       if(element!=null)
         artistsAndTheirPresenceInMostPlayed[element.artist]=artistsAndTheirPresenceInMostPlayed[element.artist]!=null?artistsAndTheirPresenceInMostPlayed[element.artist]++:1;
+
+      playDuration[element.artist] =newSongMap[element];
     });
     if(newSongMap.length<10){
       //picking a random song to add to fill the 10 songs mark
@@ -211,6 +213,7 @@ class StandardIsolateFunctions{
 
         newSongMap[artistToPickFrom.albums[albumIndex].songs[songIndex]] = newSongMap.values.toList().last;
         artistsAndTheirPresenceInMostPlayed[artistToPickFrom.name]++;
+        playDuration[artistToPickFrom.name] =0;
         topArtists.add(artistToPickFrom);
       }
     }
@@ -235,6 +238,7 @@ class StandardIsolateFunctions{
         "artistsPresence" : artistsAndTheirPresenceInMostPlayed,
         "mostPlayedSongs" : mostPlayedSongsToReturn,
         "discoverableArtists" : discoverableArtists,
+        "playDuration" : playDuration,
       });
     }
 
