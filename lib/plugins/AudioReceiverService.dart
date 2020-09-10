@@ -24,6 +24,10 @@ class AudioReceiverService{
    return  _audioPlayer.play(uri, title: title, album: album,  albumArt: albumArt, author: artist);
   }
 
+  Future setItem({String uri, String album, String title, String artist, String albumArt}){
+   return  _audioPlayer.setItem(uri: uri, title: title, album: album,  albumArt: albumArt, author: artist);
+  }
+
   Future pauseSong(){
     return _audioPlayer.pause();
   }

@@ -64,6 +64,16 @@ class AudioPluginService{
     return sendNewIsolateCommand(command: "hideAndroidNotification",message: "");
   }
 
+  Future setItem({String album, String title, String artist, String albumArt, String uri}){
+    return sendNewIsolateCommand(command: "setItem",message: json.encode({
+      'uri':uri,
+      'album':album,
+      'title':title,
+      'artist':artist,
+      'albumArt':albumArt,
+    }));
+  }
+
   BehaviorSubject<Duration> subscribeToPositionChanges(){
     ReceivePort tempPort = ReceivePort();
     MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<String>(

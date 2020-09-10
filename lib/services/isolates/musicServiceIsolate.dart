@@ -376,6 +376,19 @@ class musicServiceIsolate {
           }
           break;
         }
+        case "setItem":{
+          if(incomingMessage[1]!=null){
+            Map args = json.decode(incomingMessage[1]);
+            audioReceiverService.setItem(
+              uri: args['uri'],
+              albumArt: args["albumArt"],
+              album: args["album"],
+              title: args["title"],
+              artist: args["artist"],
+            ).then((data)=>(incomingMessage[2] as SendPort).send(data));
+          }
+          break;
+        }
         case "subscribeToPosition":{
           if(incomingMessage[1]!=null){
             audioReceiverService.onPositionChanges((position) => (incomingMessage[2] as SendPort).send(position));

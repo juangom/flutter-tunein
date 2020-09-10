@@ -159,8 +159,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           List<int> defaultImageBytes = dibd.buffer.asUint8List();
           ByteData artistBundleImage = await rootBundle.load("images/artist.jpg");
           List<int> defaultBgImageBytes = artistBundleImage.buffer.asUint8List();
+          Tune songToshowONNotification = musicService.playerState$.value.value;
           if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
-            Tune songToshowONNotification = musicService.playerState$.value.value;
             Artist artist = musicService.artistsImages$.value!=null?musicService.artistsImages$.value[songToshowONNotification.artist]:null;
             NotificationService.show(
                 title: '${songToshowONNotification.title?? "Unknown Title"}',
@@ -178,6 +178,19 @@ class RootState extends State<Root> with TickerProviderStateMixin {
                 bgImageBackgroundColor: (artist.colors!=null && artist.colors.length!=0)?Color(artist.colors[0]):MyTheme.darkBlack,
                 bgColor: songToshowONNotification.colors.length!=0?Color(songToshowONNotification.colors[0]): MyTheme.grey300
             );
+          }
+
+          if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
+
+            musicService.setAndroidNativeNotificationItem(
+              title: songToshowONNotification.title,
+              albumArt: songToshowONNotification.albumArt,
+              album: songToshowONNotification.album,
+              artist: songToshowONNotification.artist,
+              uri: songToshowONNotification.uri
+            ).then((itemSet){
+              musicService.showAndroidNativeNotifications();
+            });
           }
         }
         metricsLoaded.cancel();

@@ -316,6 +316,10 @@ class MusicService {
     _audioPlayer.hideNotification();
   }
 
+  Future setAndroidNativeNotificationItem({String uri, String title, String album, String artist, String albumArt}){
+    return _audioPlayer.setItem(uri: uri, artist: artist, album: album, albumArt: albumArt, title: title);
+  }
+
   Future<int> rescanLibrary(context) async{
 
     MapEntry<PlayerState, Tune> oldPlayerState = playerState$.value;
@@ -1519,11 +1523,21 @@ class MusicService {
     _audioStateChangeSub =
         _audioPlayer.subscribeToStateChanges().listen((AudioPlayerState state) {
      if(castService.castingState.value==CastState.NOT_CASTING){
-       if (state == AudioPlayerState.COMPLETED) {
-         _onSongComplete();
-       }
-       if (state == AudioPlayerState.PAUSED) {
-         updatePlayerState(PlayerState.paused, _playerState$.value.value);
+
+       switch(state){
+
+         case AudioPlayerState.STOPPED:
+           updatePlayerState(PlayerState.paused, _playerState$.value.value);
+           break;
+         case AudioPlayerState.PLAYING:
+           updatePlayerState(PlayerState.playing, _playerState$.value.value);
+           break;
+         case AudioPlayerState.PAUSED:
+           updatePlayerState(PlayerState.paused, _playerState$.value.value);
+           break;
+         case AudioPlayerState.COMPLETED:
+           _onSongComplete();
+           break;
        }
      }else{
        //if it is casting do nothing for now as everything is being handeled elsewhere
