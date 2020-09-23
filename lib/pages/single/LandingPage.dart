@@ -192,7 +192,28 @@ class _LandingPageState extends State<LandingPage> {
                           ),
                         );
                       }
-                      Widget MostPlayedWiget = getMostPlayedWidget(context, msnapshot.data["artistsPresence"], msnapshot.data["mostPlayedSongs"]);
+                      Map<String, int> artistPresence = msnapshot.data["artistsPresence"];
+                      List<Tune> mostPlayedSongs = msnapshot.data["mostPlayedSongs"];
+                      Widget MostPlayedWiget;
+                      if(mostPlayedSongs==null || mostPlayedSongs==null){
+                        MostPlayedWiget = Container(
+                          height: 190,
+                          color: MyTheme.darkBlack,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: Text("Not enough songs to process most played",
+                              style: TextStyle(
+                                  color: MyTheme.grey300.withOpacity(.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      }else{
+                        MostPlayedWiget = getMostPlayedWidget(context, artistPresence, mostPlayedSongs);
+                      }
                       int firstLimiter = MathUtils.getRandomFromRange(0,  musicService.songs$.value.length-10);
                       List<Tune> randomSongs = musicService.songs$.value.sublist(firstLimiter, firstLimiter+10);
                       Widget RandomSongsWidgets = getRandomSongsWidget(context, randomSongs);
@@ -234,26 +255,6 @@ class _LandingPageState extends State<LandingPage> {
                   child: StreamBuilder(
                     stream: topAlbumsStream,
                     builder: (context, AsyncSnapshot<dynamic> snapshot){
-                      if(!snapshot.hasData){
-                        return Container(
-                          height: 190,
-                          color: MyTheme.darkBlack,
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          child: Center(
-                            child: Text("Looking for Albums",
-                              style: TextStyle(
-                                  color: MyTheme.grey300.withOpacity(.8),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 18
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      Map albumData = snapshot.data;
-                      List<Album> topAlbums;
-                      topAlbums = albumData["topAlbums"];
-                      Map PlayDuration = albumData["playDuration"];
                       Widget shallowWidget = Container(
                         height: 190,
                         color: MyTheme.darkBlack,
@@ -268,8 +269,29 @@ class _LandingPageState extends State<LandingPage> {
                           ),
                         ),
                       );
-                      if(topAlbums==null){
+                      if(!snapshot.hasData){
                         return shallowWidget;
+                      }
+                      Map albumData = snapshot.data;
+                      List<Album> topAlbums;
+                      topAlbums = albumData["topAlbums"];
+                      Map PlayDuration = albumData["playDuration"];
+
+                      if(topAlbums==null){
+                        return Container(
+                          height: 190,
+                          color: MyTheme.darkBlack,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: Text("You didn't listen to enough albums",
+                              style: TextStyle(
+                                  color: MyTheme.grey300.withOpacity(.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18
+                              ),
+                            ),
+                          ),
+                        );
                       }
                       return getTopAlbumsWidget(context, topAlbums, PlayDuration);
                     },
@@ -430,24 +452,6 @@ class _LandingPageState extends State<LandingPage> {
                   child: StreamBuilder(
                     stream: mostPlayedStream,
                     builder: (context, AsyncSnapshot<dynamic> snapshot){
-                      if(!snapshot.hasData){
-                        return Container(
-                          height: 190,
-                          color: MyTheme.darkBlack,
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          child: Center(
-                            child: Text("Looking for Albums",
-                              style: TextStyle(
-                                  color: MyTheme.grey300.withOpacity(.8),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 18
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      List<Artist> discoverableArtists = snapshot.data["discoverableArtists"];
-                      Map<String,int> playDuration = snapshot.data["playDuration"];
                       Widget shallowWidget = Container(
                         height: 190,
                         color: MyTheme.darkBlack,
@@ -462,8 +466,27 @@ class _LandingPageState extends State<LandingPage> {
                           ),
                         ),
                       );
-                      if(discoverableArtists==null){
+                      if(!snapshot.hasData){
                         return shallowWidget;
+                      }
+                      List<Artist> discoverableArtists = snapshot.data["discoverableArtists"];
+                      Map<String,int> playDuration = snapshot.data["playDuration"];
+
+                      if(discoverableArtists==null || discoverableArtists.length==0){
+                        return Container(
+                          height: 190,
+                          color: MyTheme.darkBlack,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Center(
+                            child: Text("No artists to discover",
+                              style: TextStyle(
+                                  color: MyTheme.grey300.withOpacity(.8),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18
+                              ),
+                            ),
+                          ),
+                        );
                       }
                       return getDiscoverArtistWidget(context, discoverableArtists, playDuration);
                     },
