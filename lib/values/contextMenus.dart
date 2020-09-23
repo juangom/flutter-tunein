@@ -48,6 +48,11 @@ final songCardContextMenulist=[
     title: "Song information",
     icon: Icons.info_outline,
   ),
+  ContextMenuOptions(
+    id: 10,
+    title: "Edit Tags",
+    icon: Icons.edit,
+  ),
 ];
 ///The context menu for the regular artist card found in the artists page
 final artistCardContextMenulist=[

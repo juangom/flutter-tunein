@@ -52,19 +52,7 @@ class _SelectableTileState extends State<SelectableTile> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    imageUri=widget.imageUri;
-    title= widget.title;
-    onTap=widget.onTap;
-    isSelected=widget.isSelected??false;
-    placeHolderAssetUri= widget.placeHolderAssetUri;
-    initialBackgroundColor=widget.initialBackgroundColor;
-    initialTextColor=widget.initialTextColor;
-    selectedTextColor=widget.selectedTextColor;
-    selectedBackgroundColor=widget.selectedBackgroundColor;
-    subtitle=widget.subtitle;
-    initialSubtitleColor=widget.initialSubtitleColor;
-    selectedSubtitleColor=widget.selectedSubtitleColor;
-    leadingWidget=widget.leadingWidget;
+    updateAllItemsWidget();
   }
   @override
   Widget build(BuildContext context) {
@@ -81,6 +69,46 @@ class _SelectableTileState extends State<SelectableTile> {
         return buildNormal();
       }
     }
+  }
+
+  @override
+  void didUpdateWidget(SelectableTile oldWidget) {
+    if(
+    imageUri!=widget.imageUri||
+    title!= widget.title||
+    onTap!=widget.onTap||
+    isSelected!=widget.isSelected||
+    placeHolderAssetUri!= widget.placeHolderAssetUri||
+    initialBackgroundColor!=widget.initialBackgroundColor||
+    initialTextColor!=widget.initialTextColor||
+    selectedTextColor!=widget.selectedTextColor||
+    selectedBackgroundColor!=widget.selectedBackgroundColor||
+    subtitle!=widget.subtitle||
+    initialSubtitleColor!=widget.initialSubtitleColor||
+    selectedSubtitleColor!=widget.selectedSubtitleColor||
+    leadingWidget!=widget.leadingWidget
+    ) {
+      setState((){
+        updateAllItemsWidget();
+      });
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  updateAllItemsWidget(){
+    imageUri=widget.imageUri;
+    title= widget.title;
+    onTap=widget.onTap;
+    isSelected=widget.isSelected??false;
+    placeHolderAssetUri= widget.placeHolderAssetUri;
+    initialBackgroundColor=widget.initialBackgroundColor;
+    initialTextColor=widget.initialTextColor;
+    selectedTextColor=widget.selectedTextColor;
+    selectedBackgroundColor=widget.selectedBackgroundColor;
+    subtitle=widget.subtitle;
+    initialSubtitleColor=widget.initialSubtitleColor;
+    selectedSubtitleColor=widget.selectedSubtitleColor;
+    leadingWidget=widget.leadingWidget;
   }
 
   Widget buildMediumSithSub(){

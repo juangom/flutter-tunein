@@ -19,6 +19,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:Tunein/pages/single/playingQueue.dart';
 import 'package:badges/badges.dart';
 import 'package:popup_menu/popup_menu.dart';
+import 'package:dart_tags/dart_tags.dart';
+
 
 class NowPlayingScreen extends StatefulWidget {
   PageController controller;
@@ -76,6 +78,45 @@ class _PlayingPageState extends State<PlayingPage>
   MapEntry<MapEntry<PlayerState, Tune>, List<Tune>> tempState;
   BehaviorSubject<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>> newStream = new BehaviorSubject<MapEntry<MapEntry<PlayerState, Tune>, List<Tune>>>();
   Timer isScheduelingtoPushData;
+
+  void _proceedArg(String path) {
+    final fileType = FileStat.statSync(path).type;
+    switch (fileType) {
+      case FileSystemEntityType.directory:
+        Directory(path)
+            .list(recursive: true, followLinks: false)
+            .listen((FileSystemEntity entity) {
+          if (entity.statSync().type == FileSystemEntityType.file &&
+              entity.path.endsWith('.mp3')) {
+            printFileInfo(entity.path);
+          }
+        });
+        break;
+      case FileSystemEntityType.file:
+        if (path.endsWith('.mp3')) {
+          printFileInfo(path);
+        }
+        break;
+      case FileSystemEntityType.notFound:
+        print('file not found');
+        break;
+      default:
+        print('sorry dude I don`t know what I must to do with that...\n');
+    }
+  }
+
+  void printFileInfo(String fileName) {
+    final file = File(fileName);
+    TagProcessor().getTagsFromByteArray(file.readAsBytes()).then((l) {
+      print('FILE: $fileName');
+      l.forEach((data){
+        print(data);
+      });
+      print('\n');
+    });
+
+
+  }
 
   @override
   void initState() {
@@ -141,7 +182,7 @@ class _PlayingPageState extends State<PlayingPage>
         final _state = snapshot.data.key.key;
         final _currentSong = snapshot.data.key.value;
         final List<Tune> _favorites = snapshot.data.value;
-
+        //_proceedArg(_currentSong.uri);
         final int index =
             _favorites.indexWhere((song) => song.id == _currentSong.id);
         final bool _isFavorited = index == -1 ? false : true;

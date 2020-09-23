@@ -10,6 +10,7 @@ import 'package:Tunein/plugins/NotificationControlService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
+import 'package:Tunein/services/fileService.dart';
 import 'package:Tunein/services/http/requests.dart';
 import 'package:Tunein/services/http/utilsRequests.dart';
 import 'package:Tunein/services/musicMetricsService.dart';
@@ -38,6 +39,7 @@ final queueService = locator<QueueService>();
 final SettingsService = locator<settingService>();
 final metricService = locator<MusicMetricsService>();
 final castService = locator<CastService>();
+final FileService = locator<fileService>();
 
 class MusicService {
   BehaviorSubject<List<Tune>> _songs$;
@@ -96,7 +98,7 @@ class MusicService {
 
 
   MusicService() {
-    _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null, null);
+    _defaultSong = Tune(null, " ", " ", " ", null, null, null, [], null, null, null);
     _initStreams();
    // _initAudioPlayer();
   }
@@ -259,7 +261,42 @@ class MusicService {
         return true;
       }
     });
+  }
 
+
+  ///Will update albums without rewriting them all
+  ///
+  /// We do not use this yet, since we don't store albums on device, so they are always fetched from songs
+  /// And we still don't
+  Future<bool> updateAlbums({List<String> albumNames}) async{
+    Map<String, Album> albums = AlbumList.map((key, value) => MapEntry<String,Album>('${value.title}${value.artist}',value));
+    int currentIndex = 0;
+    List<Tune> songs = songs$.value;
+    songs.forEach((Tune tune) {
+      if(albumNames.contains(tune.album)){
+        if (albums["${tune.album}${tune.artist}"] != null) {
+          albums["${tune.album}${tune.artist}"].songs.removeWhere((element) => element.id==tune.id);
+          albums["${tune.album}${tune.artist}"].songs.add(tune);
+        } else {
+          albums["${tune.album}${tune.artist}"] =
+          new Album(currentIndex, tune.album, tune.artist, tune.albumArt);
+          albums["${tune.album}${tune.artist}"].songs.add(tune);
+          currentIndex++;
+        }
+      }
+    });
+    List<Album> newAlbumList = albums.values.toList();
+    newAlbumList.forEach((album){
+      album.songs.sort((a,b){
+        if(a.numberInAlbum ==null || b.numberInAlbum==null) return 1;
+        if(a.numberInAlbum < b.numberInAlbum) return -1;
+        else return 1;
+      });
+    });
+    newAlbumList.sort((a, b) {
+      if (a.title == null || b.title == null) return 1;
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
   }
 
   BehaviorSubject<List<Album>> fetchAlbum(
@@ -300,12 +337,42 @@ class MusicService {
         currentIndex++;
       }
     });
-    List<Artist> newAlbumList = artists.values.toList();
-    newAlbumList.sort((a, b) {
+    List<Artist> newArtistList = artists.values.toList();
+    newArtistList.sort((a, b) {
       if (a.name == null || b.name == null) return 1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
-    _artists$.add(newAlbumList);
+    _artists$.add(newArtistList);
+  }
+
+  Future<List> updateArtist({List<String> artistNames}) async {
+    Map<String, Artist> artists = artists$.value.asMap().map((key, value) => MapEntry<String,Artist>(value.name,value));
+    int currentIndex = 0;
+    List<Album> ItemsList = _albums$.value;
+    artistNames.forEach((element) {
+      artists[element].albums.clear();
+    });
+    ItemsList.forEach((Album album) {
+      if(artistNames.contains(album.artist)){
+        if (artists["${album.artist}"] != null) {
+          //artists["${album.artist}"].albums.removeWhere((element) => element.id==album.id);
+          artists["${album.artist}"].albums.add(album);
+        } else {
+          artists["${album.artist}"] =
+          new Artist(currentIndex, album.artist, null, null);
+          artists["${album.artist}"].albums.add(album);
+          currentIndex++;
+        }
+      }
+
+    });
+    List<Artist> newArtistList = artists.values.toList();
+    newArtistList.removeWhere((element) => element.albums.length==0);
+    newArtistList.sort((a, b) {
+      if (a.name == null || b.name == null) return 1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    _artists$.add(newArtistList);
   }
 
   void showAndroidNativeNotifications(){
@@ -1165,9 +1232,9 @@ class MusicService {
     _prefs.setStringList("favoritetunes", _encodedStrings);
   }
 
-  Future<void> saveFiles() async {
+  Future<void> saveFiles({List<Tune> songsToSave}) async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final List<Tune> _songs = _songs$.value;
+    final List<Tune> _songs = songsToSave??_songs$.value;
     ReceivePort tempPort = ReceivePort();
     MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
         sender: tempPort.sendPort,
@@ -1184,7 +1251,6 @@ class MusicService {
         tempPort.close();
       }
     });
-
   }
 
   Future<void> saveArtists() async {
@@ -1207,6 +1273,30 @@ class MusicService {
       }
     });
 
+  }
+
+  Future<bool> saveSongTags(Tune newSong, Tune oldSong){
+    if(newSong!=null){
+      List<Tune> newSongList = songs$.value;
+      int indexOfSongToReplace = newSongList.indexWhere((element) => element.id==newSong.id);
+      newSongList[indexOfSongToReplace]=newSong;
+      return saveFiles(songsToSave: newSongList).then((value){
+        songs$.add(newSongList);
+        print("gona add songs to the stream now");
+        print("gona fectchAlbums now");
+        return fetchAlbums();
+      }).then((data){
+        print("gona fetchArtist now");
+        return updateArtist(artistNames: [newSong.artist,oldSong.artist]);
+      }).then((data){
+        print("gona save artists now");
+        return saveArtists();
+      }).then((value){
+        return FileService.writeTags(newSong);
+      }).then((value) => true);
+    }else{
+      return null;
+    }
   }
 
   Future<bool> getArtistDataAndSaveIt() async{

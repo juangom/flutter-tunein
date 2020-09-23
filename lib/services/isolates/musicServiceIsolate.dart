@@ -26,7 +26,7 @@ class musicServiceIsolate {
   static BehaviorSubject<MapEntry<PlayerState, Tune>> _playerState$ = BehaviorSubject<MapEntry<PlayerState, Tune>>.seeded(
     MapEntry(
       PlayerState.stopped,
-      Tune(null, " ", " ", " ", null, null, null, [], null, null),
+      Tune(null, " ", " ", " ", null, null, null, [], null, null, null),
     ),
   );
 
@@ -502,6 +502,11 @@ class musicServiceIsolate {
           }
           break;
         }
+        case "sdCardPermission":{
+          if(incomingMessage[1]!=null){
+            getSDCardAndPermissions((value)=>(incomingMessage[2] as SendPort).send(value));
+          }
+        }
       }
     });
   }
@@ -558,6 +563,26 @@ class musicServiceIsolate {
 
       }
     });
+
+  }
+
+
+  static getSDCardAndPermissions(Function(dynamic) callback)async{
+    MethodChannel platform = MethodChannel('android_app_retain');
+    platform.setMethodCallHandler((call) {
+      switch(call.method){
+        case "resolveWithSDCardUri":{
+          print("***************************************************");
+          print("DATA FROM THE SDCARD URI PERMISSION");
+          print(call.arguments);
+          if(callback!=null){
+            callback(call.arguments);
+          }
+        }
+      }
+      return null;
+    });
+    platform.invokeMethod("getSDCardPermission");
 
   }
 

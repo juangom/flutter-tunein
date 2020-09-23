@@ -1414,6 +1414,10 @@ class _LandingPageState extends State<LandingPage> {
                       PageRoutes.goToSingleArtistPage(tune, context);
                       break;
                     }
+                    case 10:{
+                      PageRoutes.goToEditTagsPage(tune, context, subtract60ForBottomBar: true);
+                      break;
+                    }
                   }
                 },
                 onSongCardTap: (song,state,isSelectedSong){
@@ -1656,6 +1660,10 @@ class _LandingPageState extends State<LandingPage> {
                       }
                       case 9:{
                         PageRoutes.goToSingleArtistPage(tune, context);
+                        break;
+                      }
+                      case 10:{
+                        PageRoutes.goToEditTagsPage(tune, context, subtract60ForBottomBar: true);
                         break;
                       }
                     }

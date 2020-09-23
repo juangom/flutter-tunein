@@ -340,6 +340,10 @@ class _SearchPageState extends State<SearchPage> {
                             PageRoutes.goToSingleArtistPage(song, context);
                             break;
                           }
+                          case 10:{
+                            PageRoutes.goToEditTagsPage(song, context, subtract60ForBottomBar: true);
+                            break;
+                          }
                         }
                       },
                     ):SliverToBoxAdapter()

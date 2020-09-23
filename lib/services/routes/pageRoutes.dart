@@ -1,6 +1,7 @@
 
 
 
+import 'package:Tunein/components/Tune/SongTags.dart';
 import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
@@ -34,6 +35,16 @@ class PageRoutes{
       Navigator.of(context, rootNavigator: rootRouter).push(
         MaterialPageRoute(
           builder: (context) => SingleArtistPage(targetArtist, heightToSubstract: subtract60ForBottomBar?60:0),
+        ),
+      );
+    }
+  }
+
+  static void goToEditTagsPage(Tune song, context, {bool subtract60ForBottomBar=false, bool rootRouter=false}){
+    if(song!=null){
+      Navigator.of(context, rootNavigator: rootRouter).push(
+        MaterialPageRoute(
+          builder: (context) => SongTags(song, heightToSubtract: subtract60ForBottomBar?60:0),
         ),
       );
     }

@@ -148,54 +148,59 @@ class SingleAlbumPage extends StatelessWidget {
                                   forceStrutHeight: true
                               )
                             ),
-                            Container(
-                              alignment: Alignment.bottomRight,
-                              margin: EdgeInsets.all(5)
-                                  .add(EdgeInsets.only(top: 2)),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Container(
-                                    margin: EdgeInsets.only(right: 5),
-                                    child: Text(
-                                      album.songs.length.toString(),
-                                      style: TextStyle(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  alignment: Alignment.bottomRight,
+                                  margin: EdgeInsets.all(5),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.access_time,
                                         color: bgColor!=null?Color(bgColor[2]):Colors.white70,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
                                       ),
-                                    ),
+                                      Container(
+                                        child: Text(
+                                          "${Duration(milliseconds: sumDurationsofAlbum(album).floor()).inMinutes} min",
+                                          style: TextStyle(
+                                            color: bgColor!=null?Color(bgColor[2]):Colors.white70,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        margin: EdgeInsets.only(left: 5),
+                                      ),
+                                    ],
                                   ),
-                                  Icon(
-                                    Icons.audiotrack,
-                                    color: bgColor!=null?Color(bgColor[2]):Colors.white70,
-                                  )
-                                ],
-                              ),
-                            ),
-                            Container(
-                              alignment: Alignment.bottomRight,
-                              margin: EdgeInsets.all(5),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Container(
-                                    child: Text(
-                                      "${Duration(milliseconds: sumDurationsofAlbum(album).floor()).inMinutes} min",
-                                      style: TextStyle(
+                                ),
+                                Container(
+                                  alignment: Alignment.bottomRight,
+                                  margin: EdgeInsets.all(5)
+                                      .add(EdgeInsets.only(top: 2)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.only(right: 5),
+                                        child: Text(
+                                          album.songs.length.toString(),
+                                          style: TextStyle(
+                                            color: bgColor!=null?Color(bgColor[2]):Colors.white70,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.audiotrack,
                                         color: bgColor!=null?Color(bgColor[2]):Colors.white70,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    margin: EdgeInsets.only(right: 5),
+                                      )
+                                    ],
                                   ),
-                                  Icon(
-                                    Icons.access_time,
-                                    color: bgColor!=null?Color(bgColor[2]):Colors.white70,
-                                  )
-                                ],
-                              ),
+                                )
+                              ],
                             )
                           ],
                         ),
@@ -386,6 +391,11 @@ class SingleAlbumPage extends StatelessWidget {
                               }
                               case 9:{
                                 PageRoutes.goToSingleArtistPage(album.songs[newIndex], context);
+                                break;
+                              }
+                              case 10:{
+                                print("sdqsdfqsdfsqdfqsdFSDFDSQFDSQFDSFQSDFSDQF");
+                                PageRoutes.goToEditTagsPage(album.songs[newIndex], context, subtract60ForBottomBar: true);
                                 break;
                               }
                             }

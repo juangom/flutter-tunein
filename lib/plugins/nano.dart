@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/services/memoryCacheService.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
@@ -14,6 +15,7 @@ import 'package:ext_storage/ext_storage.dart';
 class Nano {
 
   final MusicServiceIsolate = locator<musicServiceIsolate>();
+  final memoryCachingService = locator<MemoryCacheService>();
 
   MethodChannel platform = MethodChannel('android_app_retain');
 
@@ -44,10 +46,11 @@ class Nano {
   }
 
   Future getSdCardPath() async {
-    var value;
+    String value;
     try {
       value = await platform.invokeMethod("getSdCardPath");
     } catch (e) {}
+    memoryCachingService.setCacheItem(CachedItems.SDCARD_NAME, value.split("/").last);
     return value;
   }
 
@@ -227,7 +230,9 @@ class Nano {
           albumArt,
           [],
           int.parse(_metaData[i][4]),
-          _metaData[i][6]
+          _metaData[i][6],
+          _metaData[i][7],
+
       );
       tunes.add(tune);
     }
@@ -246,10 +251,11 @@ class Tune {
   String albumArt;
   int numberInAlbum;
   String genre;
+  String year;
   List<int> colors;
 
   Tune(this.id, this.title, this.artist, this.album, this.duration, this.uri,
-      this.albumArt, this.colors, this.numberInAlbum, this.genre);
+      this.albumArt, this.colors, this.numberInAlbum, this.genre, this.year);
   Tune.fromMap(Map m) {
     id = m["id"];
     artist = m["artist"];
@@ -265,6 +271,7 @@ class Tune {
     });
     colors = colorList;
     genre= m["genre"];
+    year=m["year"];
   }
 
   Map toMap(){
@@ -279,6 +286,7 @@ class Tune {
     _map["colors"] = this.colors;
     _map["numberInAlbum"] = this.numberInAlbum;
     _map["genre"] = this.genre;
+    _map["year"] = this.year;
     return _map;
   }
 }

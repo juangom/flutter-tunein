@@ -402,6 +402,10 @@ class _playingQueueState extends State<playingQueue> with AutomaticKeepAliveClie
                                               PageRoutes.goToSingleArtistPage(_playlist[newIndex], context);
                                               break;
                                             }
+                                            case 10:{
+                                              PageRoutes.goToEditTagsPage(_playlist[newIndex], context, subtract60ForBottomBar: true);
+                                              break;
+                                            }
                                           }
                                         },
                                         onContextCancel: (choice){

@@ -31,12 +31,12 @@ class DialogService{
       ..show();
   }
 
-  static showToast(context, {String message, Color color, Color backgroundColor}){
+  static showToast(context, {String message, Color color, Color backgroundColor, int duration}){
     Toast.show(message, context,
       textStyle:  TextStyle(
         color: color??MyTheme.grey300
       ),
-      duration: 2,
+      duration: duration??2,
       gravity: 0,
       backgroundRadius : 2,
       backgroundColor: backgroundColor??MyTheme.bgBottomBar.withOpacity(0.7),
@@ -301,13 +301,15 @@ class DialogService{
   }
 
 
-  static Future<bool> showPersistentDialog(context, {String message, Color titleColor, Color messageColor ,String title, Widget content}){
+  static Future<bool> showPersistentDialog(context, {String message, Color titleColor, Color messageColor ,String title, Widget content, EdgeInsets padding, bool showCancelAction = false}){
     return showDialog(
         context: context,
         barrierDismissible: false,
         useRootNavigator: true,
+        useSafeArea: false,
         builder: (_) {
           return AlertDialog(
+            contentPadding: padding,
             backgroundColor: MyTheme.darkBlack,
             title: Text(
               title,
@@ -322,6 +324,15 @@ class DialogService{
               ),
             ),
             actions: <Widget>[
+              if(showCancelAction)
+                FlatButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop(false))
             ],
           );
         });

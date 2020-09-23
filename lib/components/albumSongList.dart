@@ -16,6 +16,7 @@ import 'package:Tunein/services/castService.dart';
 import 'package:Tunein/services/dialogService.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
+import 'package:Tunein/services/routes/pageRoutes.dart';
 import 'package:Tunein/values/contextMenus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -143,7 +144,11 @@ class _AlbumSongListState extends State<AlbumSongList> {
                                   break;
                                 }
                                 case 9:{
-                                  goToSingleArtistPage(widget.album);
+                                  PageRoutes.goToSingleArtistPage(widget.album.songs[0], context, subtract60ForBottomBar: true);
+                                  break;
+                                }
+                                case 10:{
+                                  PageRoutes.goToEditTagsPage(widget.album.songs[0], context, subtract60ForBottomBar: true);
                                   break;
                                 }
                               }
@@ -172,17 +177,6 @@ class _AlbumSongListState extends State<AlbumSongList> {
       },
     );
 
-  }
-
-  void goToSingleArtistPage(Album album){
-    Artist artist = musicService.getArtistTitle(album.artist);
-    if(artist!=null){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SingleArtistPage(artist, heightToSubstract: 60),
-        ),
-      );
-    }
   }
 }
 

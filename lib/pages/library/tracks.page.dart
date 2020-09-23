@@ -883,6 +883,10 @@ class _TracksPageState extends State<TracksPage>
                                       PageRoutes.goToSingleArtistPage(_songs[newIndex], context);
                                       break;
                                     }
+                                    case 10:{
+                                      PageRoutes.goToEditTagsPage(_songs[newIndex], context, subtract60ForBottomBar: false, rootRouter: true);
+                                      break;
+                                    }
                                   }
                                 },
                                 onContextCancel: (choice){

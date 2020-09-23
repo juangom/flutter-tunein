@@ -196,8 +196,8 @@ class StandardIsolateFunctions{
         int indexOfArtistWithPriority =0;
         String nameOfArtistsToPickFrom = sortedPresenceMap.keys.toList()[indexOfArtistWithPriority];
         while(sortedPresenceMap[nameOfArtistsToPickFrom]<2 && indexOfArtistWithPriority< sortedPresenceMap.keys.toList().length){
-          indexOfArtistWithPriority++;
           nameOfArtistsToPickFrom = sortedPresenceMap.keys.toList()[indexOfArtistWithPriority];
+          indexOfArtistWithPriority++;
         }
         Artist artistToPickFrom = artists.values.firstWhere((element) => element.name==nameOfArtistsToPickFrom, orElse: ()=>null);
         if(artistToPickFrom==null){
