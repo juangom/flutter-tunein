@@ -183,6 +183,9 @@ class _PlayingPageState extends State<PlayingPage>
         final _currentSong = snapshot.data.key.value;
         final List<Tune> _favorites = snapshot.data.value;
         //_proceedArg(_currentSong.uri);
+        print(_currentSong.artist);
+        print(_currentSong.album);
+        print(_currentSong.title);
         final int index =
             _favorites.indexWhere((song) => song.id == _currentSong.id);
         final bool _isFavorited = index == -1 ? false : true;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:Tunein/models/playerstate.dart';
@@ -121,13 +122,26 @@ class MusicMetricsService {
     }
   }
 
-  void addSongToLatestPlayedSongs(Tune song){
+  Future<dynamic> addSongToLatestPlayedSongs(Tune song){
     List<Tune> existingList = getCurrentMemoryMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS);
     if(existingList.length==10){
       existingList.removeLast();
     }
     existingList.add(song);
-    updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, existingList);
+    return updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, existingList);
+  }
+
+  FutureOr<bool> removeSongFromLatestPlayedSongs(Tune song,{String id, String title}){
+    if(song==null && id==null && title==null){
+      return false;
+    }
+    List<Tune> existingList = getCurrentMemoryMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS);
+    Tune foundSong = existingList.firstWhere((element){
+      return song?.title??title == element.title || element.id==id;
+    }, orElse: ()=>null);
+    if(foundSong==null) return false;
+    bool songRemoved = existingList.remove(foundSong);
+    return updateSingleMetric(MetricIds.MET_GLOBAL_LAST_PLAYED_SONGS, existingList).then((value) => songRemoved);
   }
 
 

@@ -349,8 +349,11 @@ class MusicService {
     Map<String, Artist> artists = artists$.value.asMap().map((key, value) => MapEntry<String,Artist>(value.name,value));
     int currentIndex = 0;
     List<Album> ItemsList = _albums$.value;
+
     artistNames.forEach((element) {
-      artists[element].albums.clear();
+      if(artists[element]!=null){
+        artists[element].albums.clear();
+      }
     });
     ItemsList.forEach((Album album) {
       if(artistNames.contains(album.artist)){
@@ -1293,6 +1296,14 @@ class MusicService {
         return saveArtists();
       }).then((value){
         return FileService.writeTags(newSong);
+      }).then((value) async {
+        //Here we need to refresh multiple values
+        //The first would be the lastSongPlayed that is saved to the storage with a separate reference
+        bool songRemoved = await metricService.removeSongFromLatestPlayedSongs(null,title: oldSong.title);
+        if(songRemoved){
+          return  metricService.addSongToLatestPlayedSongs(newSong);
+        }
+        return true;
       }).then((value) => true);
     }else{
       return null;
