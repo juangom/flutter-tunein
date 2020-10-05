@@ -1,22 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:Tunein/globals.dart';
-import 'package:Tunein/models/playback.dart';
-import 'package:Tunein/models/playerstate.dart';
-import 'package:Tunein/plugins/nano.dart';
-import 'package:Tunein/services/themeService.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:media_notification/media_notification.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'locator.dart';
 
-final themeService = locator<ThemeService>();
 
 
 enum SettingsIds{
@@ -27,7 +17,9 @@ enum SettingsIds{
   SET_TRACK_LIST_DECK_ITEMS,
   SET_ALBUM_LIST_PAGE,
   SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL,
-  SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL
+  SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL,
+  SET_OUT_GOING_HTTP_SERVER_IP,
+  SET_OUT_GOING_HTTP_SERVER_PORT,
 }
 
 
@@ -203,6 +195,12 @@ class settingService{
         break;
       case SettingsIds.SET_ANDROID_NOTIFICATION_PLAYBACK_CONTROL:
         return "true";
+        break;
+      case SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP:
+        return "0.0.0.0";
+        break;
+      case SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT:
+        return "8090";
         break;
       default:
         return null;

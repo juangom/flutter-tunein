@@ -6,6 +6,7 @@ import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/platformService.dart';
+import 'package:Tunein/services/settingService.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:upnp/upnp.dart';
 import 'package:uuid/uuid.dart';
@@ -42,6 +43,7 @@ class CastService {
   List<int> subscriptionIDs=[];
   final MusicServiceIsolate = locator<musicServiceIsolate>();
   final platformService = locator<PlatformService>();
+  final SettingService = locator<settingService>();
 
 
 
@@ -160,7 +162,7 @@ class CastService {
       castingPlayerStateTimer.cancel();
       castingPlayerStateTimer=null;
       if(PlayerStateStream!=null){
-        PlayerStateStream.close();
+        if(!PlayerStateStream.isClosed)PlayerStateStream.close();
         PlayerStateStream=null;
       }
     }
@@ -229,10 +231,12 @@ class CastService {
       if(songToCast.albumArt!=null){
         await registerArtForService("art${songToCast.id}",songToCast.albumArt);
       }
+
       String currentIP = await platformService.getCurrentIP();
-      String newURI = "http://${currentIP}:8089/file/?fileID=${songToCast.id}.mp3";
+      String currentPort = SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT);
+      String newURI = "http://${currentIP}:${currentPort}/file?fileID=${songToCast.id}.mp3";
       print(newURI);
-      String newArtURI = "http://${currentIP}:8089/file/?fileID=art${songToCast.id}.jpg";
+      String newArtURI = "http://${currentIP}:${currentPort}/file?fileID=art${songToCast.id}.jpg";
       CastItem newItemToCast = CastItem(uri: newURI, name: songToCast.title.toString(), coverArtUri: songToCast.albumArt!=null?newArtURI:null, id: songToCast.id);
 
       Device currentDev = deviceToUse??_currentDeviceToBeUsed.value;

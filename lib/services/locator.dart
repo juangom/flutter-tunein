@@ -26,10 +26,10 @@ void setupLocator() {
   locator.registerSingleton(PlatformService());
   locator.registerSingleton(musicServiceIsolate());
   locator.registerSingleton(notificationControlService());
+  locator.registerSingleton(settingService());
   locator.registerSingleton(CastService());
   locator.registerSingleton(MusicMetricsService());
   locator.registerSingleton(ThemeService());
-  locator.registerSingleton(settingService());
   locator.registerSingleton(QueueService());
   locator.registerSingleton(MusicService());
 

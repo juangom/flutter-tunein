@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:Tunein/components/pagenavheader.dart';
 import 'package:Tunein/globals.dart';
@@ -69,7 +70,7 @@ class SettingsPage extends StatelessWidget {
                             ],
                           ),
                           SettingsSection(
-                            title: 'Aritsts',
+                            title: 'Artists',
                             tiles: [
                               SettingsTile.switchTile(
                                 title: 'Update Artist thumbnails',
@@ -383,7 +384,63 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
                 MetricsPage(),
-                Container(
+                StreamBuilder(
+                  stream: SettingService.settings$,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<Map<SettingsIds,String>> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container();
+                    }
+                    final _settings = snapshot.data;
+                    return Container(
+                      child: SettingsList(
+                        backgroundColor: MyTheme.darkBlack,
+                        textColor: MyTheme.grey300,
+                        headingTextColor: MyTheme.darkRed,
+                        sections: [
+                          SettingsSection(
+                            title: 'Outgoing HTTP Server',
+                            tiles: [
+                              SettingsTile(
+                                title: 'IP & Port',
+                                subtitle: "${_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP]}:${_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT]}",
+                                leading: Icon(
+                                  Icons.av_timer,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  MapEntry<String,String> newValue = await openHttpServerIpAndPort(context,_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP],_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT]);
+                                  bool changesHappened=false;
+                                  if(newValue!=null){
+                                    if(newValue.key!=null && newValue.key!=""){
+                                      await saveSettingValue(SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP,newValue.key);
+                                      changesHappened=true;
+                                    }
+                                    if(newValue.value!=null && newValue.value!=""){
+                                      await saveSettingValue(SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT,newValue.value);
+                                      changesHappened=true;
+                                    }
+                                    if(changesHappened){
+                                      DialogService.showToast(context,
+                                          backgroundColor: MyTheme.darkBlack,
+                                          color: MyTheme.darkRed,
+                                          message: "Settings Saved",
+                                          duration: 2
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+
+                  },
+                ),
+
+                /*Container(
                   width: screenSize.width,
                   child: Center(
                     child: Text(
@@ -398,7 +455,7 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
+                )*/
               ],
             ),
           )
@@ -419,6 +476,189 @@ class SettingsPage extends StatelessWidget {
     if(quality!=null){
       SettingService.updateSingleSetting(SettingsIds.SET_DISCOG_THUMB_QUALITY, quality);
     }
+  }
+
+  Future<MapEntry<String,String>> openHttpServerIpAndPort(context, String currentIp, String currentPort){
+    String currentKey = "";
+    String newIP="";
+    String newPort;
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) {
+          return AlertDialog(
+            backgroundColor: MyTheme.darkBlack,
+            buttonPadding: EdgeInsets.all(5),
+            insetPadding: EdgeInsets.all(12),
+            title: Text(
+              "Outgoing Ip address and Port",
+              style: TextStyle(
+                  color: Colors.white70
+              ),
+            ),
+            content: Material(
+              color: Colors.transparent,
+              child: Container(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width/1.2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text("**",
+                                  style: TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      color: MyTheme.grey300,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 1.2
+                                  ),
+                                  textAlign: TextAlign.start,
+                                ),
+                                flex: 1,
+                              ),
+                              Expanded(
+                                child: Text("These changes will only work properly after app restart. Your casting will NOT work until you restart the app",
+                                  style: TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      color: MyTheme.grey300,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 1.2
+                                  ),
+                                ),
+                                flex: 11,
+                              )
+                            ],
+                          ),
+                          margin: EdgeInsets.only(bottom: 10),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                child: TextField(
+                                  autofocus: true,
+                                  onChanged: (string){
+                                    newIP=string;
+                                  },
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  decoration: InputDecoration(
+                                      hintText: currentIp,
+                                      hintStyle: TextStyle(
+                                          color: MyTheme.grey500.withOpacity(0.6)
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: MyTheme.grey300.withOpacity(.7),
+                                              style: BorderStyle.solid,
+                                              width: 1
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: MyTheme.darkRed.withOpacity(.9),
+                                              style: BorderStyle.solid,
+                                              width: 2
+                                          )
+                                      ),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      labelText: "IP address",
+                                      labelStyle: TextStyle(
+                                        fontSize: 17,
+                                        color: MyTheme.darkRed.withOpacity(.8),
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 1.4,
+                                      )
+                                  ),
+                                ),
+                                margin: EdgeInsets.only(right: 8),
+                              ),
+                              flex: 8,
+                            ),
+                            Expanded(
+                              child: Container(
+                                child: TextField(
+                                  autofocus: true,
+                                  onChanged: (string){
+                                    newPort=string;
+                                  },
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  decoration: InputDecoration(
+                                      hintText: currentPort,
+                                      hintStyle: TextStyle(
+                                          color: MyTheme.grey500.withOpacity(0.6)
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: MyTheme.grey300.withOpacity(.7),
+                                              style: BorderStyle.solid,
+                                              width: 1
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: MyTheme.darkRed.withOpacity(.9),
+                                              style: BorderStyle.solid,
+                                              width: 2
+                                          )
+                                      ),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      labelText: "Port",
+                                      labelStyle: TextStyle(
+                                        fontSize: 17,
+                                        color: MyTheme.darkRed.withOpacity(.8),
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 1.4,
+                                      )
+                                  ),
+                                ),
+                                margin: EdgeInsets.only(right: 8),
+                              ),
+                              flex: 4,
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                padding: EdgeInsets.all(0),
+                child: Text(
+                  "Save Changes",
+                  style: TextStyle(
+                      color: MyTheme.grey300
+                  ),
+                ),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop(MapEntry(newIP,newPort));
+                },
+              ),
+              FlatButton(
+                  padding: EdgeInsets.all(0),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: MyTheme.darkRed
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context, rootNavigator: true).pop(null))
+            ],
+          );
+        });
   }
 
   Future<bool> checkDiscogAPIValidity(context) async{

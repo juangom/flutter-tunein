@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:Tunein/plugins/nano.dart';
+import 'package:Tunein/services/http/server/httpOutgoingServer.dart';
 import 'package:Tunein/utils/MathUtils.dart';
 import 'package:upnp/upnp.dart';
 import 'package:Tunein/plugins/upnp.dart' as UPnPPlugin;
@@ -12,6 +13,8 @@ import 'package:path/path.dart';
 
 
 class StandardIsolateFunctions{
+
+  static Map<String, MapEntry<String,String>> filesToServe=Map();
 
   static searchForCastingDevices(Function(List<Device>) callback) async{
     try{
@@ -252,6 +255,58 @@ class StandardIsolateFunctions{
       randomIndexList.add(MathUtils.getRandomFromRange(0, notTopArtists.length));
     }
     return randomIndexList.map((e) => notTopArtists[e]).toList();
+  }
+
+  static void createServerAndAddImagesAndFiles(String ip, String port, Function(dynamic) callback){
+    HttpOutgoingServer httpServer = HttpOutgoingServer(
+        doCreateServer: true,
+        initiateListeningImmediately: true,
+        ip: ip,
+        port: port,
+        newSharedServer: true
+    );
+
+    _sendFileNotFound(HttpResponse response) {
+      response.write('File Not found');
+      response.statusCode = HttpStatus.notFound;
+      response.close();
+    }
+
+    httpServer.addListenerCallback(SimpleRequest(
+        method: ["GET","HEAD"],
+        URL: "/file",
+        callback:  (HttpRequest request){
+          // PENDING: Do more security checks here?
+          final String fileID = request.uri.queryParameters["fileID"];
+          try{
+            String fileUri = fileID!=null?filesToServe[fileID.split(".")[0]].key:null;
+            List<String> contentType = filesToServe[fileID.split(".")[0]].value.split("/");
+            if(fileUri!=null){
+              final File file = new File(fileUri);
+              file.exists().then((bool found)  async{
+                if (found) {
+                  request.response.headers.contentType = ContentType(contentType[0]??"audio",contentType[1]??"mpeg");
+                  request.response.contentLength = file.statSync().size;
+                  await request.response.addStream(file.openRead());
+                  return Future.value(true);
+                } else {
+                  _sendFileNotFound(request.response);
+                }
+              });
+            }else{
+              _sendFileNotFound(request.response);
+            }
+          }catch(e){
+            print(e);
+            print(e.stack);
+            _sendFileNotFound(request.response);
+          }
+          return Future.value(null);
+        }
+    ));
+    if(callback!=null){
+      callback(true);
+    }
   }
 
   }

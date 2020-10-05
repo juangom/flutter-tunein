@@ -14,6 +14,7 @@ import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/settingService.dart';
 import 'package:Tunein/services/sideDrawerService.dart';
+import 'package:Tunein/utils/messaginUtils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,12 +42,21 @@ class RootState extends State<Root> with TickerProviderStateMixin {
   @override
   void initState() {
     MusicServiceIsolate.callerCreateIsolate().then((value){
-      MusicServiceIsolate.sendReceive("Hello").then((retunedValue){
+      MusicServiceIsolate.sendReceive("Hello").then((retunedValue)async{
         print("the returned value is ${retunedValue}");
-        MusicServiceIsolate.callerCreatePluginEnabledIsolate().then((value){
+        await SettingService.fetchSettings();
+        MusicServiceIsolate.callerCreatePluginEnabledIsolate({
+          "httpServerIP":SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP),
+          "httpServerPort":SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT),
+        }).then((value){
           print("isolate with plugins initiated");
           musicService.manualAudioPlayerInit();
           musicService.showUI();
+          MessagingUtils.sendNewStandardIsolateCommand(command: "createServerAndAddFilesHosting",
+              message: [
+                SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP),
+                SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT)
+              ]);
           loadFiles();
         });
       });
@@ -66,7 +76,6 @@ class RootState extends State<Root> with TickerProviderStateMixin {
 
   Future loadFiles() async {
     _startupStatus.add(StartupState.Busy);
-    await SettingService.fetchSettings();
     //fetching all userMetrics doesn't need to be awaited
     metricService.fetchAllMetrics();
     final data = await musicService.retrieveFiles();
