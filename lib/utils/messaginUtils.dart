@@ -26,18 +26,20 @@ class MessagingUtils {
     });
   }
 
-  static Future sendNewStandardIsolateCommand({@required String command,  message=""}){
+  static Future<dynamic> sendNewStandardIsolateCommand<T>({@required String command,  message}){
     musicServiceIsolate MusicServiceIsolate = locator<musicServiceIsolate>();
     ReceivePort tempPort = ReceivePort();
-    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage<dynamic>(
+    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
         sender: tempPort.sendPort,
         command: command,
-        message: message
+        message: message??""
     ));
-    return tempPort.forEach((data){
+    return tempPort.singleWhere((data){
       if(data!="OK"){
         tempPort.close();
-        return data;
+        return true;
+      }else{
+        return false;
       }
     });
   }

@@ -169,9 +169,6 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           ByteData artistBundleImage = await rootBundle.load("images/artist.jpg");
           List<int> defaultBgImageBytes = artistBundleImage.buffer.asUint8List();
           Tune songToshowONNotification = musicService.playerState$.value.value;
-          print(songToshowONNotification.album);
-          print(songToshowONNotification.artist);
-          print(songToshowONNotification.title);
           if(SettingsService.getOrCreateSingleSettingStream(SettingsIds.SET_CUSTOM_NOTIFICATION_PLAYBACK_CONTROL).value=="true"){
             Artist artist = musicService.artistsImages$.value!=null?musicService.artistsImages$.value[songToshowONNotification.artist]:null;
             NotificationService.show(

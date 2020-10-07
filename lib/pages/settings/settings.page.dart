@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:Tunein/components/common/ShowWithFadeComponent.dart';
+import 'package:Tunein/components/common/selectableTile.dart';
 import 'package:Tunein/components/pagenavheader.dart';
 import 'package:Tunein/globals.dart';
 import 'package:Tunein/pages/metrics/metrics.page.dart';
@@ -11,6 +14,7 @@ import 'package:Tunein/services/layout.dart';
 import 'package:Tunein/services/locator.dart';
 import 'package:Tunein/services/musicService.dart';
 import 'package:Tunein/services/settingService.dart';
+import 'package:Tunein/utils/messaginUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -405,7 +409,7 @@ class SettingsPage extends StatelessWidget {
                                 title: 'IP & Port',
                                 subtitle: "${_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP]}:${_settings[SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT]}",
                                 leading: Icon(
-                                  Icons.av_timer,
+                                  Icons.laptop_chromebook,
                                   color: MyTheme.grey300,
                                 ),
                                 onTap: () async{
@@ -429,6 +433,17 @@ class SettingsPage extends StatelessWidget {
                                       );
                                     }
                                   }
+                                },
+                              ),
+                              SettingsTile(
+                                title: 'Externally Accessible File list',
+                                subtitle: "A list of exposed files (that are accessible externally) via the HTTP server",
+                                leading: Icon(
+                                  Icons.insert_drive_file,
+                                  color: MyTheme.grey300,
+                                ),
+                                onTap: () async{
+                                  openNetworkOpenFileList(context);
                                 },
                               ),
                             ],
@@ -661,6 +676,87 @@ class SettingsPage extends StatelessWidget {
         });
   }
 
+
+  Future<bool> openNetworkOpenFileList(context){
+    return DialogService.showAlertDialog(context,
+      title: "Exposed File list",
+      padding: EdgeInsets.all(10),
+      content: Material(
+        color: Colors.transparent,
+        child: Container(
+          height: MediaQuery.of(context).size.height/2.5,
+          width: MediaQuery.of(context).size.width/1.3,
+          child: StreamBuilder<dynamic>(
+            stream: MessagingUtils.sendNewStandardIsolateCommand<Map<String,String>>(command: "getServedFilesList",message: "").asStream(),
+            initialData: null,
+            builder: (bcontext, AsyncSnapshot<dynamic> snapshot){
+              if(snapshot.data==null){
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(top: 8),
+                        child: Text("Looking For Files",
+                          style: TextStyle(
+                              color: MyTheme.grey300,
+                              fontSize: 17
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              }
+              if(snapshot.data.length==0){
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(top: 8),
+                        child: Text("No Exposed Files",
+                          style: TextStyle(
+                              color: MyTheme.grey300,
+                              fontSize: 17
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              }
+              Map<String,MapEntry<String,String>> data =  snapshot.data as  Map<String,MapEntry<String,String>>;
+              return Container(
+                child: ListView(
+                  children: data.map((key, value) {
+                    List<String> parts = value.key.split("/");
+                    String title = parts[parts.length-1];
+                    return MapEntry(value.key,
+                        SelectableTile.mediumWithSubtitle(
+                          leadingWidget: FadeInImage(
+                            placeholder: AssetImage('images/track.png'),
+                            fadeInDuration: Duration(milliseconds: 200),
+                            fadeOutDuration: Duration(milliseconds: 100),
+                            image: value.value =="image/jpeg"
+                                ? FileImage(
+                              new File(value.key),
+                            )
+                                : AssetImage('images/track.png'),
+                          ),
+                          title: title.split(".")[0],
+                          subtitle: value.key,
+                        )
+                    );
+                  }).values.toList(),
+                ),
+              );
+            },
+          ),
+        ),
+      )
+    );
+  }
   Future<bool> checkDiscogAPIValidity(context) async{
     //This will check the validity of the discog API INFO stored in teh settings
     //in the future this should be a generic check for any API that can be used and exactly the API that is selected from a list

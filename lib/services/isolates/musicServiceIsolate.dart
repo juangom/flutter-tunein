@@ -167,6 +167,10 @@ class musicServiceIsolate {
           incomingMessage.sender.send(true);
           break;
         }
+        case "getServedFilesList":{
+          incomingMessage.sender.send(StandardIsolateFunctions.filesToServe);
+          break;
+        }
         case "searchForCastDevices":{
           if(incomingMessage.message!=null){
 

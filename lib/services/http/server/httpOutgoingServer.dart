@@ -20,8 +20,6 @@ class HttpOutgoingServer {
     int intPort =  int.parse(port, radix: 10,  onError: (err)=>throw "Server port is incorrect");
     try{
       currentServer = await HttpServer.bind(ip, intPort);
-      print("currentServer is bound");
-      print(currentServer);
       if(initiateImmediately){
         startListening();
       }
@@ -36,16 +34,9 @@ class HttpOutgoingServer {
 
   void startListening(){
     if(currentServer==null) throw "No Server to listen on";
-    print("LISTENING WILL START");
-    print(currentServer.address.toString());
     currentServer.listen((request) {
-      print("URI PATH THAT IS IS GOT ");
-      print(request.uri.path);
       if(callbacks.containsKey(request.uri.path)){
         SimpleRequest req = callbacks[request.uri.path];
-        print(req.URL);
-        print(req.method);
-        print(request.method);
         if(req.method.contains(request.method)){
           if(req.callback!=null){
             req.callback(request).then((value){

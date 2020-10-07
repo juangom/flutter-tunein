@@ -110,6 +110,7 @@ class DialogService{
         context: context,
         builder: (_) {
           return AlertDialog(
+            insetPadding: padding,
             backgroundColor: MyTheme.darkBlack,
             title: Text(
               title,
@@ -123,7 +124,7 @@ class DialogService{
                 color: messageColor!=null?messageColor:Colors.white
               ),
             ),
-            contentPadding: padding??EdgeInsets.fromLTRB(24.0,20.0,24.0,24.0),
+            //contentPadding: padding??EdgeInsets.fromLTRB(24.0,20.0,24.0,24.0),
             actions: <Widget>[
               FlatButton(
                 child: Text(
