@@ -176,6 +176,7 @@ class _LandingPageState extends State<LandingPage> {
               slivers: <Widget>[
                 SliverToBoxAdapter(
                   child: ItemListDevider(DeviderTitle: "Preferred Pics",
+                    secondaryTitle: "Automatically generated collections",
                     backgroundColor: Colors.transparent,
                   ),
                 ),
@@ -861,13 +862,332 @@ class _LandingPageState extends State<LandingPage> {
                       stream: AlbumSongs[index].albumArt!=null?ConversionUtils.FileUriTo8Bit(AlbumSongs[index].albumArt).asStream():Asset8bitList.asStream(),
                       builder: (context, AsyncSnapshot<List<int>> snapshot){
                         if(snapshot.hasError){
-
                           return PreferredPicks(
                             allImageBlur:false,
                             bottomTitle: "",
                             colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
                           );
                         }
+                        if(!snapshot.hasData){
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: MyTheme.bgBottomBar
+                            )
+                          );
+                        }
+                        return GestureDetector(
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8),
+                            child: ShowWithFade.fromStream(
+                              inStream: ConversionUtils.createImageFromWidget(
+                                  Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: PreferredPicks(
+                                        allImageBlur:false,
+                                        bottomTitle: "${AlbumSongs[index].title.split(' ').join('\n')}",
+                                        backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
+                                        colors: AlbumSongs[index].songs[0].colors.map((e){
+                                          return Color(e).withOpacity(.5).value;
+                                        }).toList(),
+                                      )
+                                  ),
+                                  wait: Duration(milliseconds: 250+(index*100)),
+                                  imageSize: Size(135,190),
+                                  logicalSize: Size(135,190)
+                              ).then((value) {
+                                return Image.memory(value);
+                              }).asStream(),
+                              durationUntilFadeStarts: Duration(milliseconds: 300+(index*50)),
+                              shallowWidget: Container(
+                                  decoration: BoxDecoration(
+                                      color: MyTheme.bgBottomBar
+                                  )
+                              ),
+                            ),
+                          ),
+                          onTap: (){
+                            List<int> colors = AlbumSongs[index].songs[0].colors;
+                            showGeneralDialog(
+                                barrierLabel: "TopAlbums",
+                                barrierDismissible: true,
+                                barrierColor: Colors.black.withOpacity(0.7),
+                                transitionDuration: Duration(milliseconds: 100),
+                                context: context,
+                                pageBuilder: (context, anim1, anim2){
+                                  return SinglePicturePopupWidget(
+                                      listOfSongs: AlbumSongs[index].songs,
+                                      onPlaybuttonTap: (){
+                                        musicService.updatePlaylist(AlbumSongs[index].songs);
+                                        musicService.stopMusic();
+                                        musicService.playMusic(AlbumSongs[index].songs[0]);
+                                      },
+                                      onShuffleButtonTap: (){
+                                        musicService.updatePlaylist(AlbumSongs[index].songs);
+                                        musicService.updatePlayback(Playback.shuffle);
+                                        musicService.stopMusic();
+                                        musicService.playMusic(musicService.playlist$.value.value[0]);
+                                      },
+                                      screensize: screensize,
+                                      title: AlbumSongs[index].title,
+                                      subtitle: AlbumSongs[index].artist,
+                                      colors: colors,
+                                      topLeftImage: AlbumSongs[index].albumArt,
+                                      Description: "3333333333",
+                                      underSubtitleTray: Column(
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: <Widget>[
+                                                  Container(
+                                                    margin: EdgeInsets.only(right: 5),
+                                                    child: Text(
+                                                      AlbumSongs[index].songs.length.toString(),
+                                                      style: TextStyle(
+                                                        color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    Icons.audiotrack,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  )
+                                                ],
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.only(right: 8, left :8),
+                                                width: 1,
+                                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  Container(
+                                                    child: Text(
+                                                      "${Duration(milliseconds: ConversionUtils.songListToDuration(AlbumSongs[index].songs).floor()).inMinutes} min",
+                                                      style: TextStyle(
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                    margin: EdgeInsets.only(right: 5),
+                                                  ),
+                                                  Icon(
+                                                    Icons.access_time,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  )
+                                                ],
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.only(right: 8, left :8),
+                                                width: 4,
+                                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                              ),
+                                            ],
+                                          ),
+                                          SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Padding(
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Icon(
+                                                      Icons.av_timer,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    ),
+                                                    Container(
+                                                      child: Text(
+                                                        "${ConversionUtils.DurationToFancyText(playDuration[AlbumSongs[index].id.toString()])} of play time",
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      margin: EdgeInsets.only(left: 5),
+                                                    ),
+                                                  ],
+                                                ),
+                                                padding: EdgeInsets.only(left: 4),
+                                              )
+                                          )
+
+                                        ],
+                                      )
+                                  );
+                                },
+                                transitionBuilder: (context, anim1, anim2, child){
+                                  return AnimatedDialog(
+                                    dialogContent: child,
+                                    inputAnimation: anim1,
+                                  );
+                                }
+                            );
+                          },
+                        );
+                        return ShowWithFade.fromStream(
+                          inStream: ConversionUtils.createImageFromWidget(
+                              Directionality(
+                                textDirection: TextDirection.ltr,
+                                  child: PreferredPicks(
+                                    allImageBlur:false,
+                                    bottomTitle: "${AlbumSongs[index].title.split(' ').join('\n')}",
+                                    backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
+                                    colors: AlbumSongs[index].songs[0].colors.map((e){
+                                      return Color(e).withOpacity(.5).value;
+                                    }).toList(),
+                                  )
+                              ),
+                            imageSize: Size(122,190),
+                            logicalSize: Size(122,190)
+                          ).then((value) {
+                            return GestureDetector(
+                              child: Container(
+                                margin: EdgeInsets.only(right: 8),
+                                child: Image.memory(value),
+                              ),
+                              onTap: (){
+                                List<int> colors = AlbumSongs[index].songs[0].colors;
+                                showGeneralDialog(
+                                    barrierLabel: "TopAlbums",
+                                    barrierDismissible: true,
+                                    barrierColor: Colors.black.withOpacity(0.7),
+                                    transitionDuration: Duration(milliseconds: 100),
+                                    context: context,
+                                    pageBuilder: (context, anim1, anim2){
+                                      return SinglePicturePopupWidget(
+                                          listOfSongs: AlbumSongs[index].songs,
+                                          onPlaybuttonTap: (){
+                                            musicService.updatePlaylist(AlbumSongs[index].songs);
+                                            musicService.stopMusic();
+                                            musicService.playMusic(AlbumSongs[index].songs[0]);
+                                          },
+                                          onShuffleButtonTap: (){
+                                            musicService.updatePlaylist(AlbumSongs[index].songs);
+                                            musicService.updatePlayback(Playback.shuffle);
+                                            musicService.stopMusic();
+                                            musicService.playMusic(musicService.playlist$.value.value[0]);
+                                          },
+                                          screensize: screensize,
+                                          title: AlbumSongs[index].title,
+                                          subtitle: AlbumSongs[index].artist,
+                                          colors: colors,
+                                          topLeftImage: AlbumSongs[index].albumArt,
+                                          Description: "3333333333",
+                                          underSubtitleTray: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: <Widget>[
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize.max,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        margin: EdgeInsets.only(right: 5),
+                                                        child: Text(
+                                                          AlbumSongs[index].songs.length.toString(),
+                                                          style: TextStyle(
+                                                            color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                                            fontWeight: FontWeight.w700,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Icon(
+                                                        Icons.audiotrack,
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Container(
+                                                    margin: EdgeInsets.only(right: 8, left :8),
+                                                    width: 1,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        child: Text(
+                                                          "${Duration(milliseconds: ConversionUtils.songListToDuration(AlbumSongs[index].songs).floor()).inMinutes} min",
+                                                          style: TextStyle(
+                                                            color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                            fontWeight: FontWeight.w700,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        margin: EdgeInsets.only(right: 5),
+                                                      ),
+                                                      Icon(
+                                                        Icons.access_time,
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Container(
+                                                    margin: EdgeInsets.only(right: 8, left :8),
+                                                    width: 4,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  ),
+                                                ],
+                                              ),
+                                              SingleChildScrollView(
+                                                  scrollDirection: Axis.horizontal,
+                                                  child: Padding(
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.max,
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      children: <Widget>[
+                                                        Icon(
+                                                          Icons.av_timer,
+                                                          color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                        ),
+                                                        Container(
+                                                          child: Text(
+                                                            "${ConversionUtils.DurationToFancyText(playDuration[AlbumSongs[index].id.toString()])} of play time",
+                                                            style: TextStyle(
+                                                              color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                              fontWeight: FontWeight.w700,
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                          margin: EdgeInsets.only(left: 5),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    padding: EdgeInsets.only(left: 4),
+                                                  )
+                                              )
+
+                                            ],
+                                          )
+                                      );
+                                    },
+                                    transitionBuilder: (context, anim1, anim2, child){
+                                      return AnimatedDialog(
+                                        dialogContent: child,
+                                        inputAnimation: anim1,
+                                      );
+                                    }
+                                );
+                              },
+                            );
+                          }).asStream(),
+                          durationUntilFadeStarts: Duration(milliseconds: 200+(index*50)),
+                          shallowWidget: Container(
+                              decoration: BoxDecoration(
+                                  color: MyTheme.bgBottomBar
+                              )
+                          ),
+                        );
                         return AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
                           switchInCurve: Curves.easeInToLinear,
@@ -1071,6 +1391,159 @@ class _LandingPageState extends State<LandingPage> {
                             colors: [MyTheme.grey300.value, MyTheme.darkBlack.value],
                           );
                         }
+
+                        if(!snapshot.hasData){
+
+                        }
+
+                        return GestureDetector(
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8),
+                            child: ShowWithFade.fromStream(
+                              inStream: ConversionUtils.createImageFromWidget(
+                                  Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: PreferredPicks(
+                                        allImageBlur:false,
+                                        bottomTitle: "${Artists[index].name.split(' ').join('\n')}",
+                                        backgroundWidget: getCombinedImages([snapshot.data], maxWidth: 122, standardWidth: 122, standardHeight: 190),
+                                        colors: Artists[index].colors.map((e){
+                                          return Color(e).withOpacity(.5).value;
+                                        }).toList(),
+                                      )
+                                  ),
+                                  wait: Duration(milliseconds: 250+(index*100)),
+                                  imageSize: Size(135,190),
+                                  logicalSize: Size(135,190)
+                              ).then((value) {
+                                return Image.memory(value);
+                              }).asStream(),
+                              durationUntilFadeStarts: Duration(milliseconds: 300+(index*50)),
+                              shallowWidget: Container(
+                                  decoration: BoxDecoration(
+                                      color: MyTheme.bgBottomBar
+                                  )
+                              ),
+                            ),
+                          ),
+                          onTap: (){
+                            List<int> colors = Artists[index].colors;
+                            showGeneralDialog(
+                                barrierLabel: "TopAlbums",
+                                barrierDismissible: true,
+                                barrierColor: Colors.black.withOpacity(0.7),
+                                transitionDuration: Duration(milliseconds: 100),
+                                context: context,
+                                pageBuilder: (context, anim1, anim2){
+                                  return SinglePictureArtistPopupWidget(
+                                      artist: Artists[index],
+                                      screensize: screensize,
+                                      title: Artists[index].name,
+                                      subtitle: '',
+                                      colors: colors,
+                                      topLeftImage: Artists[index].coverArt,
+                                      underSubtitleTray: Column(
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: <Widget>[
+                                                  Container(
+                                                    margin: EdgeInsets.only(right: 5),
+                                                    child: Text(
+                                                      Artists[index].albums.length.toString(),
+                                                      style: TextStyle(
+                                                        color: (colors!=null && colors.length!=null)!=null?Color(colors[1]):Colors.white70,
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    Icons.album,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  )
+                                                ],
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.only(right: 8, left :8),
+                                                width: 1,
+                                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  Container(
+                                                    child: Text(
+                                                      "${Duration(milliseconds: ConversionUtils.songListToDuration(Artists[index].albums.reduce((value, element){
+                                                        value.songs.addAll(element.songs);
+                                                        return value;
+                                                      }).songs).floor()).inMinutes} min",
+                                                      style: TextStyle(
+                                                        color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                    margin: EdgeInsets.only(right: 5),
+                                                  ),
+                                                  Icon(
+                                                    Icons.access_time,
+                                                    color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                  )
+                                                ],
+                                              ),
+                                              Container(
+                                                margin: EdgeInsets.only(right: 8, left :8),
+                                                width: 4,
+                                                color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                              ),
+                                            ],
+                                          ),
+                                          SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Padding(
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Icon(
+                                                      Icons.av_timer,
+                                                      color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                    ),
+                                                    Container(
+                                                      child: Text(
+                                                        "${ConversionUtils.DurationToFancyText(Duration(seconds: playDuration[Artists[index].name]??0))} of play time",
+                                                        style: TextStyle(
+                                                          color: (colors!=null && colors.length!=null)?Color(colors[1]):Colors.white70,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      margin: EdgeInsets.only(left: 5),
+                                                    ),
+                                                  ],
+                                                ),
+                                                padding: EdgeInsets.only(left: 4),
+                                              )
+                                          )
+
+                                        ],
+                                      )
+                                  );
+                                },
+                                transitionBuilder: (context, anim1, anim2, child){
+                                  return AnimatedDialog(
+                                    dialogContent: child,
+                                    inputAnimation: anim1,
+                                  );
+                                }
+                            );
+                          },
+                        );
                         return AnimatedSwitcher(
                           duration: Duration(milliseconds: 200),
                           switchInCurve: Curves.easeInToLinear,
