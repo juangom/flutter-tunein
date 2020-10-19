@@ -272,9 +272,9 @@ class _PlayingPageState extends State<PlayingPage>
               ),
             ),
             padding: EdgeInsets.all(1),
-            position: BadgePosition.topRight(
+            position: BadgePosition.topEnd(
                 top: -9,
-                right: -6
+                end: -6
             ),
             badgeColor: Color(colors[0]),
           ):Icon(

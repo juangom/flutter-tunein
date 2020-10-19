@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:Tunein/models/playerstate.dart';
 import 'package:Tunein/plugins/AudioReceiverService.dart';
+import 'package:Tunein/plugins/ThemeReceiverService.dart';
 import 'package:Tunein/plugins/nano.dart';
 import 'package:Tunein/services/http/server/httpOutgoingServer.dart';
 import 'package:Tunein/services/isolates/pluginIsolateFunctions.dart';
@@ -199,7 +200,7 @@ class musicServiceIsolate {
 
         case "fetchAlbumsFromSongs":{
           if(incomingMessage.message!=null){
-            StandardIsolateFunctions.fetchAlbumFromsongs(incomingMessage.message,(data){
+            StandardIsolateFunctions.fetchAlbumFromsongs(incomingMessage.message,callback: (data){
               incomingMessage.sender.send(data);
             });
           }
@@ -273,7 +274,7 @@ class musicServiceIsolate {
         }
         case "getAllTracksMetadata":{
           if(incomingMessage[1]!=null){
-            PluginIsolateFunctions.fetchMetadataOfAllTracks(incomingMessage[1],(data){
+            PluginIsolateFunctions.fetchMetadataOfAllTracks(incomingMessage[1],callback: (data){
               (incomingMessage[2] as SendPort).send(data);
             });
           }
@@ -471,6 +472,25 @@ class musicServiceIsolate {
           if(incomingMessage[1]!=null){
             PluginIsolateFunctions.getSDCardAndPermissions((value)=>(incomingMessage[2] as SendPort).send(value));
           }
+          break;
+        }
+        //Theme service calls
+        case "getArtistColors":
+        case "getThemeColors":
+        case "updateTheme":
+          {
+          if(incomingMessage[1]!=null){
+            PluginIsolateFunctions.themeReceiverService.execute(incomingMessage[0], incomingMessage[1]).then((value)=>(incomingMessage[2] as SendPort).send(value));
+          }
+          break;
+        }
+
+        //Starter calls
+        case "LoadStarterFiles":{
+          if(incomingMessage[1]!=null){
+            PluginIsolateFunctions.loadFiles().then((value)=>(incomingMessage[2] as SendPort).send(value));
+          }
+          break;
         }
       }
     });

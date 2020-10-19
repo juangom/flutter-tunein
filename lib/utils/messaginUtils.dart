@@ -18,10 +18,12 @@ class MessagingUtils {
         command: command,
         message: message
     ));
-    return tempPort.forEach((data){
+    return tempPort.singleWhere((data){
       if(data!="OK"){
         tempPort.close();
-        return data;
+        return true;
+      }else{
+        return false;
       }
     });
   }

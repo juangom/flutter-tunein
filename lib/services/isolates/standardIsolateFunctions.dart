@@ -29,7 +29,7 @@ class StandardIsolateFunctions{
 
   }
 
-  static readExtDir(Directory dir, Function(String) callback) async {
+  static Future<bool> readExtDir(Directory dir, Function(String) callback) async {
     Stream<FileSystemEntity> sdContents = dir.list(recursive: true);
     sdContents = sdContents.handleError((data) {});
     await for (var data in sdContents) {
@@ -40,6 +40,7 @@ class StandardIsolateFunctions{
       }
     }
     callback("0001");
+    return true;
   }
 
   static bool validateMusicFile(String path){
@@ -56,7 +57,7 @@ class StandardIsolateFunctions{
       _encodedStrings.add(_encodeSongToJson(song));
     }
     print("encoded ${_encodedStrings.length} songs");
-    callback(_encodedStrings);
+    return callback(_encodedStrings);
   }
 
   static String _encodeSongToJson(Tune song) {
@@ -65,8 +66,29 @@ class StandardIsolateFunctions{
     return data;
   }
 
+  static Future<List<Artist>> fetchArtistsFromAlbums(List<Album> albums) async {
+    Map<String, Artist> artists = {};
+    int currentIndex = 0;
+    List<Album> ItemsList = albums;
+    ItemsList.forEach((Album album) {
+      if (artists["${album.artist}"] != null) {
+        artists["${album.artist}"].albums.add(album);
+      } else {
+        artists["${album.artist}"] =
+        new Artist(currentIndex, album.artist, null, null);
+        artists["${album.artist}"].albums.add(album);
+        currentIndex++;
+      }
+    });
+    List<Artist> newArtistList = artists.values.toList();
+    newArtistList.sort((a, b) {
+      if (a.name == null || b.name == null) return 1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return newArtistList;
+  }
 
-  static fetchAlbumFromsongs(List<Tune> songs, Function(List<Album>) callback) async{
+  static Future<List<Album>> fetchAlbumFromsongs(List<Tune> songs, {Function(List<Album>) callback}) async{
     Map<String, Album> albums = {};
     int currentIndex = 0;
     songs.forEach((Tune tune) {
@@ -91,7 +113,8 @@ class StandardIsolateFunctions{
       if (a.title == null || b.title == null) return 1;
       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
     });
-    callback(newAlbumList);
+    callback!=null?callback(newAlbumList):null;
+    return newAlbumList;
   }
 
   //encoding artists to save in prefs in the main isolate
@@ -102,7 +125,7 @@ class StandardIsolateFunctions{
       _encodedStrings.add(_encodeArtistToJson(artist));
     }
     print("encoded ${_encodedStrings.length} artist");
-    callback(_encodedStrings);
+    return callback(_encodedStrings);
   }
 
   static String _encodeArtistToJson(Artist artist) {

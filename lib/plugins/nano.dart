@@ -3,10 +3,13 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:Tunein/models/playerstate.dart';
+import 'package:Tunein/services/isolates/pluginIsolateFunctions.dart';
+import 'package:Tunein/services/isolates/standardIsolateFunctions.dart';
 import 'package:Tunein/services/memoryCacheService.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
+import 'package:tunein_image_utils_plugin/tunein_image_utils_plugin.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import 'package:Tunein/services/locator.dart';
@@ -14,8 +17,8 @@ import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:ext_storage/ext_storage.dart';
 class Nano {
 
-  final MusicServiceIsolate = locator<musicServiceIsolate>();
-  final memoryCachingService = locator<MemoryCacheService>();
+  /*final MusicServiceIsolate = locator<musicServiceIsolate>();
+  final memoryCachingService = locator<MemoryCacheService>();*/
 
   MethodChannel platform = MethodChannel('android_app_retain');
 
@@ -48,9 +51,9 @@ class Nano {
   Future getSdCardPath() async {
     String value;
     try {
-      value = await platform.invokeMethod("getSdCardPath");
+      value = await TuneinImageUtilsPlugin.getSdCardPath();
     } catch (e) {}
-    memoryCachingService.setCacheItem(CachedItems.SDCARD_NAME, value.split("/").last);
+    //memoryCachingService.setCacheItem(CachedItems.SDCARD_NAME, value.split("/").last);
     return value;
   }
 
@@ -72,31 +75,11 @@ class Nano {
   }
 
   Future<dynamic> readExtDir(Directory dir) async {
-    ReceivePort tempPort = ReceivePort();
-    MusicServiceIsolate.sendCrossIsolateMessage(CrossIsolatesMessage(
-      sender: tempPort.sendPort,
-      command: "readExternalDirectory",
-      message: dir
-    ));
-    return tempPort.forEach((dataURL){
-      if(dataURL!="OK"){
-        if(dataURL!="0001"){
-          _musicFiles.add(dataURL);
-        }else{
-          tempPort.close();
-          return true;
-        }
+    return StandardIsolateFunctions.readExtDir(dir,(dataPath){
+      if(dataPath!="0001"){
+        _musicFiles.add(dataPath);
       }
     });
-
-
-    /*Stream sdContents = dir.list(recursive: true);
-    sdContents = sdContents.handleError((data) {});
-    await for (var data in sdContents) {
-      if (data.path.endsWith(".mp3")) {
-        if(validateMusicFile(data.path))_musicFiles.add(data.path);
-      }
-    }*/
   }
 
   bool validateMusicFile(String path){
@@ -121,41 +104,8 @@ class Nano {
   }
 
   Future getAllMetaData() async {
-
-    //Metadata is not currently possible through isolate as it is using platform methods that are only available from the main UI thread.
-    //The use of the traditional
-    ReceivePort tempPort = ReceivePort();
-    MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<List>(
-        sender: tempPort.sendPort,
-        command: "getAllTracksMetadata",
-        message: List.from(_musicFiles)
-    ));
-    return tempPort.forEach((metaDataList){
-      if(metaDataList!="OK"){
-        _metaData=metaDataList;
-        tempPort.close();
-        return true;
-      }else{
-
-      }
-    });
-
-/*    for (var track in _musicFiles) {
-      var data = await getFileMetaData(track);
-      // updateLoadingTrack(track, _musicFiles.indexOf(track), _musicFiles.length);
-      if (data!=null && data[2] != null) {
-        if (data[2] is List<int>) {
-          var digest = sha1.convert(data[2]).toString();
-          writeImage(digest, data[2]);
-          data[2] = digest;
-          _metaData.add(data);
-        } else {
-          _metaData.add(data);
-        }
-      } else {
-        _metaData.add(data);
-      }
-    }*/
+    _metaData = await PluginIsolateFunctions.fetchMetadataOfAllTracks(List.from(_musicFiles));
+    return;
   }
 
   Future getFileMetaData(track) async {

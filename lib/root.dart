@@ -45,10 +45,8 @@ class RootState extends State<Root> with TickerProviderStateMixin {
       MusicServiceIsolate.sendReceive("Hello").then((retunedValue)async{
         print("the returned value is ${retunedValue}");
         await SettingService.fetchSettings();
-        MusicServiceIsolate.callerCreatePluginEnabledIsolate({
-          "httpServerIP":SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_IP),
-          "httpServerPort":SettingService.getCurrentMemorySetting(SettingsIds.SET_OUT_GOING_HTTP_SERVER_PORT),
-        }).then((value){
+        MusicServiceIsolate.callerCreatePluginEnabledIsolate({})
+            .then((value){
           print("isolate with plugins initiated");
           musicService.manualAudioPlayerInit();
           musicService.showUI();
@@ -60,8 +58,6 @@ class RootState extends State<Root> with TickerProviderStateMixin {
           loadFiles();
         });
       });
-
-
     });
 
     super.initState();
@@ -78,59 +74,24 @@ class RootState extends State<Root> with TickerProviderStateMixin {
     _startupStatus.add(StartupState.Busy);
     //fetching all userMetrics doesn't need to be awaited
     metricService.fetchAllMetrics();
-    final data = await musicService.retrieveFiles();
-    if (data.length == 0) {
-      print("gona fetch songs");
-      await musicService.fetchSongs();
-      print("gona fetch albums");
-      await musicService.fetchAlbums();
-      print("gona fetch artist");
-      await musicService.fetchArtists();
-      print("gona fetch playlists");
-      await musicService.retrievePlaylists();
-      print("gona saveFiles");
-      musicService.saveFiles();
-      print("gona save artist");
-      musicService.saveArtists();
-      print("gona retrieve favorites");
-      musicService.retrieveFavorites();
-      _startupStatus.add(StartupState.Success);
-    } else {
-      await musicService.fetchAlbums();
-      final data =await musicService.retrieveArtists();
-      if(data.length==0){
-        await musicService.fetchArtists();
-        await musicService.saveArtists();
+
+    MessagingUtils.sendNewIsolateCommand(command: "LoadStarterFiles").then((value){
+      List<Tune> newSongs = (value["songs"] as List<Map>).map((e) =>Tune.fromMap(e)).toList();
+      List<Album> newAlbums =(value["albums"] as List<Map>).map((e) => Album.fromMap(e)).toList();
+      List<Artist> newArtists = (value["artists"] as List<Map>).map((e) => Artist.fromMap(e)).toList();
+      List<Playlist> newPlaylists = (value["playlists"] as List<Map>).map((e) => Playlist.fromMap(e)).toList();
+      List<Tune> newFavs = (value["favs"] as List<Map>).map((e) => Tune.fromMap(e)).toList();
+      bool newStartup = value["notNewStartup"]==null;
+      musicService.songs$.add(newSongs);
+      musicService.albums$.add(newAlbums);
+      musicService.artists$.add(newArtists);
+      musicService.playlists$.add(newPlaylists);
+      musicService.favorites$.add(newFavs);
+      if(newStartup){
+        loadLastTimeSongsAndPlaylists();
       }
-      await musicService.retrievePlaylists();
-      musicService.retrieveFavorites();
-      await musicService.getArtistDataAndSaveIt();
       _startupStatus.add(StartupState.Success);
-
-      loadLastTimeSongsAndPlaylists();
-
-      //This was a test of the flutter_isolate plugin that gives option to use plugins inside of dart isolate
-      //This is not working as of now since the plugin is missing breaking updates
-      /*ReceivePort tempPort = ReceivePort();
-      MusicServiceIsolate.sendCrossPluginIsolatesMessage(CrossIsolatesMessage<List>(
-          sender: tempPort.sendPort,
-          command: "getAllTracksMetadata",
-          message: List.from(musicService.songs$.value.map((elem)=>elem.uri))
-      ));
-      return tempPort.forEach((metaDataList){
-        if(metaDataList!="OK"){
-          print(metaDataList);
-          tempPort.close();
-          return true;
-        }else{
-
-        }
-      });*/
-      //MusicServiceIsolate.sendCrossPluginIsolatesMessage()
-
-
-    }
-
+    });
   }
 
   loadLastTimeSongsAndPlaylists(){
