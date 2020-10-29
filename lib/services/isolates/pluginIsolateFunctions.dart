@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:Tunein/plugins/ThemeReceiverService.dart';
 import 'package:Tunein/plugins/nano.dart';
@@ -8,6 +9,8 @@ import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:Tunein/services/isolates/standardIsolateFunctions.dart';
 import 'package:Tunein/utils/MathUtils.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_tags/dart_tags.dart';
+import 'package:dart_tags/src/utils/image_extractor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_file_meta_data/flutter_file_meta_data.dart';
@@ -59,7 +62,7 @@ class PluginIsolateFunctions {
         return value;
       }
     } catch (e, stack) {
-
+      return [null, null, null, null, null, null, null, null];
     }
 
   }
