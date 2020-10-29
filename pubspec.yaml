@@ -13,9 +13,7 @@ dependencies:
       ref: master
       url: https://github.com/moda20/audioplayer
   path_provider: ^1.1.0
-  flutter_reorderable_list:
-    git:
-      url: https://github.com/martinory/flutter_reorderable_list.git
+  flutter_reorderable_list: ^0.1.5
   rxdart: ^0.23.1
   sliding_up_panel: ^0.3.4
   shared_preferences: ^0.5.3+1

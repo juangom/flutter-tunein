@@ -497,22 +497,6 @@ class musicServiceIsolate {
   }
 
 
-  //flutter_isolate static callback
-  static ReceivePort isolateTempPort = ReceivePort();
-  static void callback(MapEntry<ReceivePort,String>data) async {
-
-    isolateTempPort.listen((dataSenT) async{
-      if(dataSenT!=null){
-        MethodChannel platform = MethodChannel('android_app_retain');
-        var metaValue = await platform
-            .invokeMethod("getMetaData", <String, dynamic>{'filepath': data.value});
-        data.key.sendPort.send(metaValue);
-
-      }
-    });
-
-  }
-
   void _initStreams() {
     _playerState$.listen((data){
       CrossIsolatesMessage messageToBeSent = new CrossIsolatesMessage<MapEntry<PlayerState,Tune>>(

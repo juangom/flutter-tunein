@@ -17,11 +17,6 @@ import 'package:Tunein/services/isolates/musicServiceIsolate.dart';
 import 'package:ext_storage/ext_storage.dart';
 class Nano {
 
-  /*final MusicServiceIsolate = locator<musicServiceIsolate>();
-  final memoryCachingService = locator<MemoryCacheService>();*/
-
-  MethodChannel platform = MethodChannel('android_app_retain');
-
   // used for app
   List _metaData = [];
   List _musicFiles = [];
@@ -106,19 +101,6 @@ class Nano {
   Future getAllMetaData() async {
     _metaData = await PluginIsolateFunctions.fetchMetadataOfAllTracks(List.from(_musicFiles));
     return;
-  }
-
-  Future getFileMetaData(track) async {
-    var value;
-    try {
-      if (mapMetaData[track] == null) {
-        value = await platform
-            .invokeMethod("getMetaData", <String, dynamic>{'filepath': track});
-      } else {
-        value = mapMetaData[track];
-      }
-    } catch (e) {}
-    return value;
   }
 
   void cleanMetadata() {

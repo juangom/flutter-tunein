@@ -15,8 +15,9 @@ Thank you in advance 👍
 ## Getting Started 🚀
 
 - Clone the repo
-- Install the dependicies
-- Run it
+- Install the dependencies by running `flutter packages get`
+- Run it with `flutter run` or `flutter run -d android` for a specific platform
+- You can build using `flutter build --no-tree-shake-icons` : the tree shake icons argument is a temporary thing until a fix is added in the main channel.
 
 
 
@@ -49,7 +50,7 @@ Thank you in advance 👍
         - [x] Full Interface and integration and testing
         - [ ] Full integration with media keys (headphones, wireless earphones, ...)
         - [ ] Implementing private access to files and moving to a HTTPS-only option
-- [ ] Adding a better landing page :
+- [x] Adding a better landing page :
     - [x] Most Played & Random songs
     - [x] Top Albums
     - [x] Current Queue wheel
