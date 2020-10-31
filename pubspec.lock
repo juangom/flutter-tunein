@@ -424,9 +424,11 @@ packages:
   preload_page_view:
     dependency: "direct main"
     description:
-      name: preload_page_view
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "508c0ef34dd0c0aba7536bc0d79f34a92195535e"
+      url: "https://github.com/moda20/preload_page_view"
+    source: git
     version: "0.1.4"
   process:
     dependency: transitive
@@ -555,7 +557,7 @@ packages:
       name: strings
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.2"
+    version: "0.1.4"
   term_glyph:
     dependency: transitive
     description:
