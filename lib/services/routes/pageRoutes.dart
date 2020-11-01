@@ -1,7 +1,7 @@
 
 
 
-import 'package:Tunein/components/Tune/SongTags.dart';
+import 'package:Tunein/components/Tune/songTags.dart';
 import 'package:Tunein/pages/single/singleAlbum.page.dart';
 import 'package:Tunein/pages/single/singleArtistPage.dart';
 import 'package:Tunein/plugins/nano.dart';
